@@ -6,8 +6,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
