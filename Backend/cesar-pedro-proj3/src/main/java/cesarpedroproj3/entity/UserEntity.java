@@ -1,4 +1,5 @@
 package cesarpedroproj3.entity;
+
 import java.io.Serializable;
 import java.util.Set;
 

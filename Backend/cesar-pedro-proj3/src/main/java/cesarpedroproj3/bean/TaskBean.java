@@ -1,6 +1,6 @@
-package aor.paj.project2.backend.bean;
+package cesarpedroproj3.bean;
 
-import aor.paj.project2.backend.dto.Task;
+import cesarpedroproj3.dto.Task;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.ArrayList;
