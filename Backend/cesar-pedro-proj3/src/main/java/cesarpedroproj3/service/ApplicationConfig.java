@@ -1,4 +1,4 @@
-package aor.paj.project2.backend.service;
+package cesarpedroproj3.service;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;

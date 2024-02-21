@@ -1,4 +1,4 @@
-package aor.paj.project2.backend.dto;
+package cesarpedroproj3.dto;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;

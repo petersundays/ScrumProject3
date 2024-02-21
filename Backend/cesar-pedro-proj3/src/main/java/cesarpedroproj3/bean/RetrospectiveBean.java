@@ -1,7 +1,7 @@
-package aor.paj.project2.backend.bean;
+package cesarpedroproj3.bean;
 
-import aor.paj.project2.backend.dto.Retrospective;
-import aor.paj.project2.backend.dto.Comment;
+import cesarpedroproj3.dto.Comment;
+import cesarpedroproj3.dto.Retrospective;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
