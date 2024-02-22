@@ -33,6 +33,12 @@ public class Task {
     public static final int MEDIUMPRIORITY = 200;
     @XmlElement
     public static final int HIGHPRIORITY = 300;
+    @XmlElement
+    public Category category;
+    @XmlElement
+    public boolean erased;
+    @XmlElement
+    public User owner;
 
     public Task() {
     }
@@ -121,4 +127,27 @@ public class Task {
         this.limitDate = limitDate;
     }
 
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public boolean isErased() {
+        return erased;
+    }
+
+    public void setErased(boolean erased) {
+        this.erased = erased;
+    }
 }
