@@ -1,13 +1,24 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.TaskDao;
+import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-@ApplicationScoped
-public class TaskBean {
+@Stateless
+public class TaskBean implements Serializable {
+
+    @EJB
+    TaskDao taskDao;
+
+    @EJB
+    UserDao userDao;
 
     public boolean newTask(Task task) {
         task.generateId();

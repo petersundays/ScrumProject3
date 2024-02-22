@@ -1,7 +1,10 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
@@ -13,8 +16,13 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 
-@ApplicationScoped
-public class UserBean {
+@Stateless
+public class UserBean implements Serializable{
+
+    @EJB
+    UserDao userDao;
+
+
     private final String filename = "users.json";
     private ArrayList<User> users;
 
