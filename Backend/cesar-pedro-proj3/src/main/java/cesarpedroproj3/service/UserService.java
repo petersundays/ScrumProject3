@@ -1,9 +1,11 @@
 package cesarpedroproj3.service;
 
 import cesarpedroproj3.bean.UserBean;
+import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import jakarta.inject.Inject;
+import jakarta.persistence.ManyToOne;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -34,13 +36,13 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(usernameHeader, password)) {
-            if (!userBean.isEmailValid(user.getEmail(), usernameHeader)) {
+            if (!userBean.isEmailValid(user)) {
                 response = Response.status(422).entity("Invalid email").build();
 
             } else if (!userBean.isImageUrlValid(user.getPhotoURL())) {
                 response = Response.status(422).entity("Image URL invalid").build(); //400
 
-            } else if (!userBean.isPhoneNumberValid(user.getPhone())) {
+            } else if (!userBean.isPhoneNumberValid(user)) {
                 response = Response.status(422).entity("Invalid phone number").build();
 
             } else if (usernameHeader.equals(username)) {
@@ -79,14 +81,15 @@ public class UserService {
 
     @POST
     @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(@HeaderParam("username") String username, @HeaderParam("password") String password) {
+    public Response login(Login login) {
 
+        String token = userBean.login(login);
         Response response;
-        boolean isAuth = userBean.isAuthenticated(username, password);
 
-        if (isAuth) {
-            response = Response.status(200).entity("login successful").build();
+        if (token != null) {
+            response = Response.status(200).entity(token).build();
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -95,11 +98,11 @@ public class UserService {
     @POST
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response logout() {
+    public Response logout(@HeaderParam("token") String token) {
 
-        userBean.writeIntoJsonFile();
+        if(userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
 
-        return Response.status(200).entity("Logout successful").build();
+        return Response.status(401).entity("Invalid Token!").build();
     }
 
     @GET
@@ -128,13 +131,13 @@ public class UserService {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response registerUser(User user) {
+    public Response registerUser(User user){
         Response response;
 
-        boolean isUsernameAvailable = userBean.isUsernameAvailable(user.getUsername());
-        boolean isEmailValid = userBean.isEmailValid(user.getEmail(), user.getUsername());
+        boolean isUsernameAvailable = userBean.isUsernameAvailable(user);
+        boolean isEmailValid = userBean.isEmailValid(user);
         boolean isFieldEmpty = userBean.isAnyFieldEmpty(user);
-        boolean isPhoneNumberValid = userBean.isPhoneNumberValid(user.getPhone());
+        boolean isPhoneNumberValid = userBean.isPhoneNumberValid(user);
         boolean isImageValid = userBean.isImageUrlValid(user.getPhotoURL());
 
         if (isFieldEmpty) {
@@ -147,7 +150,7 @@ public class UserService {
             response = Response.status(422).entity("Image URL invalid").build(); //400
         } else if (!isPhoneNumberValid) {
             response = Response.status(422).entity("Invalid phone number").build();
-        } else if (userBean.addUser(user)) {
+        } else if (userBean.register(user)) {
             response = Response.status(Response.Status.CREATED).entity("User registered successfully").build(); //status code 201
         } else {
             response = Response.status(Response.Status.BAD_REQUEST).entity("Something went wrong").build(); //status code 400
@@ -284,4 +287,6 @@ public class UserService {
         }
         return response;
     }
+
+
 }

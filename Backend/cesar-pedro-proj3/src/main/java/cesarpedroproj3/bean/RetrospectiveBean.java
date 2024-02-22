@@ -1,7 +1,7 @@
 package cesarpedroproj3.bean;
 
-import cesarpedroproj3.dto.Comment;
 import cesarpedroproj3.dto.Retrospective;
+import cesarpedroproj3.dto.Comment;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;

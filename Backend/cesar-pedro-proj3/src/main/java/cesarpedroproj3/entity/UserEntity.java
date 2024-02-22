@@ -1,18 +1,16 @@
 package cesarpedroproj3.entity;
+
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name="user")
+//@NamedQuery(name = "User.findAll", query = "SELECT u FROM UserEntity u")
 @NamedQuery(name = "User.findUserByUsername", query = "SELECT u FROM UserEntity u WHERE u.username = :username")
 @NamedQuery(name = "User.findUserByEmail", query = "SELECT u FROM UserEntity u WHERE u.email = :email")
+@NamedQuery(name = "User.findUserByPhone", query = "SELECT  u FROM UserEntity u WHERE u.phone = :phone")
 @NamedQuery(name = "User.findUserByToken", query = "SELECT DISTINCT u FROM UserEntity u WHERE u.token = :token")
 public class UserEntity implements Serializable{
 
@@ -20,13 +18,21 @@ public class UserEntity implements Serializable{
 
     //user unique email has ID - not updatable, unique, not null, min size = 3
     @Id
-    @Column(name="email", nullable=false, unique = true, updatable = false)
+    @Column(name="email", nullable=false, unique = true, updatable = true)
     private String email;
 
     //user's name
-    @Column(name="name", nullable=false, unique = false, updatable = true)
-    private String name;
+    @Column(name="first_name", nullable=false, unique = false, updatable = true)
+    private String firstName;
 
+    @Column(name="last_name", nullable=false, unique = false, updatable = true)
+    private String lastName;
+
+    @Column(name="phone", nullable=false, unique = true, updatable = true)
+    private String phone;
+
+    @Column(name="photo_url", nullable=false, unique = false, updatable = true)
+    private String photoURL;
 
     @Column(name="token", nullable=true, unique = true, updatable = true)
     private String token;
@@ -34,38 +40,22 @@ public class UserEntity implements Serializable{
     @Column(name="password", nullable=false, unique = false, updatable = true)
     private String password;
 
-    @Column(name="username", nullable=false, unique = false, updatable = true)
+    @Column(name="username", nullable=false, unique = true, updatable = false)
     private String username;
 
-    @OneToMany(mappedBy = "owner")
-    private Set<TaskEntity> activities;
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    private Set<TaskEntity> userTasks;
 
 
     //default empty constructor
     public UserEntity() {}
 
-    public String getEmail() {
-        return email;
+    public String getUsername() {
+        return username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -76,21 +66,60 @@ public class UserEntity implements Serializable{
         this.password = password;
     }
 
-    public Set<TaskEntity> getActivities() {
-        return activities;
+    public String getEmail() {
+        return email;
     }
 
-    public void setActivities(Set<TaskEntity> activities) {
-        this.activities = activities;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    /*public Set<TaskEntity> getUserTasks() {
+        return userTasks;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserTasks(Set<TaskEntity> userTasks) {
+        this.userTasks = userTasks;
+    }*/
+
+    public String getFirstName() {
+        return firstName;
     }
 
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPhotoURL() {
+        return photoURL;
+    }
+
+    public void setPhotoURL(String photoURL) {
+        this.photoURL = photoURL;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
 }

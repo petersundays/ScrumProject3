@@ -2,8 +2,8 @@ package cesarpedroproj3.service;
 
 import cesarpedroproj3.bean.RetrospectiveBean;
 import cesarpedroproj3.bean.UserBean;
-import cesarpedroproj3.dto.Comment;
 import cesarpedroproj3.dto.Retrospective;
+import cesarpedroproj3.dto.Comment;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
