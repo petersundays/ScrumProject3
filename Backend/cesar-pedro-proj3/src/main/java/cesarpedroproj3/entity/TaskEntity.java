@@ -2,13 +2,18 @@ package cesarpedroproj3.entity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="task")
-@NamedQuery(name="Task.findTaskById", query="SELECT a FROM TaskEntity a WHERE a.id = :id")
+@Table(name="Task")
+@NamedQuery(name="Task.findTaskById", query="SELECT a FROM TaskEntity a WHERE a.id = :id")// os : significam que, neste caso o id é um parametro/atributo
 @NamedQuery(name="Task.findTaskByUser", query="SELECT a FROM TaskEntity a WHERE a.owner = :owner")
+@NamedQuery(name="Task.findErasedTasks", query="SELECT a FROM TaskEntity a WHERE a.erased = true")
+@NamedQuery(name="Task.findAllTasks", query="SELECT a FROM TaskEntity a")
+
+
 public class TaskEntity implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -18,15 +23,33 @@ public class TaskEntity implements Serializable{
     @Column (name="id", nullable = false, unique = true, updatable = false)
     private int id;
 
-    @Column (name="title", nullable = false, unique = true)
+    @Column (name="title", nullable = false, unique = false, length = 100)
     private String title;
 
-    @Column (name="description", nullable = true, unique = false, length = 65535, columnDefinition = "TEXT")
+    @Column (name="description", nullable = false, unique = false, length = 20000, columnDefinition = "TEXT")
     private String description;
 
+    @Column (name="stateId", nullable = false, unique = false, updatable = true)
+    private int stateId;
+
+    @Column (name="priority", nullable = false, unique = false, updatable = true)
+    private int priority;
+
     @CreationTimestamp
-    @Column(name="creation_date", nullable = false, unique = false, updatable = false)
+    @Column (name="creation_date", nullable = false, unique = false, updatable = false)
     private Timestamp creationDate;
+
+    @Column (name="startDate", nullable = false, unique = false, updatable = true)
+    private LocalDate startDate;
+
+    @Column (name="limitDate", nullable = false, unique = false, updatable = true)
+    private LocalDate limitDate;
+
+    @Column (name="category", nullable = false, unique = false, updatable = true)
+    private String category;
+
+    @Column (name="erased", nullable = false, unique = false, updatable = true)
+    private boolean erased;
 
     //Owning Side User - task
     @ManyToOne
@@ -85,5 +108,51 @@ public class TaskEntity implements Serializable{
         this.description = description;
     }
 
+    public int getStateId() {
+        return stateId;
+    }
 
+    public void setStateId(int stateId) {
+        this.stateId = stateId;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getLimitDate() {
+        return limitDate;
+    }
+
+    public void setLimitDate(LocalDate limitDate) {
+        this.limitDate = limitDate;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public boolean getErased() {
+        return erased;
+    }
+
+    public void setErased(boolean erased) {
+        this.erased = erased;
+    }
 }
