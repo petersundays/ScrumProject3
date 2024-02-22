@@ -1,19 +1,13 @@
 package cesarpedroproj3.entity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Set;
+import jakarta.persistence.*;
 
-import cesarpedroproj3.dto.Task;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.Set;
 
 @Entity
 @Table(name="user")
+//@NamedQuery(name = "User.findAll", query = "SELECT u FROM UserEntity u")
 @NamedQuery(name = "User.findUserByUsername", query = "SELECT u FROM UserEntity u WHERE u.username = :username")
 @NamedQuery(name = "User.findUserByEmail", query = "SELECT u FROM UserEntity u WHERE u.email = :email")
 @NamedQuery(name = "User.findUserByPhone", query = "SELECT  u FROM UserEntity u WHERE u.phone = :phone")
@@ -24,20 +18,20 @@ public class UserEntity implements Serializable{
 
     //user unique email has ID - not updatable, unique, not null, min size = 3
     @Id
-    @Column(name="email", nullable=false, unique = true, updatable = false)
+    @Column(name="email", nullable=false, unique = true, updatable = true)
     private String email;
 
     //user's name
-    @Column(name="firstName", nullable=false, unique = false, updatable = true)
+    @Column(name="first_name", nullable=false, unique = false, updatable = true)
     private String firstName;
 
-    @Column(name="lastName", nullable=false, unique = false, updatable = true)
+    @Column(name="last_name", nullable=false, unique = false, updatable = true)
     private String lastName;
 
     @Column(name="phone", nullable=false, unique = true, updatable = true)
     private String phone;
 
-    @Column(name="photoURL", nullable=false, unique = true, updatable = true)
+    @Column(name="photo_url", nullable=false, unique = false, updatable = true)
     private String photoURL;
 
     @Column(name="token", nullable=true, unique = true, updatable = true)
@@ -46,10 +40,10 @@ public class UserEntity implements Serializable{
     @Column(name="password", nullable=false, unique = false, updatable = true)
     private String password;
 
-    @Column(name="username", nullable=false, unique = false, updatable = true)
+    @Column(name="username", nullable=false, unique = true, updatable = false)
     private String username;
 
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
     private Set<TaskEntity> userTasks;
 
 
@@ -80,13 +74,13 @@ public class UserEntity implements Serializable{
         this.email = email;
     }
 
-    public Set<TaskEntity> getUserTasks() {
+    /*public Set<TaskEntity> getUserTasks() {
         return userTasks;
     }
 
     public void setUserTasks(Set<TaskEntity> userTasks) {
         this.userTasks = userTasks;
-    }
+    }*/
 
     public String getFirstName() {
         return firstName;

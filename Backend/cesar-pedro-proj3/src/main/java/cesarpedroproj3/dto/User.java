@@ -1,12 +1,9 @@
 package cesarpedroproj3.dto;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 @XmlRootElement
 public class User {
