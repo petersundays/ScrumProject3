@@ -1,7 +1,12 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
+import cesarpedroproj3.dto.Login;
+import cesarpedroproj3.entity.UserEntity;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
@@ -11,14 +16,20 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 
-@ApplicationScoped
-public class UserBean {
+@Stateless
+public class UserBean implements Serializable{
+
+    @EJB
+    UserDao userDao;
+
     private final String filename = "users.json";
     private ArrayList<User> users;
 
-    public UserBean() {
+    /*public UserBean() {
         File f = new File(filename);
         if (f.exists()) {
             try {
@@ -32,13 +43,90 @@ public class UserBean {
         } else {
             users = new ArrayList<>();
         }
+    }*/
+
+    //Permite ao utilizador entrar na app, gera token
+    public String login(Login user){
+        UserEntity userEntity = userDao.findUserByUsername(user.getUsername());
+        if (userEntity != null){
+            if (userEntity.getPassword().equals(user.getPassword())){
+                String token = generateNewToken();
+                userEntity.setToken(token);
+                return token;
+            }
+        }
+        return null;
+    }
+
+    //Faz o registo do utilizador, adiciona à base de dados
+    public boolean register(User user){
+
+        if (user!=null){
+            userDao.persist(convertUserDtotoUserEntity(user));
+            return true;
+        }else
+            return false;
+
+    }
+
+    //Apaga todos os registos do utilizador da base de dados
+    //Verificar tarefas!!!!!!!
+    public boolean delete(User user){
+
+        UserEntity u= userDao.findUserByUsername(user.getUsername());
+
+        if (user != null){
+            userDao.remove(u);
+            return true;
+        }else
+            return false;
+    }
+
+    private UserEntity convertUserDtotoUserEntity(User user){
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(user.getUsername());
+        userEntity.setPassword(user.getPassword());
+        userEntity.setEmail(user.getEmail());
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setPhone(user.getPhone());
+        userEntity.setPhotoURL(user.getPhotoURL());
+
+        System.out.println(user.getUsername());
+
+        return userEntity;
+    }
+
+    private String generateNewToken() {
+        SecureRandom secureRandom = new SecureRandom(); //threadsafe
+        Base64.Encoder base64Encoder = Base64.getUrlEncoder(); //threadsafe
+        byte[] randomBytes = new byte[24];
+        secureRandom.nextBytes(randomBytes);
+        return base64Encoder.encodeToString(randomBytes);
+    }
+
+    public boolean logout(String token) {
+        UserEntity u= userDao.findUserByToken(token);
+
+        if(u!=null){
+            u.setToken(null);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean tokenExist(String token){
+        if (userDao.findUserByToken(token) != null)
+            return true;
+        return false;
+
     }
 
     public ArrayList<User> getUsers() {
         return users;
     }
 
-    public boolean addUser(User user) {
+    /*public boolean addUser(User user) {
 
         boolean status = false;
         if (users.add(user)) {
@@ -46,7 +134,7 @@ public class UserBean {
         }
         writeIntoJsonFile();
         return status;
-    }
+    }*/
 
     public User getUser(String username) {
         for (User user : users) {
@@ -67,7 +155,7 @@ public class UserBean {
                 a.setLastName(user.getLastName());
                 a.setPhone(user.getPhone());
                 a.setPhotoURL(user.getPhotoURL());
-                writeIntoJsonFile();
+                //writeIntoJsonFile();
                 status = true;
             }
         }
@@ -85,14 +173,15 @@ public class UserBean {
         return status;
     }
 
-    public boolean isUsernameAvailable(String username) {
-        boolean status = true;
+    public boolean isUsernameAvailable(User user) {
 
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                status = false;
-            }
+        UserEntity u = userDao.findUserByUsername(user.getUsername());
+        boolean status = false;
+
+        if (u==null) {
+            status = true;
         }
+
         return status;
     }
 
@@ -103,19 +192,15 @@ public class UserBean {
         return email.matches(emailRegex);
     }
 
-    public boolean isEmailValid(String email, String username) {
+    public boolean isEmailValid(User user) {
+
+        UserEntity u = userDao.findUserByEmail(user.getEmail());
         // Check if the email format is valid
-        if (!isEmailFormatValid(email)) {
-            return false;
+        if (isEmailFormatValid(user.getEmail()) && u==null) {
+            return true;
         }
 
-        // Check if the email is already in use by a different user
-        for (User user : users) {
-            if (user.getEmail().equals(email) && !user.getUsername().equals(username)) {
-                return false;
-            }
-        }
-        return true;
+        return false;
     }
 
 
@@ -135,14 +220,16 @@ public class UserBean {
         return status;
     }
 
-    public boolean isPhoneNumberValid(String phone) {
+    public boolean isPhoneNumberValid(User user) {
         boolean status = true;
         int i = 0;
 
-        while (status && i < phone.length() - 1) {
-            if (phone.length() == 9) {
-                for (; i < phone.length(); i++) {
-                    if (!Character.isDigit(phone.charAt(i))) {
+        UserEntity u= userDao.findUserByPhone(user.getPhone());
+
+        while (status && i < user.getPhone().length() - 1) {
+            if (user.getPhone().length() == 9) {
+                for (; i < user.getPhone().length(); i++) {
+                    if (!Character.isDigit(user.getPhone().charAt(i))) {
                         status = false;
                     }
                 }
@@ -150,6 +237,12 @@ public class UserBean {
                 status = false;
             }
         }
+
+        //Se existir contacto na base de dados retorna false
+        if (u != null){
+            status = false;
+        }
+
         return status;
     }
 
@@ -188,7 +281,7 @@ public class UserBean {
         boolean done = taskBean.newTask(temporaryTask);
         if (done) {
             getUserAndHisTasks(username).add(temporaryTask);
-            writeIntoJsonFile();
+            //writeIntoJsonFile();
         }
         return done;
     }
@@ -198,7 +291,7 @@ public class UserBean {
         boolean updated = false;
 
         if (taskBean.editTask(task, getUserAndHisTasks(username))) {
-            writeIntoJsonFile();
+            //writeIntoJsonFile();
             updated = true;
         }
         return updated;
@@ -209,7 +302,7 @@ public class UserBean {
         boolean removed = false;
 
         if (taskBean.removeTask(id, getUserAndHisTasks(username))) {
-            writeIntoJsonFile();
+            //writeIntoJsonFile();
             removed = true;
         }
 
@@ -228,7 +321,7 @@ public class UserBean {
                 for (Task task : userTasks) {
                     if (task.getId().equals(taskId)) {
                         task.setStateId(newStatus);
-                        writeIntoJsonFile();
+                        //writeIntoJsonFile();
                         return true;
                     }
                 }
@@ -239,7 +332,7 @@ public class UserBean {
 
 
 
-    public void writeIntoJsonFile() {
+    /*public void writeIntoJsonFile() {
         Jsonb jsonb = JsonbBuilder.create(new
                 JsonbConfig().withFormatting(true));
         try {
@@ -247,6 +340,6 @@ public class UserBean {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 
 }
