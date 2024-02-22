@@ -12,15 +12,6 @@ import jakarta.persistence.*;
 @NamedQuery(name="Task.findTaskByUser", query="SELECT a FROM TaskEntity a WHERE a.owner = :owner")
 @NamedQuery(name="Task.findErasedTasks", query="SELECT a FROM TaskEntity a WHERE a.erased = true")
 @NamedQuery(name="Task.findAllTasks", query="SELECT a FROM TaskEntity a")
-@NamedQuery(name="Task.deleteTask", query="DELETE FROM TaskEntity a WHERE a.id = :id")
-@NamedQuery(name="Task.updateTitle", query="UPDATE TaskEntity a SET a.title = :newTitle WHERE a.id = :id")
-@NamedQuery(name="Task.updateDescription", query="UPDATE TaskEntity a SET a.description = :newDescription WHERE a.id = :id")
-@NamedQuery(name="Task.updateState", query="UPDATE TaskEntity a SET a.stateId = :newState WHERE a.id = :id")
-@NamedQuery(name="Task.updatePriority", query="UPDATE TaskEntity a SET a.priority = :newPriority WHERE a.id = :id")
-@NamedQuery(name="Task.updateStartDate", query="UPDATE TaskEntity a SET a.startDate = :newStartDate WHERE a.id = :id")
-@NamedQuery(name="Task.updateLimitDate", query="UPDATE TaskEntity a SET a.limitDate = :newLimitDate WHERE a.id = :id")
-@NamedQuery(name="Task.updateCategory", query="UPDATE TaskEntity a SET a.category = :newCategory WHERE a.id = :id")
-@NamedQuery(name="Task.updateErased", query="UPDATE TaskEntity a SET a.erased = :newErased WHERE a.id = :id")
 
 
 public class TaskEntity implements Serializable{
