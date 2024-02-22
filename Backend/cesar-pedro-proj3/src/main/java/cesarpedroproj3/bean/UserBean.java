@@ -71,11 +71,11 @@ public class UserBean implements Serializable{
 
     //Apaga todos os registos do utilizador da base de dados
     //Verificar tarefas!!!!!!!
-    public boolean delete(User user){
+    public boolean delete(String username){
 
-        UserEntity u= userDao.findUserByUsername(user.getUsername());
+        UserEntity u= userDao.findUserByUsername(username);
 
-        if (user != null){
+        if (username != null){
             userDao.remove(u);
             return true;
         }else

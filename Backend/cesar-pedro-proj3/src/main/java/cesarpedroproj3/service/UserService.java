@@ -59,7 +59,6 @@ public class UserService {
     }
 
 
-
     @GET
     @Path("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -95,12 +94,13 @@ public class UserService {
         }
         return response;
     }
+
     @POST
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
     public Response logout(@HeaderParam("token") String token) {
 
-        if(userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
+        if (userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
 
         return Response.status(401).entity("Invalid Token!").build();
     }
@@ -115,7 +115,7 @@ public class UserService {
         if (userBean.isAuthenticated(usernameHeader, password)) {
             if (usernameHeader.equals(username)) {
                 ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
-                userTasks.sort(Comparator.comparing(Task::getPriority,Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
+                userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
 
             } else {
@@ -131,7 +131,7 @@ public class UserService {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response registerUser(User user){
+    public Response registerUser(User user) {
         Response response;
 
         boolean isUsernameAvailable = userBean.isUsernameAvailable(user);
@@ -245,7 +245,7 @@ public class UserService {
                                      @PathParam("username") String username,
                                      @PathParam("taskId") String taskId,
                                      int newStatus) {
-        
+
         Response response;
         if (userBean.isAuthenticated(usernameHeader, password)) {
             if (usernameHeader.equals(username)) {
@@ -287,6 +287,32 @@ public class UserService {
         }
         return response;
     }
+
+    @DELETE
+    @Path("/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response removeUser(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username) {
+
+        Response response;
+        if (userBean.isAuthenticated(username, password)) {
+            if (usernameHeader.equals(username)) {
+
+                boolean removed = userBean.delete(username);
+
+                if (removed) {
+                    response = Response.status(200).entity("User removed successfully").build();
+                } else {
+                    response = Response.status(404).entity("User is not found").build();
+                }
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
 
 
 }
