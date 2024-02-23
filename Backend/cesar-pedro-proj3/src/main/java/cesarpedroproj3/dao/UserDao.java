@@ -55,4 +55,15 @@ public class UserDao extends AbstractDao<UserEntity> {
 		}
 	}
 
+	public UserEntity findUserByUsernameAndPassword(String username, String password){
+		try{
+			return (UserEntity) em.createNamedQuery("User.findUserByUsernameAndPassword")
+					.setParameter("username", username)
+					.setParameter("password", password)
+					.getSingleResult();
+		}catch (NoResultException e){
+			return null; //Nenhum user foi encontrado com estes dados
+		}
+	}
+
 }

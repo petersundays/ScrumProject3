@@ -22,6 +22,8 @@ public class User {
     @XmlElement
     private String photoURL;
     @XmlElement
+    private boolean visivel;
+    @XmlElement
     private ArrayList<Task> userTasks = new ArrayList<>(); //ser array de ids das tasks assim as tasks ficavam no json das tasks
 
     public User() {
@@ -96,6 +98,10 @@ public class User {
     public void setPhotoURL(String photoURL) {
         this.photoURL = photoURL;
     }
+
+    public boolean isVisivel() { return visivel; }
+
+    public void setVisivel(boolean visivel) { this.visivel = visivel; }
 
     @Override
     public String toString() {

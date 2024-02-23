@@ -1,20 +1,18 @@
 package cesarpedroproj3.bean;
 
 import cesarpedroproj3.dao.UserDao;
+import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
-import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -49,7 +47,8 @@ public class UserBean implements Serializable{
     public String login(Login user){
         UserEntity userEntity = userDao.findUserByUsername(user.getUsername());
         if (userEntity != null){
-            if (userEntity.getPassword().equals(user.getPassword())){
+            //Verifica se a password coincide com a password encriptada
+            if (BCrypt.checkpw(user.getPassword(), userEntity.getPassword())){
                 String token = generateNewToken();
                 userEntity.setToken(token);
                 return token;
@@ -62,6 +61,14 @@ public class UserBean implements Serializable{
     public boolean register(User user){
 
         if (user!=null){
+
+            //Encripta a password usando BCrypt
+            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+
+            //Define a password encriptada
+            user.setPassword(hashedPassword);
+
+            //Persist o user
             userDao.persist(convertUserDtotoUserEntity(user));
             return true;
         }else
@@ -71,11 +78,11 @@ public class UserBean implements Serializable{
 
     //Apaga todos os registos do utilizador da base de dados
     //Verificar tarefas!!!!!!!
-    public boolean delete(User user){
+    public boolean delete(String username){
 
-        UserEntity u= userDao.findUserByUsername(user.getUsername());
+        UserEntity u= userDao.findUserByUsername(username);
 
-        if (user != null){
+        if (u != null){
             userDao.remove(u);
             return true;
         }else
@@ -163,14 +170,9 @@ public class UserBean implements Serializable{
     }
 
     public boolean isAuthenticated(String username, String password) {
-        boolean status = false;
 
-        for (User user : users) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                status = true;
-            }
-        }
-        return status;
+        UserEntity user = userDao.findUserByUsernameAndPassword(username,password);
+        return user != null;
     }
 
     public boolean isUsernameAvailable(User user) {
