@@ -194,7 +194,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response newTask(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username, Task task) {
         Response response;
-        System.out.println(task);
+
         if (userBean.isAuthenticated(usernameHeader, password)) {
             if (usernameHeader.equals(username)) {
                 boolean added = userBean.addTaskToUser(username, task);

@@ -3,6 +3,9 @@ package cesarpedroproj3.bean;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
+import cesarpedroproj3.dto.User;
+import cesarpedroproj3.entity.TaskEntity;
+import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,9 +24,14 @@ public class TaskBean implements Serializable {
     UserDao userDao;
 
     public boolean newTask(Task task) {
-        task.generateId();
+        boolean created = false;
+        //task.generateId();
         task.setInitialStateId();
-        return validateTask(task);
+        if (validateTask(task)) {
+            taskDao.persist(convertTaskToEntity(task));
+            created = true;
+        }
+        return created;
     }
 
     public boolean editTask(Task task, ArrayList<Task> tasks) {
@@ -73,6 +81,20 @@ public class TaskBean implements Serializable {
             valid = false;
         }
         return valid;
+    }
+
+    private TaskEntity convertTaskToEntity(Task task) {
+        TaskEntity taskEntity = new TaskEntity();
+        //taskEntity.setId(task.getId());
+        taskEntity.setTitle(task.getTitle());
+        taskEntity.setDescription(task.getDescription());
+        taskEntity.setPriority(task.getPriority());
+        taskEntity.setStateId(task.getStateId());
+        taskEntity.setStartDate(task.getStartDate());
+        taskEntity.setLimitDate(task.getLimitDate());
+        taskEntity.setCategory(task.getCategory().getName());
+        taskEntity.setErased(task.getErased());
+        return taskEntity;
     }
 
 }
