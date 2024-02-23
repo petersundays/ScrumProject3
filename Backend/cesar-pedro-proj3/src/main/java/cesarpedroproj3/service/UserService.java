@@ -5,7 +5,6 @@ import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import jakarta.inject.Inject;
-import jakarta.persistence.ManyToOne;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -288,6 +287,7 @@ public class UserService {
         return response;
     }
 
+    //Apagar utilizador
     @DELETE
     @Path("/{username}")
     @Consumes(MediaType.APPLICATION_JSON)
