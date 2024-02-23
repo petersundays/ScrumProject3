@@ -143,7 +143,7 @@ public class Task {
         this.category = category;
     }
 
-    public boolean isErased() {
+    public boolean getErased() {
         return erased;
     }
 
