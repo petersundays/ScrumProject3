@@ -1,11 +1,14 @@
 package cesarpedroproj3.service;
 
+import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
+import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
+import cesarpedroproj3.entity.UserEntity;
 import jakarta.inject.Inject;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Entity;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -19,6 +22,10 @@ public class UserService {
 
     @Inject
     UserBean userBean;
+    @Inject
+    TaskBean taskBean;
+    @Inject
+    UserDao userDao;
 
     @GET
     @Path("/all")
@@ -32,10 +39,10 @@ public class UserService {
     @Path("/update/{username}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateUser(@PathParam("username") String username, @HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, User user) {
+    public Response updateUser(@PathParam("username") String username, @HeaderParam("token") String token, User user) {
         Response response;
 
-        if (userBean.isAuthenticated(usernameHeader, password)) {
+        if (userBean.isAuthenticated(token)) {
             if (!userBean.isEmailValid(user)) {
                 response = Response.status(422).entity("Invalid email").build();
 
@@ -45,7 +52,7 @@ public class UserService {
             } else if (!userBean.isPhoneNumberValid(user)) {
                 response = Response.status(422).entity("Invalid phone number").build();
 
-            } else if (usernameHeader.equals(username)) {
+            } else if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 boolean updatedUser = userBean.updateUser(user);
                 response = Response.status(Response.Status.OK).entity(updatedUser).build(); //status code 200
 
@@ -59,15 +66,14 @@ public class UserService {
     }
 
 
-
     @GET
     @Path("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUser(@PathParam("username") String username, @HeaderParam("username") String usernameHeader, @HeaderParam("password") String password) {
+    public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
         Response response;
 
-        if (userBean.isAuthenticated(usernameHeader, password)) {
-            if (usernameHeader.equals(username)) {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 User user = userBean.getUser(username);
                 response = Response.ok().entity(user).build();
             } else {
@@ -95,12 +101,13 @@ public class UserService {
         }
         return response;
     }
+
     @POST
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
     public Response logout(@HeaderParam("token") String token) {
 
-        if(userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
+        if (userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
 
         return Response.status(401).entity("Invalid Token!").build();
     }
@@ -108,14 +115,14 @@ public class UserService {
     @GET
     @Path("/{username}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsersTasks(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username) {
+    public Response getAllUsersTasks(@HeaderParam("token") String token, @PathParam("username") String username) {
 
         Response response;
 
-        if (userBean.isAuthenticated(usernameHeader, password)) {
-            if (usernameHeader.equals(username)) {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
-                userTasks.sort(Comparator.comparing(Task::getPriority,Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
+                userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
 
             } else {
@@ -131,7 +138,7 @@ public class UserService {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response registerUser(User user){
+    public Response registerUser(User user) {
         Response response;
 
         boolean isUsernameAvailable = userBean.isUsernameAvailable(user);
@@ -161,11 +168,12 @@ public class UserService {
     @GET
     @Path("/getFirstName")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFirstName(@HeaderParam("username") String username, @HeaderParam("password") String password) {
+    public Response getFirstName(@HeaderParam("token") String token) {
         Response response;
-        User currentUser = userBean.getUser(username);
+        UserEntity currentUserEntity = userDao.findUserByToken(token);
+        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
 
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             response = Response.status(200).entity(currentUser.getFirstName()).build();
@@ -176,11 +184,12 @@ public class UserService {
     @GET
     @Path("/getPhotoUrl")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getImage(@HeaderParam("username") String username, @HeaderParam("password") String password) {
+    public Response getImage(@HeaderParam("token") String token) {
         Response response;
-        User currentUser = userBean.getUser(username);
+        UserEntity currentUserEntity = userDao.findUserByToken(token);
+        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
 
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             response = Response.status(200).entity(currentUser.getPhotoURL()).build();
@@ -192,15 +201,19 @@ public class UserService {
     @Path("/{username}/addTask")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response newTask(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username, Task task) {
+    public Response newTask(@HeaderParam("token") String token, @PathParam("username") String username, Task task) {
         Response response;
 
-        if (userBean.isAuthenticated(usernameHeader, password)) {
-            if (usernameHeader.equals(username)) {
-                boolean added = userBean.addTaskToUser(username, task);
-                if (added) {
-                    response = Response.status(201).entity("Task created successfully").build();
-                } else {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                try {
+                    boolean added = taskBean.newTask(task);
+                    if (added) {
+                        response = Response.status(201).entity("Task created successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Impossible to create task. Verify all fields").build();
+                    }
+                } catch (Exception e) {
                     response = Response.status(404).entity("Impossible to create task. Verify all fields").build();
                 }
             } else {
@@ -216,11 +229,11 @@ public class UserService {
     @PUT
     @Path("/{username}/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTask(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username, @PathParam("id") String id, Task task) {
+    public Response updateTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id, Task task) {
 
         Response response;
-        if (userBean.isAuthenticated(username, password)) {
-            if (usernameHeader.equals(username)) {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 task.setId(id);
                 boolean updated = userBean.updateTask(username, task);
                 if (updated) {
@@ -240,15 +253,11 @@ public class UserService {
     @PUT
     @Path("/{username}/tasks/{taskId}/status")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTaskStatus(@HeaderParam("username") String usernameHeader,
-                                     @HeaderParam("password") String password,
-                                     @PathParam("username") String username,
-                                     @PathParam("taskId") String taskId,
-                                     int newStatus) {
-        
+    public Response updateTaskStatus(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("taskId") String taskId, int newStatus) {
+
         Response response;
-        if (userBean.isAuthenticated(usernameHeader, password)) {
-            if (usernameHeader.equals(username)) {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 boolean updated = userBean.updateTaskStatus(username, taskId, newStatus);
                 if (updated) {
                     response = Response.status(200).entity("Task status updated successfully").build();
@@ -268,11 +277,11 @@ public class UserService {
     @DELETE
     @Path("/{username}/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response removeTask(@HeaderParam("username") String usernameHeader, @HeaderParam("password") String password, @PathParam("username") String username, @PathParam("id") String id) {
+    public Response removeTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id) {
 
         Response response;
-        if (userBean.isAuthenticated(username, password)) {
-            if (usernameHeader.equals(username)) {
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 boolean removed = userBean.removeTask(username, id);
                 if (removed) {
                     response = Response.status(200).entity("Task removed successfully").build();
@@ -287,6 +296,33 @@ public class UserService {
         }
         return response;
     }
+
+    //Apagar utilizador
+    @DELETE
+    @Path("/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response removeUser(@HeaderParam("token") String token, @PathParam("username") String username) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+
+                boolean removed = userBean.delete(username);
+
+                if (removed) {
+                    response = Response.status(200).entity("User removed successfully").build();
+                } else {
+                    response = Response.status(404).entity("User is not found").build();
+                }
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
 
 
 }

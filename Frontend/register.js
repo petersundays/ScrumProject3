@@ -165,7 +165,8 @@ function createUserData() {
             firstName: firstName,
             lastName: lastName,
             phone: phone,
-            photoURL: photoURL
+            photoURL: photoURL,
+            visivel: true
         };
     
 }

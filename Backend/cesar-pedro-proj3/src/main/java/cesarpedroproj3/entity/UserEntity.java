@@ -12,16 +12,23 @@ import java.util.Set;
 @NamedQuery(name = "User.findUserByEmail", query = "SELECT u FROM UserEntity u WHERE u.email = :email")
 @NamedQuery(name = "User.findUserByPhone", query = "SELECT  u FROM UserEntity u WHERE u.phone = :phone")
 @NamedQuery(name = "User.findUserByToken", query = "SELECT DISTINCT u FROM UserEntity u WHERE u.token = :token")
+@NamedQuery(name = "User.findUserByUsernameAndPassword", query = "SELECT u FROM UserEntity u WHERE u.username = :username AND u.password = :password")
 public class UserEntity implements Serializable{
 
     private static final long serialVersionUID = 1L;
 
-    //user unique email has ID - not updatable, unique, not null, min size = 3
+    //user unique username has ID - not updatable, unique, not null
     @Id
+    @Column(name="username", nullable=false, unique = true, updatable = false)
+    private String username;
+
+    @Column(name="password", nullable=false, unique = false, updatable = true)
+    private String password;
+
+
     @Column(name="email", nullable=false, unique = true, updatable = true)
     private String email;
 
-    //user's name
     @Column(name="first_name", nullable=false, unique = false, updatable = true)
     private String firstName;
 
@@ -37,13 +44,10 @@ public class UserEntity implements Serializable{
     @Column(name="token", nullable=true, unique = true, updatable = true)
     private String token;
 
-    @Column(name="password", nullable=false, unique = false, updatable = true)
-    private String password;
+    @Column(name="visivel", nullable = false, unique = false, updatable = true)
+    private boolean visivel;
 
-    @Column(name="username", nullable=false, unique = true, updatable = false)
-    private String username;
-
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<TaskEntity> userTasks;
 
 
@@ -74,13 +78,13 @@ public class UserEntity implements Serializable{
         this.email = email;
     }
 
-    /*public Set<TaskEntity> getUserTasks() {
+    public Set<TaskEntity> getUserTasks() {
         return userTasks;
     }
 
     public void setUserTasks(Set<TaskEntity> userTasks) {
         this.userTasks = userTasks;
-    }*/
+    }
 
     public String getFirstName() {
         return firstName;
@@ -122,4 +126,7 @@ public class UserEntity implements Serializable{
         this.token = token;
     }
 
+    public boolean isVisivel() {return visivel;}
+
+    public void setVisivel(boolean visivel) {this.visivel = visivel;}
 }
