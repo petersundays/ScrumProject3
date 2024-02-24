@@ -21,7 +21,7 @@ public class TaskEntity implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name="id", nullable = false, unique = true, updatable = false)
-    private int id;
+    private String id;
 
     @Column (name="title", nullable = false, unique = false, length = 100)
     private String title;
@@ -60,12 +60,12 @@ public class TaskEntity implements Serializable{
 
     }
 
-    public int getId()
+    public String getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(String id)
     {
         this.id = id;
     }
