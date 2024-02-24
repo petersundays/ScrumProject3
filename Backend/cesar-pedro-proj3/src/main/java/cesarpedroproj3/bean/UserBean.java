@@ -89,7 +89,7 @@ public class UserBean implements Serializable{
             return false;
     }
 
-    private UserEntity convertUserDtotoUserEntity(User user){
+    public UserEntity convertUserDtotoUserEntity(User user){
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(user.getUsername());
         userEntity.setPassword(user.getPassword());
@@ -102,6 +102,19 @@ public class UserBean implements Serializable{
         System.out.println(user.getUsername());
 
         return userEntity;
+    }
+
+    public User convertUserEntitytoUserDto(UserEntity userEntity){
+        User user = new User();
+        user.setUsername(userEntity.getUsername());
+        user.setPassword(userEntity.getPassword());
+        user.setEmail(userEntity.getEmail());
+        user.setFirstName(userEntity.getFirstName());
+        user.setLastName(userEntity.getLastName());
+        user.setPhone(userEntity.getPhone());
+        user.setPhotoURL(userEntity.getPhotoURL());
+
+        return user;
     }
 
     private String generateNewToken() {
@@ -169,9 +182,9 @@ public class UserBean implements Serializable{
         return status;
     }
 
-    public boolean isAuthenticated(String username, String password) {
+    public boolean isAuthenticated(String token) {
 
-        UserEntity user = userDao.findUserByUsernameAndPassword(username,password);
+        UserEntity user = userDao.findUserByToken(token);
         return user != null;
     }
 
@@ -278,15 +291,14 @@ public class UserBean implements Serializable{
         return userTasks;
     }
 
-    public boolean addTaskToUser(String username, Task temporaryTask) {
+/*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();
         boolean done = taskBean.newTask(temporaryTask);
         if (done) {
             getUserAndHisTasks(username).add(temporaryTask);
-            //writeIntoJsonFile();
         }
         return done;
-    }
+    }*/
 
     public boolean updateTask(String username, Task task) {
         TaskBean taskBean = new TaskBean();

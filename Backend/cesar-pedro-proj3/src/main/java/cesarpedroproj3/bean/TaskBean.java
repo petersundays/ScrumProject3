@@ -21,11 +21,14 @@ public class TaskBean implements Serializable {
     TaskDao taskDao;
 
     @EJB
+    UserBean userBean;
+
+    @EJB
     UserDao userDao;
 
     public boolean newTask(Task task) {
         boolean created = false;
-        //task.generateId();
+        task.generateId();
         task.setInitialStateId();
         if (validateTask(task)) {
             taskDao.persist(convertTaskToEntity(task));
@@ -74,6 +77,7 @@ public class TaskBean implements Serializable {
                 || task.getLimitDate().isBefore(task.getStartDate())
                 || task.getTitle().isBlank()
                 || task.getDescription().isBlank()
+                || task.getOwner() == null
                 || task.getPriority() == 0
                 || (task.getPriority() != Task.LOWPRIORITY && task.getPriority() != Task.MEDIUMPRIORITY && task.getPriority() != Task.HIGHPRIORITY)
                 || (task.getStateId() != Task.TODO && task.getStateId() != Task.DOING && task.getStateId() != Task.DONE)
@@ -85,7 +89,7 @@ public class TaskBean implements Serializable {
 
     private TaskEntity convertTaskToEntity(Task task) {
         TaskEntity taskEntity = new TaskEntity();
-        //taskEntity.setId(task.getId());
+        taskEntity.setId(task.getId());
         taskEntity.setTitle(task.getTitle());
         taskEntity.setDescription(task.getDescription());
         taskEntity.setPriority(task.getPriority());
@@ -94,6 +98,7 @@ public class TaskBean implements Serializable {
         taskEntity.setLimitDate(task.getLimitDate());
         taskEntity.setCategory(task.getCategory().getName());
         taskEntity.setErased(task.getErased());
+        taskEntity.setOwner(userBean.convertUserDtotoUserEntity(task.getOwner()));
         return taskEntity;
     }
 

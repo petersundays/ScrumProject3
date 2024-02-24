@@ -23,13 +23,12 @@ public class RetrospectiveService {
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRetrospectives(@HeaderParam("username") String username, @HeaderParam("password") String password) {
+    public Response getRetrospectives(@HeaderParam("token") String token) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             List<Retrospective> retrospectives = retrospectiveBean.getRetrospectives();
-            System.out.println(username+ " " + password + " " + retrospectives.size());
             response = Response.status(200).entity(retrospectives).build();
         }
         return response;
@@ -38,9 +37,9 @@ public class RetrospectiveService {
     @GET
     @Path("/{id}/allComments")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getComments(@HeaderParam("username") String username, @HeaderParam("password") String password, @PathParam("id") String id) {
+    public Response getComments(@HeaderParam("token") String token, @PathParam("id") String id) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             List<Comment> comments = retrospectiveBean.getComments(id);
@@ -56,9 +55,9 @@ public class RetrospectiveService {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRetrospective(@HeaderParam("username") String username, @HeaderParam("password") String password, @PathParam("id") String id) {
+    public Response getRetrospective(@HeaderParam("token") String token, @PathParam("id") String id) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             Retrospective retrospective = retrospectiveBean.getRetrospective(id);
@@ -74,9 +73,9 @@ public class RetrospectiveService {
     @GET
     @Path("/{id}/comment/{id2}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getComment(@HeaderParam("username") String username, @HeaderParam("password") String password, @PathParam("id") String id, @PathParam("id2") String id2) {
+    public Response getComment(@HeaderParam("token") String token, @PathParam("id") String id, @PathParam("id2") String id2) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             if (id == null) {
@@ -98,10 +97,9 @@ public class RetrospectiveService {
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addRetrospective(@HeaderParam("username") String username, @HeaderParam("password") String
-            password, Retrospective temporaryRetrospective) {
+    public Response addRetrospective(@HeaderParam("token") String token, Retrospective temporaryRetrospective) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             boolean added = retrospectiveBean.addRetrospective(temporaryRetrospective);
@@ -118,10 +116,9 @@ public class RetrospectiveService {
     @POST
     @Path("/{id}/addComment")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response newComment(@HeaderParam("username") String username, @HeaderParam("password") String
-            password, @PathParam("id") String id, Comment temporaryComment) {
+    public Response newComment(@HeaderParam("token") String token, @PathParam("id") String id, Comment temporaryComment) {
         Response response;
-        if (!userBean.isAuthenticated(username, password)) {
+        if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             boolean added = retrospectiveBean.addCommentToRetrospective(id, temporaryComment);

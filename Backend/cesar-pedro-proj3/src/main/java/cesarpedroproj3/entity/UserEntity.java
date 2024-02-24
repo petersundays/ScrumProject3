@@ -47,7 +47,7 @@ public class UserEntity implements Serializable{
     @Column(name="visivel", nullable = false, unique = false, updatable = true)
     private boolean visivel;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<TaskEntity> userTasks;
 
 
@@ -78,13 +78,13 @@ public class UserEntity implements Serializable{
         this.email = email;
     }
 
-    /*public Set<TaskEntity> getUserTasks() {
+    public Set<TaskEntity> getUserTasks() {
         return userTasks;
     }
 
     public void setUserTasks(Set<TaskEntity> userTasks) {
         this.userTasks = userTasks;
-    }*/
+    }
 
     public String getFirstName() {
         return firstName;
