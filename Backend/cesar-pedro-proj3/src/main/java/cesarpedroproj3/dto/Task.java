@@ -34,7 +34,7 @@ public class Task {
     @XmlElement
     public static final int HIGHPRIORITY = 300;
     @XmlElement
-    public Category category;
+    public String category;
     @XmlElement
     public boolean erased;
     @XmlElement
@@ -135,11 +135,11 @@ public class Task {
         this.owner = owner;
     }
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
