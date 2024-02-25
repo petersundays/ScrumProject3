@@ -1,5 +1,6 @@
 package cesarpedroproj3.entity;
 
+import cesarpedroproj3.dto.Task;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -8,7 +9,7 @@ import java.io.Serializable;
 @Table(name="category")
 @NamedQuery(name="Category.findTasksByCategory", query="SELECT a FROM CategoryEntity a WHERE a.name = :name")
 @NamedQuery(name="Category.findCategories", query="SELECT a FROM CategoryEntity a")
-@NamedQuery(name="Category.replaceCategory", query="UPDATE TaskEntity a SET a.category = :newCategory WHERE a.category = :oldCategory")
+@NamedQuery(name="Category.findCategoryByName", query="SELECT a FROM CategoryEntity a WHERE a.name = :name")
 @NamedQuery(name="Category.deleteCategory", query="DELETE FROM CategoryEntity a WHERE a.name = :name")
 
 public class CategoryEntity implements Serializable {
@@ -17,6 +18,8 @@ public class CategoryEntity implements Serializable {
     @Id
     @Column(name="name", nullable=false, unique = true, updatable = false)
     private String name;
+    @ManyToOne
+    private TaskEntity task;
 
     public CategoryEntity() {
     }
@@ -29,6 +32,11 @@ public class CategoryEntity implements Serializable {
         this.name = name;
     }
 
+    public TaskEntity getTask() {
+        return task;
+    }
 
-
+    public void setTask(TaskEntity task) {
+        this.task = task;
+    }
 }

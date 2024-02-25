@@ -206,16 +206,16 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                try {
-                    boolean added = taskBean.newTask(task);
+                //try {
+                    boolean added = taskBean.newTask(task, username);
                     if (added) {
                         response = Response.status(201).entity("Task created successfully").build();
                     } else {
                         response = Response.status(404).entity("Impossible to create task. Verify all fields").build();
                     }
-                } catch (Exception e) {
-                    response = Response.status(404).entity("Impossible to create task. Verify all fields").build();
-                }
+                /*} catch (Exception e) {
+                    response = Response.status(404).entity("Deu erro").build();
+                }*/
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
             }
