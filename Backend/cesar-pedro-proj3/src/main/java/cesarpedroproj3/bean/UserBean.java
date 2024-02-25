@@ -61,6 +61,8 @@ public class UserBean implements Serializable{
     public boolean register(User user){
 
         if (user!=null){
+            user.setInitialTypeOfUser();
+            user.setVisible(true);
 
             //Encripta a password usando BCrypt
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -93,11 +95,13 @@ public class UserBean implements Serializable{
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(user.getUsername());
         userEntity.setPassword(user.getPassword());
+        userEntity.setTypeOfUser(user.getTypeOfUser());
         userEntity.setEmail(user.getEmail());
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
         userEntity.setPhone(user.getPhone());
         userEntity.setPhotoURL(user.getPhotoURL());
+        userEntity.setVisible(user.isVisible());
 
         System.out.println(user.getUsername());
 
@@ -108,11 +112,13 @@ public class UserBean implements Serializable{
         User user = new User();
         user.setUsername(userEntity.getUsername());
         user.setPassword(userEntity.getPassword());
+        user.setTypeOfUser(userEntity.getTypeOfUser());
         user.setEmail(userEntity.getEmail());
         user.setFirstName(userEntity.getFirstName());
         user.setLastName(userEntity.getLastName());
         user.setPhone(userEntity.getPhone());
         user.setPhotoURL(userEntity.getPhotoURL());
+        user.setVisible(userEntity.isVisible());
 
         return user;
     }

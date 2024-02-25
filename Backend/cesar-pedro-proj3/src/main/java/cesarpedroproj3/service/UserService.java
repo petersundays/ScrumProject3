@@ -339,19 +339,23 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (categoryBean.categoryExists(categoryName)) {
-                    response = Response.status(409).entity("Category with this name already exists").build();
-                } else {
-                    try {
-                        boolean added = categoryBean.newCategory(categoryName);
-                        if (added) {
-                            response = Response.status(201).entity("Category created successfully").build();
-                        } else {
-                            response = Response.status(404).entity("Impossible to create category. Verify all fields").build();
+                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                    if (categoryBean.categoryExists(categoryName)) {
+                        response = Response.status(409).entity("Category with this name already exists").build();
+                    } else {
+                        try {
+                            boolean added = categoryBean.newCategory(categoryName);
+                            if (added) {
+                                response = Response.status(201).entity("Category created successfully").build();
+                            } else {
+                                response = Response.status(404).entity("Impossible to create category. Verify all fields").build();
+                            }
+                        } catch (Exception e) {
+                            response = Response.status(404).entity("Something went wrong. A new category was not created.").build();
                         }
-                    } catch (Exception e) {
-                        response = Response.status(404).entity("Something went wrong. A new category was not created.").build();
                     }
+                } else {
+                    response = Response.status(403).entity("You don't have permission to create a category").build();
                 }
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
@@ -371,6 +375,7 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
                 try {
                     boolean deleted = categoryBean.deleteCategory(categoryName);
                     if (deleted) {
@@ -380,6 +385,9 @@ public class UserService {
                     }
                 } catch (Exception e) {
                     response = Response.status(404).entity("Something went wrong. The category was not removed.").build();
+                }
+                } else {
+                    response = Response.status(403).entity("You don't have permission to delete a category").build();
                 }
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();

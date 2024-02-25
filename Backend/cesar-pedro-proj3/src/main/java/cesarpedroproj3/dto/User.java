@@ -22,7 +22,15 @@ public class User {
     @XmlElement
     private String photoURL;
     @XmlElement
-    private boolean visivel;
+    private boolean visible;
+    @XmlElement
+    int typeOfUser;
+    @XmlElement
+    public static final int DEVELOPER = 100;
+    @XmlElement
+    public static final int SCRUMMASTER = 200;
+    @XmlElement
+    public static final int PRODUCTOWNER = 300;
     @XmlElement
     private ArrayList<Task> userTasks = new ArrayList<>(); //ser array de ids das tasks assim as tasks ficavam no json das tasks
 
@@ -99,9 +107,27 @@ public class User {
         this.photoURL = photoURL;
     }
 
-    public boolean isVisivel() { return visivel; }
+    public boolean isVisible() { return visible; }
 
-    public void setVisivel(boolean visivel) { this.visivel = visivel; }
+    public void setVisible(boolean visible) { this.visible = visible; }
+
+    public int getTypeOfUser() { return typeOfUser; }
+
+    public void setTypeOfUser(int typeOfUser) { this.typeOfUser = typeOfUser; }
+
+    public void setInitialTypeOfUser() {
+        this.typeOfUser = DEVELOPER;
+    }
+
+    public void editTypeOfUser(int stateId) {
+        if (stateId == DEVELOPER) {
+            this.typeOfUser = DEVELOPER;
+        } else if (stateId == SCRUMMASTER) {
+            this.typeOfUser = SCRUMMASTER;
+        } else {
+            this.typeOfUser = PRODUCTOWNER;
+        }
+    }
 
     @Override
     public String toString() {
