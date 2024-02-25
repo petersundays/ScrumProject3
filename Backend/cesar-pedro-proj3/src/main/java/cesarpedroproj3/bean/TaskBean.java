@@ -8,8 +8,6 @@ import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.enterprise.context.ApplicationScoped;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,11 +24,20 @@ public class TaskBean implements Serializable {
     @EJB
     UserDao userDao;
 
-    public boolean newTask(Task task) {
+    public boolean newTask(Task task, String username) {
         boolean created = false;
-        task.generateId();
+        UserEntity userEntity = userDao.findUserByUsername(username);
+        System.out.println("*****************************************************************" + userEntity.getUsername());
+        User user = userBean.convertUserEntitytoUserDto(userEntity);
+        System.out.println("*****************************************************************" + user.getUsername());
+        //task.generateId();
+        task.setId("123");
         task.setInitialStateId();
+        task.setCategory(task.getCategory());
+        task.setOwner(user);
+        System.out.println("###################################################################" + task.getOwner().getUsername());
         if (validateTask(task)) {
+            System.out.println("#*#*#*#*# ENTROU NO IF #*#*#*#*#");
             taskDao.persist(convertTaskToEntity(task));
             created = true;
         }
@@ -96,7 +103,7 @@ public class TaskBean implements Serializable {
         taskEntity.setStateId(task.getStateId());
         taskEntity.setStartDate(task.getStartDate());
         taskEntity.setLimitDate(task.getLimitDate());
-        taskEntity.setCategory(task.getCategory().getName());
+        //taskEntity.setCategory(task.getCategory().getName());
         taskEntity.setErased(task.getErased());
         taskEntity.setOwner(userBean.convertUserDtotoUserEntity(task.getOwner()));
         return taskEntity;

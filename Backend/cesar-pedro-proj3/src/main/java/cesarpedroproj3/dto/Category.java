@@ -7,9 +7,6 @@ import java.util.ArrayList;
 public class Category {
     @XmlElement
     private String name;
-    @XmlElement
-    private ArrayList<Task> tasks;
-
 
     public Category() {
     }
@@ -22,11 +19,4 @@ public class Category {
         this.name = name;
     }
 
-    public ArrayList<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(ArrayList<Task> tasks) {
-        this.tasks = tasks;
-    }
 }
