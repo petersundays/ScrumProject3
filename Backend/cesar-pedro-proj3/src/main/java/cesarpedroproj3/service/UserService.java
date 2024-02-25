@@ -1,5 +1,6 @@
 package cesarpedroproj3.service;
 
+import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
 import cesarpedroproj3.dao.UserDao;
@@ -25,65 +26,9 @@ public class UserService {
     @Inject
     TaskBean taskBean;
     @Inject
+    CategoryBean categoryBean;
+    @Inject
     UserDao userDao;
-
-    @GET
-    @Path("/all")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<User> getUsers() {
-        return userBean.getUsers();
-    }
-
-
-    @PUT
-    @Path("/update/{username}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateUser(@PathParam("username") String username, @HeaderParam("token") String token, User user) {
-        Response response;
-
-        if (userBean.isAuthenticated(token)) {
-            if (!userBean.isEmailValid(user)) {
-                response = Response.status(422).entity("Invalid email").build();
-
-            } else if (!userBean.isImageUrlValid(user.getPhotoURL())) {
-                response = Response.status(422).entity("Image URL invalid").build(); //400
-
-            } else if (!userBean.isPhoneNumberValid(user)) {
-                response = Response.status(422).entity("Invalid phone number").build();
-
-            } else if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updatedUser = userBean.updateUser(user);
-                response = Response.status(Response.Status.OK).entity(updatedUser).build(); //status code 200
-
-            } else {
-                response = Response.status(Response.Status.NOT_ACCEPTABLE).entity("Invalid username on path").build();
-            }
-        } else {
-            response = Response.status(401).entity("Invalid credentials").build();
-        }
-        return response;
-    }
-
-
-    @GET
-    @Path("/{username}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
-        Response response;
-
-        if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                User user = userBean.getUser(username);
-                response = Response.ok().entity(user).build();
-            } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
-            }
-        } else {
-            response = Response.status(401).entity("Invalid credentials").build();
-        }
-        return response;
-    }
 
     @POST
     @Path("/login")
@@ -110,28 +55,6 @@ public class UserService {
         if (userBean.logout(token)) return Response.status(200).entity("Logout Successful!").build();
 
         return Response.status(401).entity("Invalid Token!").build();
-    }
-
-    @GET
-    @Path("/{username}/tasks")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsersTasks(@HeaderParam("token") String token, @PathParam("username") String username) {
-
-        Response response;
-
-        if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
-                userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
-                response = Response.status(Response.Status.OK).entity(userTasks).build();
-
-            } else {
-                response = Response.status(406).entity("Invalid username on path").build();
-            }
-        } else {
-            response = Response.status(401).entity("Invalid credentials").build();
-        }
-        return response;
     }
 
     @POST
@@ -193,6 +116,117 @@ public class UserService {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             response = Response.status(200).entity(currentUser.getPhotoURL()).build();
+        }
+        return response;
+    }
+
+    @PUT
+    @Path("/update/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateUser(@PathParam("username") String username, @HeaderParam("token") String token, User user) {
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            if (!userBean.isEmailValid(user)) {
+                response = Response.status(422).entity("Invalid email").build();
+
+            } else if (!userBean.isImageUrlValid(user.getPhotoURL())) {
+                response = Response.status(422).entity("Image URL invalid").build(); //400
+
+            } else if (!userBean.isPhoneNumberValid(user)) {
+                response = Response.status(422).entity("Invalid phone number").build();
+
+            } else if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                boolean updatedUser = userBean.updateUser(user);
+                response = Response.status(Response.Status.OK).entity(updatedUser).build(); //status code 200
+
+            } else {
+                response = Response.status(Response.Status.NOT_ACCEPTABLE).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    //Apagar utilizador
+    @DELETE
+    @Path("/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response removeUser(@HeaderParam("token") String token, @PathParam("username") String username) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+
+                boolean removed = userBean.delete(username);
+
+                if (removed) {
+                    response = Response.status(200).entity("User removed successfully").build();
+                } else {
+                    response = Response.status(404).entity("User is not found").build();
+                }
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsers(@HeaderParam("token") String token) {
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            List<User> allUsers = userBean.getUsers();
+            response = Response.status(200).entity(allUsers).build();
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/{username}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                User user = userBean.getUser(username);
+                response = Response.ok().entity(user).build();
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/{username}/tasks")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllUsersTasks(@HeaderParam("token") String token, @PathParam("username") String username) {
+
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
+                userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
+                response = Response.status(Response.Status.OK).entity(userTasks).build();
+
+            } else {
+                response = Response.status(406).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
         }
         return response;
     }
@@ -273,7 +307,6 @@ public class UserService {
         return response;
     }
 
-
     @DELETE
     @Path("/{username}/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -297,22 +330,56 @@ public class UserService {
         return response;
     }
 
-    //Apagar utilizador
-    @DELETE
-    @Path("/{username}")
+    @POST
+    @Path("/{username}/newCategory")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response removeUser(@HeaderParam("token") String token, @PathParam("username") String username) {
+    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, String categoryName) {
 
         Response response;
+
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-
-                boolean removed = userBean.delete(username);
-
-                if (removed) {
-                    response = Response.status(200).entity("User removed successfully").build();
+                if (categoryBean.categoryExists(categoryName)) {
+                    response = Response.status(409).entity("Category with this name already exists").build();
                 } else {
-                    response = Response.status(404).entity("User is not found").build();
+                    try {
+                        boolean added = categoryBean.newCategory(categoryName);
+                        if (added) {
+                            response = Response.status(201).entity("Category created successfully").build();
+                        } else {
+                            response = Response.status(404).entity("Impossible to create category. Verify all fields").build();
+                        }
+                    } catch (Exception e) {
+                        response = Response.status(404).entity("Something went wrong. A new category was not created.").build();
+                    }
+                }
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response; // FALTA FAZER VERIFICAÇÃO DAS PERMISSÕES DO UTILIZADOR PARA CRIAR CATEGORIA
+    }
+
+    @DELETE
+    @Path("/{username}/deleteCategory/{categoryName}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteCategory(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("categoryName") String categoryName) {
+
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                try {
+                    boolean deleted = categoryBean.deleteCategory(categoryName);
+                    if (deleted) {
+                        response = Response.status(200).entity("Category removed successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Category with this name is not found").build();
+                    }
+                } catch (Exception e) {
+                    response = Response.status(404).entity("Something went wrong. The category was not removed.").build();
                 }
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
@@ -323,6 +390,30 @@ public class UserService {
         return response;
     }
 
+    @GET
+    @Path("/{username}/categories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllCategories(@HeaderParam("token") String token, @PathParam("username") String username) {
 
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            try {
+                if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                    List<String> allCategories = categoryBean.findAllCategories();
+                    response = Response.status(200).entity(allCategories).build();
+                } else {
+                    response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                }
+            } catch (Exception e) {
+                response = Response.status(404).entity("Something went wrong. The categories were not found.").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    // ENDPOINT PARA EDIÇÃO CATEGORIAS
 
 }

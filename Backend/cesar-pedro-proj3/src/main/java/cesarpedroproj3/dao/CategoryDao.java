@@ -3,6 +3,7 @@ package cesarpedroproj3.dao;
 import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.entity.CategoryEntity;
+import cesarpedroproj3.entity.TaskEntity;
 import jakarta.ejb.Stateless;
 
 import java.util.ArrayList;
@@ -16,10 +17,9 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
         super(CategoryEntity.class);
     }
 
-    public ArrayList<Task> findTasksByCategory(String name) {
+    public ArrayList<TaskEntity> findTasksByCategory(String name) {
         try {
-            ArrayList<Task> taskEntities = (ArrayList<Task>) em.createNamedQuery("Category.findTasksByCategory").setParameter("name", name).getResultList();
-            return taskEntities;
+            return (ArrayList<TaskEntity>) em.createNamedQuery("Category.findTasksByCategory").setParameter("name", name).getResultList();
         } catch (Exception e) {
             return null;
         }
@@ -27,8 +27,7 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
 
     public ArrayList<CategoryEntity> findAllCategories() {
         try {
-            ArrayList<CategoryEntity> categoryEntities = (ArrayList<CategoryEntity>) em.createNamedQuery("Category.findCategories").getResultList();
-            return categoryEntities;
+            return (ArrayList<CategoryEntity>) em.createNamedQuery("Category.findCategories").getResultList();
         } catch (Exception e) {
             return null;
         }
@@ -48,7 +47,7 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
             deleted = false;
         } else {
             try {
-                ArrayList<CategoryEntity> categoryTasks = (ArrayList<CategoryEntity>) em.createNamedQuery("Category.findTasksByCategory").setParameter("name", name).getResultList();
+                ArrayList<TaskEntity> categoryTasks = (ArrayList<TaskEntity>) em.createNamedQuery("Category.findTasksByCategory").setParameter("name", name).getResultList();
                 if (categoryTasks.isEmpty()) {
                     em.createNamedQuery("Category.deleteCategory").setParameter("name", name).executeUpdate();
                     deleted = true;
