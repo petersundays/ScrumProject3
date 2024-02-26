@@ -1,9 +1,11 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
+import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -23,6 +25,8 @@ public class UserBean implements Serializable{
 
     @EJB
     UserDao userDao;
+    @EJB
+    private TaskDao taskDao;
 
     private final String filename = "users.json";
     private ArrayList<User> users;
@@ -102,8 +106,6 @@ public class UserBean implements Serializable{
         userEntity.setPhone(user.getPhone());
         userEntity.setPhotoURL(user.getPhotoURL());
         userEntity.setVisible(user.isVisible());
-
-        System.out.println(user.getUsername());
 
         return userEntity;
     }
@@ -306,7 +308,7 @@ public class UserBean implements Serializable{
         return done;
     }*/
 
-    public boolean updateTask(String username, Task task) {
+    /*public boolean updateTask(String username, Task task) {
         TaskBean taskBean = new TaskBean();
         boolean updated = false;
 
@@ -315,28 +317,8 @@ public class UserBean implements Serializable{
             updated = true;
         }
         return updated;
-    }
+    }*/
 
-    public boolean updateTaskStatus(String username, String taskId, int newStatus) {
-
-        if (newStatus != 100 && newStatus != 200 && newStatus != 300) {
-            return false;
-        }
-
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                ArrayList<Task> userTasks = user.getUserTasks();
-                for (Task task : userTasks) {
-                    if (task.getId().equals(taskId)) {
-                        task.setStateId(newStatus);
-                        //writeIntoJsonFile();
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
 
 
