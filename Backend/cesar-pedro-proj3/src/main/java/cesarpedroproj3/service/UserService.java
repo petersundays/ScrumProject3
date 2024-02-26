@@ -119,6 +119,22 @@ public class UserService {
         return response;
     }
 
+    @GET
+    @Path("/getUsername")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsername(@HeaderParam("token") String token) {
+        Response response;
+        UserEntity currentUserEntity = userDao.findUserByToken(token);
+        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
+
+        if (!userBean.isAuthenticated(token)) {
+            response = Response.status(401).entity("Invalid credentials").build();
+        } else {
+            response = Response.status(200).entity(currentUser.getUsername()).build();
+        }
+        return response;
+    }
+
     @PUT
     @Path("/update/{username}")
     @Consumes(MediaType.APPLICATION_JSON)

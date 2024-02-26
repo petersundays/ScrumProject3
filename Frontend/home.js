@@ -1,18 +1,17 @@
-
-window.onload = function() {
+window.onload = async function() {
 
   sessionStorage.clear();
-  const usernameValue = localStorage.getItem('username');
-  const passwordValue = localStorage.getItem('password');
-
+  const tokenValue = localStorage.getItem('token');
+  let usernameLogged;
   
-  if (usernameValue === null || passwordValue === null) {
+  if (tokenValue === null) {
     window.location.href = "index.html";
   } else {
     try {
-        getFirstName(usernameValue, passwordValue);
-        getPhotoUrl(usernameValue, passwordValue);
-        loadTasks();
+        usernameLogged = await getUsername(tokenValue);
+        getFirstName(tokenValue);
+        getPhotoUrl(tokenValue);
+        loadTasks(usernameLogged, tokenValue);
     } catch (error) {
         
         console.error("An error occurred:", error);
@@ -22,13 +21,7 @@ window.onload = function() {
   }
 };
 
-
-  function getValuesFromLocalStorage() {
-    const usernameValue = localStorage.getItem('username');
-    const passwordValue = localStorage.getItem('password');
-    const userValues = [usernameValue, passwordValue];     
-    return userValues;
-  }
+const tokenValue = localStorage.getItem('token');
 
   function cleanAllTaskFields() {
     document.getElementById('warningMessage2').innerText = '';
@@ -59,27 +52,29 @@ function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and
 panels.forEach(panel => { 
   panel.addEventListener('dragover', e => {
     e.preventDefault()
-    //const afterElement = getDragAfterElement(panel, e.clientY);
+    const afterElement = getDragAfterElement(panel, e.clientY);
     const task = document.querySelector('.dragging');
     
     const panelID = panel.id; 
 
-    if (afterElement == null) {
-      panel.appendChild(task);
-      task.stateId = panelID;
-    } else {
-      panel.insertBefore(task, afterElement);
-      task.stateId = panelID;
+    if (task !== null) {
+      if (afterElement == null) {
+        panel.appendChild(task);
+        task.stateId = panelID;
+      } else {
+        panel.insertBefore(task, afterElement);
+        task.stateId = panelID;
+      }
     }
 
-    updateTaskStatus(localStorage.getItem('username'), localStorage.getItem('password'), task.id, panelID);
+    updateTaskStatus(usernameLogged, localStorage.getItem('token'), task.id, panelID);
     removeAllTaskElements();
-    loadTasks();    
+    loadTasks(usernameLogged, tokenValue);    
     
   })
 })
 
-async function updateTaskStatus(username, password, taskId, newStatus) {
+async function updateTaskStatus(usernameLogged, token, taskId, newStatus) {
 
   let numericStatus;
   switch (newStatus) {
@@ -97,15 +92,15 @@ async function updateTaskStatus(username, password, taskId, newStatus) {
       return numericStatus;
   }
 
-  const updateTaskUrl = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${username}/tasks/${taskId}/status`;
+  const updateTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks/${taskId}/status`;
   try {
     const response = await fetch(updateTaskUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        username: username,
-        password: password
+        username: usernameLogged,
+        token: token
       },
       body: JSON.stringify(numericStatus)
     });
@@ -120,7 +115,7 @@ async function updateTaskStatus(username, password, taskId, newStatus) {
   }
 }
 
-/* function getDragAfterElement(panel, y) {
+function getDragAfterElement(panel, y) {
   const draggableElements = [...panel.querySelectorAll('.task:not(.dragging)')] // Dentro da lista de painéis, seleciona todos os elementos com a classe task que nao tenham a classe dragging  
   return draggableElements.reduce((closest, child) => { // Retorna o elemento mais próximo do que esáa a ser arrastado e que está a ser comparado
       const box = child.getBoundingClientRect() // Retorna o tamanho do elemento e a sua posição relativamente ao viewport
@@ -130,7 +125,7 @@ async function updateTaskStatus(username, password, taskId, newStatus) {
       } else { //
           return closest // Retorna o elemento mais próximo até agora
       }
-  }, { offset: Number.NEGATIVE_INFINITY }).element} */
+  }, { offset: Number.NEGATIVE_INFINITY }).element}
 
 // Definir os botões de priority
 const lowButton = document.getElementById("low-button-home");
@@ -158,9 +153,9 @@ mediumButton.addEventListener("click", () => setPriorityButtonSelected(mediumBut
 highButton.addEventListener("click", () => setPriorityButtonSelected(highButton, "high"));
 
  
-async function newTask(usernameValue, passwordValue, task) {
-console.log('In newTask - username: ' + usernameValue);
-  let newTask = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/addTask`;
+async function newTask(usernameLogged, tokenValue, task) {
+console.log('In newTask - username: ' + usernameLogged);
+  let newTask = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/addTask`;
     
     try {
         const response = await fetch(newTask, {
@@ -168,8 +163,8 @@ console.log('In newTask - username: ' + usernameValue);
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                username: usernameValue,
-                password: passwordValue
+                username: usernameLogged,
+                token: tokenValue
             },    
             body: JSON.stringify(task)
         });
@@ -189,9 +184,9 @@ console.log('In newTask - username: ' + usernameValue);
   };
 
 
-  async function getAllUsersTasks(usernameValue, passwordValue) {
+  async function getAllUsersTasks(usernameLogged, tokenValue) {
 
-    let getTasks = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/tasks`;
+    let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
       
       try {
           const response = await fetch(getTasks, {
@@ -199,14 +194,14 @@ console.log('In newTask - username: ' + usernameValue);
               headers: {
                   'Content-Type': 'application/JSON',
                   'Accept': '*/*',
-                  username: usernameValue,
-                  password: passwordValue
+                  username: usernameLogged,
+                  token: tokenValue
               },    
           });
   
             if (response.ok) {
-              const tasks = await response.json(); 
-              return tasks;
+              //const tasks = await response; 
+              //return tasks;
             } else if (response.status === 401) {
               alert("Invalid credentials")
             } else if (response.status === 406) {
@@ -249,12 +244,10 @@ console.log('addTask button clicked')
     document.getElementById('warningMessage2').innerText = 'Fill in all fields and define a priority';
   } else {
     let task = createTask(title, description, priority, startDate, limitDate);
-    console.log('username no localStorage = ' + getValuesFromLocalStorage()[0]);
-    const usernameValue = getValuesFromLocalStorage()[0];
-    const passwordValue = getValuesFromLocalStorage()[1];
-    newTask(usernameValue, passwordValue, task).then (() => {
+    
+    newTask(usernameLogged, tokenValue, task).then (() => {
       removeAllTaskElements();
-      loadTasks();
+      loadTasks(usernameLogged, tokenValue);
       cleanAllTaskFields();
     });
   }
@@ -312,14 +305,12 @@ document.addEventListener('click', function (event) {
   if (event.target.matches('.apagarButton')) {
     const taskElement = event.target.closest('.task');
     const taskId = event.target.dataset.taskId;
-    const usernameValue = localStorage.getItem('username');
-    const passwordValue = localStorage.getItem('password');
 
     const deletemodal = document.getElementById('delete-modal');
     deletemodal.style.display = "grid";
 
     function deleteButtonClickHandler() {
-      deleteTask(taskId, usernameValue, passwordValue);
+      deleteTask(taskId, usernameLogged, tokenValue);
       taskElement.remove();
       deletemodal.style.display = "none";
       deletebtn.removeEventListener('click', deleteButtonClickHandler); 
@@ -337,8 +328,8 @@ document.addEventListener('click', function (event) {
 
 
 // Carrega as tarefas guardadas na local storage
-function loadTasks() {
-  getAllUsersTasks(getValuesFromLocalStorage()[0], getValuesFromLocalStorage()[1]).then(tasksArray => {
+function loadTasks(usernameLogged, tokenValue) {
+  getAllUsersTasks(usernameLogged, tokenValue).then(tasksArray => {
     tasksArray.forEach(task => {
       const taskElement = createTaskElement(task);
       if (!taskElement) {
@@ -415,10 +406,10 @@ function parsePriorityToInt (priority) {
   return newPriority;
 }
 
-async function deleteTask(id, usernameValue, passwordValue) {
+async function deleteTask(id, usernameLogged, tokenValue) {
    
 
-  let deleteTaskUrl = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/${id}`;
+  let deleteTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/${id}`;
 
   try {
     const response = await fetch(deleteTaskUrl, {
@@ -426,8 +417,8 @@ async function deleteTask(id, usernameValue, passwordValue) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        username: usernameValue,
-        password: passwordValue
+        username: usernameLogged,
+        token: tokenValue
       },
     });
 
@@ -446,14 +437,13 @@ async function deleteTask(id, usernameValue, passwordValue) {
 
 window.onclose = function () { // Guarda as tarefas na local storage quando a página é fechada
 
-  localStorage.removeItem("username");
-  localStorage.removeItem("password");
+  localStorage.clear();
 }
 
 //LOGOUT 
 document.getElementById("logout-button-header").addEventListener('click', async function() {
 
-  let logoutRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/logout";
+  let logoutRequest = "http://localhost:8080/project_backend/rest/users/logout";
     
     try {   
         const response = await fetch(logoutRequest, {
@@ -461,12 +451,12 @@ document.getElementById("logout-button-header").addEventListener('click', async 
             headers: {
                 'Content-Type': 'application/JSON',
                 'Accept': '*/*',
+                token: tokenValue
             }, 
         });
         if (response.ok) {
             
-          localStorage.removeItem("username");
-          localStorage.removeItem("password");
+          localStorage.clear();
 
           window.location.href="index.html";
 
@@ -478,9 +468,9 @@ document.getElementById("logout-button-header").addEventListener('click', async 
 })
 
 
-async function getFirstName(usernameValue, passwordValue) {
+async function getFirstName(tokenValue) {
 
-  let firstNameRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getFirstName";
+  let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getFirstName";
     
     try {
         const response = await fetch(firstNameRequest, {
@@ -488,8 +478,7 @@ async function getFirstName(usernameValue, passwordValue) {
             headers: {
                 'Content-Type': 'application/JSON',
                 'Accept': '*/*',
-                username: usernameValue,
-                password: passwordValue
+                token: tokenValue
             },    
         });
 
@@ -508,10 +497,10 @@ async function getFirstName(usernameValue, passwordValue) {
     }
 }
 
-async function getPhotoUrl(usernameValue, passwordValue) {
+async function getPhotoUrl(tokenValue) {
 
   
-  let photoUrlRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getPhotoUrl";
+  let photoUrlRequest = "http://localhost:8080/project_backend/rest/users/getPhotoUrl";
     
     try {
         const response = await fetch(photoUrlRequest, {
@@ -519,8 +508,7 @@ async function getPhotoUrl(usernameValue, passwordValue) {
             headers: {
                 'Content-Type': 'application/JSON',
                 'Accept': '*/*',
-                username: usernameValue,
-                password: passwordValue
+                token: tokenValue,
             },    
         });
 
@@ -533,6 +521,35 @@ async function getPhotoUrl(usernameValue, passwordValue) {
             alert("Invalid credentials")
         } else if (response.stateId === 404) {
           alert("teste 404")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+}
+
+async function getUsername(tokenValue) {
+
+  let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsername";
+    
+    try {
+        const response = await fetch(firstNameRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+
+        if (response.ok) {
+
+          const data = await response.text();
+          return data;
+
+        } else if (!response.ok) {
+            alert("Invalid credentials")
         }
 
     } catch (error) {
