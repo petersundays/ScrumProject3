@@ -1,19 +1,15 @@
 package cesarpedroproj3.bean;
 
-import cesarpedroproj3.dao.AbstractDao;
 import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
-import cesarpedroproj3.entity.CategoryEntity;
 import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 @Stateless
 public class TaskBean implements Serializable {
@@ -49,7 +45,7 @@ public class TaskBean implements Serializable {
         return created;
     }
 
-    public boolean updateOwnTask(Task task, String id, String ownerUsername) {
+    public boolean updateTask(Task task, String id, String ownerUsername) {
         boolean edited = false;
         task.setId(id);
         task.setOwner(userBean.convertUserEntitytoUserDto(userDao.findUserByUsername(ownerUsername)));
@@ -62,14 +58,14 @@ public class TaskBean implements Serializable {
         return edited;
     }
 
-    public boolean updateTaskStatus(String taskId, int newStatus) {
+    public boolean updateTaskStatus(String taskId, int stateId) {
         boolean updated = false;
-        if (newStatus != 100 && newStatus != 200 && newStatus != 300) {
+        if (stateId != 100 && stateId != 200 && stateId != 300) {
             updated = false;
         } else {
             TaskEntity taskEntity = taskDao.findTaskById(taskId);
             if (taskEntity != null) {
-                taskEntity.setStateId(newStatus);
+                taskEntity.setStateId(stateId);
                 taskDao.merge(taskEntity);
                 updated = true;
             }
