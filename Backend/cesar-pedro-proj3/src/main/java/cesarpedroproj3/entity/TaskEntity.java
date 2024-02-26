@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="Task")
+@Table(name="task")
 @NamedQuery(name="Task.findTaskById", query="SELECT a FROM TaskEntity a WHERE a.id = :id")// os : significam que, neste caso o id é um parametro/atributo
 @NamedQuery(name="Task.findTaskByUser", query="SELECT a FROM TaskEntity a WHERE a.owner = :owner")
 @NamedQuery(name="Task.findErasedTasks", query="SELECT a FROM TaskEntity a WHERE a.erased = true")
@@ -19,9 +19,9 @@ public class TaskEntity implements Serializable{
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name="id", nullable = false, unique = true, updatable = false)
-    private int id;
+    private String id;
 
     @Column (name="title", nullable = false, unique = false, length = 100)
     private String title;
@@ -35,9 +35,9 @@ public class TaskEntity implements Serializable{
     @Column (name="priority", nullable = false, unique = false, updatable = true)
     private int priority;
 
-    @CreationTimestamp
+ /*   @CreationTimestamp
     @Column (name="creation_date", nullable = false, unique = false, updatable = false)
-    private Timestamp creationDate;
+    private Timestamp creationDate;*/
 
     @Column (name="startDate", nullable = false, unique = false, updatable = true)
     private LocalDate startDate;
@@ -45,7 +45,7 @@ public class TaskEntity implements Serializable{
     @Column (name="limitDate", nullable = false, unique = false, updatable = true)
     private LocalDate limitDate;
 
-    @Column (name="category", nullable = false, unique = false, updatable = true)
+    @Column (name="category", nullable = true, unique = false, updatable = true)
     private String category;
 
     @Column (name="erased", nullable = false, unique = false, updatable = true)
@@ -53,6 +53,7 @@ public class TaskEntity implements Serializable{
 
     //Owning Side User - task
     @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username")
     private UserEntity owner;
 
 
@@ -60,17 +61,17 @@ public class TaskEntity implements Serializable{
 
     }
 
-    public int getId()
+    public String getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(String id)
     {
         this.id = id;
     }
 
-    public Timestamp getCreationDate()
+    /*public Timestamp getCreationDate()
     {
         return creationDate;
     }
@@ -79,7 +80,7 @@ public class TaskEntity implements Serializable{
     {
         this.creationDate = creationDate;
     }
-
+*/
     public UserEntity getOwner() {
         return owner;
     }

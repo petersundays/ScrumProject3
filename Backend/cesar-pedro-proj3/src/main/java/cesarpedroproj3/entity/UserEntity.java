@@ -25,6 +25,8 @@ public class UserEntity implements Serializable{
     @Column(name="password", nullable=false, unique = false, updatable = true)
     private String password;
 
+    @Column(name="type_of_user", nullable=false, unique = false, updatable = true)
+    private int typeOfUser;
 
     @Column(name="email", nullable=false, unique = true, updatable = true)
     private String email;
@@ -44,10 +46,10 @@ public class UserEntity implements Serializable{
     @Column(name="token", nullable=true, unique = true, updatable = true)
     private String token;
 
-    @Column(name="visivel", nullable = false, unique = false, updatable = true)
-    private boolean visivel;
+    @Column(name="visible", nullable = false, unique = false, updatable = true)
+    private boolean visible;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<TaskEntity> userTasks;
 
 
@@ -70,6 +72,14 @@ public class UserEntity implements Serializable{
         this.password = password;
     }
 
+    public int getTypeOfUser() {
+        return typeOfUser;
+    }
+
+    public void setTypeOfUser(int typeOfUser) {
+        this.typeOfUser = typeOfUser;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -78,13 +88,13 @@ public class UserEntity implements Serializable{
         this.email = email;
     }
 
-    /*public Set<TaskEntity> getUserTasks() {
+    public Set<TaskEntity> getUserTasks() {
         return userTasks;
     }
 
     public void setUserTasks(Set<TaskEntity> userTasks) {
         this.userTasks = userTasks;
-    }*/
+    }
 
     public String getFirstName() {
         return firstName;
@@ -126,7 +136,7 @@ public class UserEntity implements Serializable{
         this.token = token;
     }
 
-    public boolean isVisivel() {return visivel;}
+    public boolean isVisible() {return visible;}
 
-    public void setVisivel(boolean visivel) {this.visivel = visivel;}
+    public void setVisible(boolean visivel) {this.visible = visivel;}
 }

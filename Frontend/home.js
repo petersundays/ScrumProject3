@@ -59,7 +59,7 @@ function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and
 panels.forEach(panel => { 
   panel.addEventListener('dragover', e => {
     e.preventDefault()
-    const afterElement = getDragAfterElement(panel, e.clientY);
+    //const afterElement = getDragAfterElement(panel, e.clientY);
     const task = document.querySelector('.dragging');
     
     const panelID = panel.id; 
@@ -73,14 +73,11 @@ panels.forEach(panel => {
     }
 
     updateTaskStatus(localStorage.getItem('username'), localStorage.getItem('password'), task.id, panelID);
-    
+    removeAllTaskElements();
+    loadTasks();    
     
   })
 })
-
-
-
-
 
 async function updateTaskStatus(username, password, taskId, newStatus) {
 
@@ -123,7 +120,7 @@ async function updateTaskStatus(username, password, taskId, newStatus) {
   }
 }
 
-function getDragAfterElement(panel, y) {
+/* function getDragAfterElement(panel, y) {
   const draggableElements = [...panel.querySelectorAll('.task:not(.dragging)')] // Dentro da lista de painéis, seleciona todos os elementos com a classe task que nao tenham a classe dragging  
   return draggableElements.reduce((closest, child) => { // Retorna o elemento mais próximo do que esáa a ser arrastado e que está a ser comparado
       const box = child.getBoundingClientRect() // Retorna o tamanho do elemento e a sua posição relativamente ao viewport
@@ -133,7 +130,7 @@ function getDragAfterElement(panel, y) {
       } else { //
           return closest // Retorna o elemento mais próximo até agora
       }
-  }, { offset: Number.NEGATIVE_INFINITY }).element}
+  }, { offset: Number.NEGATIVE_INFINITY }).element} */
 
 // Definir os botões de priority
 const lowButton = document.getElementById("low-button-home");

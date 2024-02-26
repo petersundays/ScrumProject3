@@ -17,7 +17,7 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 	}
 	
 
-	public TaskEntity findTaskById(int id) {
+	public TaskEntity findTaskById(String id) {
 		try {
 			return (TaskEntity) em.createNamedQuery("Task.findTaskById").setParameter("id", id)
 					.getSingleResult();
@@ -28,12 +28,28 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 
 	}
 
-	public ArrayList<TaskEntity> findActivityByUser(UserEntity userEntity) {
+	public ArrayList<TaskEntity> findTaskByUser(UserEntity userEntity) {
 		try {
-			ArrayList<TaskEntity> taskEntityEntities = (ArrayList<TaskEntity>) em.createNamedQuery("Task.findTaskByUser").setParameter("owner", userEntity).getResultList();
-			return taskEntityEntities;
+            return (ArrayList<TaskEntity>) em.createNamedQuery("Task.findTaskByUser").setParameter("owner", userEntity).getResultList();
 		} catch (Exception e) {
 			return null;
 		}
 	}
+
+	public ArrayList<TaskEntity> findErasedTasks() {
+		try {
+            return (ArrayList<TaskEntity>) em.createNamedQuery("Task.findErasedTasks").getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public ArrayList<TaskEntity> findAllTasks() {
+		try {
+            return (ArrayList<TaskEntity>) em.createNamedQuery("Task.findAllTasks").getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 }

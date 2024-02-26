@@ -61,6 +61,8 @@ public class UserBean implements Serializable{
     public boolean register(User user){
 
         if (user!=null){
+            user.setInitialTypeOfUser();
+            user.setVisible(true);
 
             //Encripta a password usando BCrypt
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -89,19 +91,36 @@ public class UserBean implements Serializable{
             return false;
     }
 
-    private UserEntity convertUserDtotoUserEntity(User user){
+    public UserEntity convertUserDtotoUserEntity(User user){
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(user.getUsername());
         userEntity.setPassword(user.getPassword());
+        userEntity.setTypeOfUser(user.getTypeOfUser());
         userEntity.setEmail(user.getEmail());
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
         userEntity.setPhone(user.getPhone());
         userEntity.setPhotoURL(user.getPhotoURL());
+        userEntity.setVisible(user.isVisible());
 
         System.out.println(user.getUsername());
 
         return userEntity;
+    }
+
+    public User convertUserEntitytoUserDto(UserEntity userEntity){
+        User user = new User();
+        user.setUsername(userEntity.getUsername());
+        user.setPassword(userEntity.getPassword());
+        user.setTypeOfUser(userEntity.getTypeOfUser());
+        user.setEmail(userEntity.getEmail());
+        user.setFirstName(userEntity.getFirstName());
+        user.setLastName(userEntity.getLastName());
+        user.setPhone(userEntity.getPhone());
+        user.setPhotoURL(userEntity.getPhotoURL());
+        user.setVisible(userEntity.isVisible());
+
+        return user;
     }
 
     private String generateNewToken() {
@@ -169,9 +188,9 @@ public class UserBean implements Serializable{
         return status;
     }
 
-    public boolean isAuthenticated(String username, String password) {
+    public boolean isAuthenticated(String token) {
 
-        UserEntity user = userDao.findUserByUsernameAndPassword(username,password);
+        UserEntity user = userDao.findUserByToken(token);
         return user != null;
     }
 
@@ -278,15 +297,14 @@ public class UserBean implements Serializable{
         return userTasks;
     }
 
-    public boolean addTaskToUser(String username, Task temporaryTask) {
+/*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();
         boolean done = taskBean.newTask(temporaryTask);
         if (done) {
             getUserAndHisTasks(username).add(temporaryTask);
-            //writeIntoJsonFile();
         }
         return done;
-    }
+    }*/
 
     public boolean updateTask(String username, Task task) {
         TaskBean taskBean = new TaskBean();
@@ -297,18 +315,6 @@ public class UserBean implements Serializable{
             updated = true;
         }
         return updated;
-    }
-
-    public boolean removeTask(String username, String id) {
-        TaskBean taskBean = new TaskBean();
-        boolean removed = false;
-
-        if (taskBean.removeTask(id, getUserAndHisTasks(username))) {
-            //writeIntoJsonFile();
-            removed = true;
-        }
-
-        return removed;
     }
 
     public boolean updateTaskStatus(String username, String taskId, int newStatus) {
