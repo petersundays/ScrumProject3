@@ -1,9 +1,11 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
+import cesarpedroproj3.entity.CategoryEntity;
 import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
@@ -19,6 +21,9 @@ public class TaskBean implements Serializable {
     TaskDao taskDao;
 
     @EJB
+    CategoryDao categoryDao;
+
+    @EJB
     UserBean userBean;
 
     @EJB
@@ -27,20 +32,19 @@ public class TaskBean implements Serializable {
     public boolean newTask(Task task, String username) {
         boolean created = false;
         UserEntity userEntity = userDao.findUserByUsername(username);
-        System.out.println("*****************************************************************" + userEntity.getUsername());
         User user = userBean.convertUserEntitytoUserDto(userEntity);
-        System.out.println("*****************************************************************" + user.getUsername());
-        //task.generateId();
-        task.setId("123");
+        task.generateId();
         task.setInitialStateId();
-        task.setCategory(task.getCategory());
         task.setOwner(user);
-        System.out.println("###################################################################" + task.getOwner().getUsername());
-        if (validateTask(task)) {
-            System.out.println("#*#*#*#*# ENTROU NO IF #*#*#*#*#");
-            taskDao.persist(convertTaskToEntity(task));
-            created = true;
+        task.setErased(false);
+        if (task.getCategory() != null && categoryExists(task.getCategory())) {
+            task.setCategory(task.getCategory());
+            if (validateTask(task)) {
+                taskDao.persist(convertTaskToEntity(task));
+                created = true;
+            }
         }
+
         return created;
     }
 
@@ -64,15 +68,23 @@ public class TaskBean implements Serializable {
         return edited;
     }
 
-    public boolean removeTask(String id, ArrayList<Task> tasks) {
+    public boolean switchErasedTaskStatus(String id) {
+        boolean swithedErased = false;
+        TaskEntity taskEntity = taskDao.findTaskById(id);
+        if(taskEntity != null) {
+            taskEntity.setErased(!taskEntity.getErased());
+            taskDao.merge(taskEntity);
+            swithedErased = true;
+        }
+        return swithedErased;
+    }
+
+    public boolean permanentlyDeleteTask(String id) {
         boolean removed = false;
-        Iterator<Task> iterator = tasks.iterator();
-        while (iterator.hasNext()) {
-            Task task = iterator.next();
-            if (task.getId().equals(id)) {
-                iterator.remove();
-                removed = true;
-            }
+        TaskEntity taskEntity = taskDao.findTaskById(id);
+        if(taskEntity != null) {
+            taskDao.removeTask(taskEntity);
+            removed = true;
         }
         return removed;
     }
@@ -103,10 +115,18 @@ public class TaskBean implements Serializable {
         taskEntity.setStateId(task.getStateId());
         taskEntity.setStartDate(task.getStartDate());
         taskEntity.setLimitDate(task.getLimitDate());
-        //taskEntity.setCategory(task.getCategory().getName());
+        taskEntity.setCategory(task.getCategory());
         taskEntity.setErased(task.getErased());
         taskEntity.setOwner(userBean.convertUserDtotoUserEntity(task.getOwner()));
         return taskEntity;
+    }
+
+    private boolean categoryExists(String category) {
+        boolean exists = false;
+        if(categoryDao.findCategoryByName(category) != null) {
+            exists = true;
+        }
+        return exists;
     }
 
 }

@@ -317,18 +317,6 @@ public class UserBean implements Serializable{
         return updated;
     }
 
-    public boolean removeTask(String username, String id) {
-        TaskBean taskBean = new TaskBean();
-        boolean removed = false;
-
-        if (taskBean.removeTask(id, getUserAndHisTasks(username))) {
-            //writeIntoJsonFile();
-            removed = true;
-        }
-
-        return removed;
-    }
-
     public boolean updateTaskStatus(String username, String taskId, int newStatus) {
 
         if (newStatus != 100 && newStatus != 200 && newStatus != 300) {

@@ -240,16 +240,16 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                //try {
+                try {
                     boolean added = taskBean.newTask(task, username);
                     if (added) {
                         response = Response.status(201).entity("Task created successfully").build();
                     } else {
                         response = Response.status(404).entity("Impossible to create task. Verify all fields").build();
                     }
-                /*} catch (Exception e) {
-                    response = Response.status(404).entity("Deu erro").build();
-                }*/
+                } catch (Exception e) {
+                    response = Response.status(404).entity("Something went wrong. A new category was not created.").build();
+                }
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
             }
@@ -307,28 +307,60 @@ public class UserService {
         return response;
     }
 
-    @DELETE
-    @Path("/{username}/{id}")
+    @PUT
+    @Path("/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response removeTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id) {
+    public Response eraseTask(@HeaderParam("token") String token, @PathParam("taskId") String id) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean removed = userBean.removeTask(username, id);
-                if (removed) {
-                    response = Response.status(200).entity("Task removed successfully").build();
-                } else {
-                    response = Response.status(404).entity("Task with this id is not found").build();
+            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+                try {
+                    boolean switched = taskBean.switchErasedTaskStatus(id);
+                    if (switched) {
+                        response = Response.status(200).entity("Task erased status switched successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Task with this id is not found").build();
+                    }
+                } catch (Exception e) {
+                    response = Response.status(404).entity("Something went wrong. The task erased status was switched.").build();
                 }
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(403).entity("You don't have permission to switch the erased status of a task").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
         return response;
     }
+
+    @DELETE
+    @Path("/{taskId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteTask(@HeaderParam("token") String token, @PathParam("taskId") String id) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                try {
+                    boolean deleted = taskBean.permanentlyDeleteTask(id);
+                    if (deleted) {
+                        response = Response.status(200).entity("Task removed successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Task with this id is not found").build();
+                    }
+                } catch (Exception e) {
+                    response = Response.status(404).entity("Something went wrong. The task was not removed.").build();
+                }
+            } else {
+                response = Response.status(403).entity("You don't have permission to delete a task").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
 
     @POST
     @Path("/{username}/newCategory")
@@ -398,6 +430,38 @@ public class UserService {
         return response;
     }
 
+    @PUT
+    @Path("/{username}/editCategory/{categoryName}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response editCategory(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("categoryName") String categoryName, String newCategoryName) {
+
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                    try {
+                        boolean edited = categoryBean.editCategory(categoryName, newCategoryName);
+                        if (edited) {
+                            response = Response.status(200).entity("Category edited successfully").build();
+                        } else {
+                            response = Response.status(404).entity("Category with this name is not found").build();
+                        }
+                    } catch (Exception e) {
+                        response = Response.status(404).entity("Something went wrong. The category was not edited.").build();
+                    }
+                } else {
+                    response = Response.status(403).entity("You don't have permission to edit a category").build();
+                }
+            } else {
+                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
     @GET
     @Path("/{username}/categories")
     @Produces(MediaType.APPLICATION_JSON)
@@ -421,7 +485,5 @@ public class UserService {
         }
         return response;
     }
-
-    // ENDPOINT PARA EDIÇÃO CATEGORIAS
 
 }
