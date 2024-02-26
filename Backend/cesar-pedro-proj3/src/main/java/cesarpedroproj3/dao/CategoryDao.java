@@ -58,4 +58,23 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
         }
         return deleted;
     }
+
+    public boolean editCategory(String name, String newName) {
+        boolean edited = false;
+        if (name == null || newName == null) {
+            edited = false;
+        } else {
+            try {
+                CategoryEntity categoryEntity = findCategoryByName(name);
+                if (categoryEntity != null) {
+                    categoryEntity.setName(newName);
+                    merge(categoryEntity);
+                    edited = true;
+                }
+            } catch (Exception e) {
+                edited = false;
+            }
+        }
+        return edited;
+    }
 }

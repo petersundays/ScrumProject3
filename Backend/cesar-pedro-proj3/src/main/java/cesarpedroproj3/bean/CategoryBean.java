@@ -54,13 +54,8 @@ public class CategoryBean implements Serializable {
 
     public boolean editCategory(String name, String newName){
         boolean edited = false;
-        if (!name.isBlank() && !newName.isBlank()) {
-            CategoryEntity categoryEntity = categoryDao.findCategoryByName(name);
-            if (categoryEntity != null) {
-                categoryEntity.setName(newName);
-                categoryDao.merge(categoryEntity);
-                edited = true;
-            }
+        if (name != null && newName != null) {
+            edited = categoryDao.editCategory(name, newName);
         }
         return edited;
     }

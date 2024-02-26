@@ -17,7 +17,7 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 	}
 	
 
-	public TaskEntity findTaskById(int id) {
+	public TaskEntity findTaskById(String id) {
 		try {
 			return (TaskEntity) em.createNamedQuery("Task.findTaskById").setParameter("id", id)
 					.getSingleResult();
@@ -51,4 +51,5 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 			return null;
 		}
 	}
+
 }

@@ -16,13 +16,25 @@ public class CategoryEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name="name", nullable=false, unique = true, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id", nullable=false, unique = true, updatable = false)
+    private int id;
+
+    @Column(name="name", nullable=false, unique = true, updatable = true)
     private String name;
     @ManyToOne
     @JoinColumn(name = "task_id", referencedColumnName = "id")
     private TaskEntity task;
 
     public CategoryEntity() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
