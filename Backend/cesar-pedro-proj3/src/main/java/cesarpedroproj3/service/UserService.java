@@ -9,7 +9,6 @@ import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.inject.Inject;
-import jakarta.persistence.Entity;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -268,15 +267,23 @@ public class UserService {
         Response response;
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                task.setId(id);
-                boolean updated = userBean.updateTask(username, task);
+                boolean updated = taskBean.updateTask(task, id, username);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
-                    response = Response.status(404).entity("Impossible to edit task. Verify all fields").build();
+                    response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
                 }
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                if (!userDao.findUserByToken(token).getUsername().equals(username) && (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER)) {
+                    boolean updated = taskBean.updateTask(task, id, username);
+                    if (updated) {
+                        response = Response.status(200).entity("Task from user " + username + " updated successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
+                    }
+                } else {
+                    response = Response.status(403).entity("You don't have permission to update this task").build();
+                }
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -285,21 +292,17 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{username}/tasks/{taskId}/status")
+    @Path("/tasks/{taskId}/{newStateId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTaskStatus(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("taskId") String taskId, int newStatus) {
+    public Response updateTaskStatus(@HeaderParam("token") String token, @PathParam("taskId") String taskId, @PathParam("newStateId") int stateId) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updated = userBean.updateTaskStatus(username, taskId, newStatus);
-                if (updated) {
-                    response = Response.status(200).entity("Task status updated successfully").build();
-                } else {
-                    response = Response.status(404).entity("Impossible to update task status. Task not found or invalid status").build();
-                }
+            boolean updated = taskBean.updateTaskStatus(taskId, stateId);
+            if (updated) {
+                response = Response.status(200).entity("Task status updated successfully").build();
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(404).entity("Impossible to update task status. Task not found or invalid status").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -335,7 +338,7 @@ public class UserService {
     }
 
     @DELETE
-    @Path("/{taskId}")
+    @Path("/delete/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTask(@HeaderParam("token") String token, @PathParam("taskId") String id) {
 
