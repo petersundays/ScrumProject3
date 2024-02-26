@@ -128,22 +128,6 @@ public class UserBean implements Serializable {
         return user;
     }
 
-    public TaskEntity convertTaskDtotoTaskEntity(Task task) {
-        TaskEntity t = new TaskEntity();
-        t.setId(task.getId());
-        //t.setOwner(task.getOwner());
-        t.setTitle(task.getTitle());
-        t.setDescription(task.getDescription());
-        t.setStateId(task.getStateId());
-        t.setPriority(task.getPriority());
-        t.setStartDate(task.getStartDate());
-        t.setLimitDate(task.getLimitDate());
-        t.setCategory(task.getCategory());
-        t.setErased(task.getErased());
-
-        return t;
-    }
-
     public Task convertTaskEntitytoTaskDto(TaskEntity taskEntity) {
         Task t = new Task();
         t.setId(taskEntity.getId());

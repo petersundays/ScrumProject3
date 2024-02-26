@@ -33,16 +33,19 @@ public class TaskBean implements Serializable {
     public boolean newTask(Task task, String username) {
         boolean created = false;
         UserEntity userEntity = userDao.findUserByUsername(username);
-        User user = userBean.convertUserEntitytoUserDto(userEntity);
-        task.generateId();
-        task.setInitialStateId();
-        task.setOwner(user);
-        task.setErased(false);
-        if (task.getCategory() != null && categoryExists(task.getCategory())) {
-            task.setCategory(task.getCategory());
-            if (validateTask(task)) {
-                taskDao.persist(convertTaskToEntity(task));
-                created = true;
+
+        if (userEntity != null) {
+            User user = userBean.convertUserEntitytoUserDto(userEntity);
+            task.generateId();
+            task.setInitialStateId();
+            task.setOwner(user);
+            task.setErased(false);
+            if (task.getCategory() != null && categoryExists(task.getCategory())) {
+                task.setCategory(task.getCategory());
+                if (validateTask(task)) {
+                    taskDao.persist(convertTaskToEntity(task));
+                    created = true;
+                }
             }
         }
 
