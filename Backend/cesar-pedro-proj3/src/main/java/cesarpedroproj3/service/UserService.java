@@ -9,7 +9,6 @@ import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.inject.Inject;
-import jakarta.persistence.Entity;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -263,17 +262,16 @@ public class UserService {
     @PUT
     @Path("/{username}/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id, Task task) {
+    public Response updateOwnTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id, Task task) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                task.setId(id);
-                boolean updated = userBean.updateTask(username, task);
+                boolean updated = taskBean.updateOwnTask(task, id, username);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
-                    response = Response.status(404).entity("Impossible to edit task. Verify all fields").build();
+                    response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
                 }
             } else {
                 response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
@@ -292,7 +290,7 @@ public class UserService {
         Response response;
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updated = userBean.updateTaskStatus(username, taskId, newStatus);
+                boolean updated = taskBean.updateTaskStatus(taskId, newStatus);
                 if (updated) {
                     response = Response.status(200).entity("Task status updated successfully").build();
                 } else {
@@ -335,7 +333,7 @@ public class UserService {
     }
 
     @DELETE
-    @Path("/{taskId}")
+    @Path("/delete/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTask(@HeaderParam("token") String token, @PathParam("taskId") String id) {
 

@@ -1,5 +1,6 @@
 package cesarpedroproj3.bean;
 
+import cesarpedroproj3.dao.AbstractDao;
 import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
@@ -48,25 +49,35 @@ public class TaskBean implements Serializable {
         return created;
     }
 
-    public boolean editTask(Task task, ArrayList<Task> tasks) {
+    public boolean updateOwnTask(Task task, String id, String ownerUsername) {
         boolean edited = false;
-
-        for (Task a : tasks) {
-            if (a.getId().equals(task.getId())) {
-                if (task.getStateId() != 0) {
-                    a.setTitle(task.getTitle());
-                    a.setDescription(task.getDescription());
-                    a.setPriority(task.getPriority());
-                    a.editStateId(task.getStateId());
-                    a.setStartDate(a.getStartDate());
-                    a.setLimitDate(a.getLimitDate());
-                    edited = validateTask(a);
-                }
+        task.setId(id);
+        task.setOwner(userBean.convertUserEntitytoUserDto(userDao.findUserByUsername(ownerUsername)));
+        if (taskDao.findTaskById(task.getId()) != null) {
+            if (validateTask(task)) {
+                taskDao.merge(convertTaskToEntity(task));
+                edited = true;
             }
         }
-
         return edited;
     }
+
+    public boolean updateTaskStatus(String taskId, int newStatus) {
+        boolean updated = false;
+        if (newStatus != 100 && newStatus != 200 && newStatus != 300) {
+            updated = false;
+        } else {
+            TaskEntity taskEntity = taskDao.findTaskById(taskId);
+            if (taskEntity != null) {
+                taskEntity.setStateId(newStatus);
+                taskDao.merge(taskEntity);
+                updated = true;
+            }
+        }
+        return updated;
+    }
+
+
 
     public boolean switchErasedTaskStatus(String id) {
         boolean swithedErased = false;
@@ -83,7 +94,7 @@ public class TaskBean implements Serializable {
         boolean removed = false;
         TaskEntity taskEntity = taskDao.findTaskById(id);
         if(taskEntity != null) {
-            taskDao.removeTask(taskEntity);
+            taskDao.remove(taskEntity);
             removed = true;
         }
         return removed;

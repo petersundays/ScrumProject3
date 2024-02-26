@@ -35,9 +35,9 @@ public class TaskEntity implements Serializable{
     @Column (name="priority", nullable = false, unique = false, updatable = true)
     private int priority;
 
- /*   @CreationTimestamp
+    @CreationTimestamp
     @Column (name="creation_date", nullable = false, unique = false, updatable = false)
-    private Timestamp creationDate;*/
+    private Timestamp creationDate;
 
     @Column (name="startDate", nullable = false, unique = false, updatable = true)
     private LocalDate startDate;
@@ -71,7 +71,7 @@ public class TaskEntity implements Serializable{
         this.id = id;
     }
 
-    /*public Timestamp getCreationDate()
+    public Timestamp getCreationDate()
     {
         return creationDate;
     }
@@ -80,7 +80,7 @@ public class TaskEntity implements Serializable{
     {
         this.creationDate = creationDate;
     }
-*/
+
     public UserEntity getOwner() {
         return owner;
     }
