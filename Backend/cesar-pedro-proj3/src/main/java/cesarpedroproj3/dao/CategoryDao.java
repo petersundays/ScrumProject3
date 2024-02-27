@@ -34,7 +34,6 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
     }
 
     public CategoryEntity findCategoryByName(String name) {
-        System.out.println("**********************************"+name);
         try {
             return (CategoryEntity) em.createNamedQuery("Category.findCategoryByName").setParameter("name", name).getSingleResult();
         } catch (Exception e) {
@@ -67,6 +66,7 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
         } else {
             try {
                 CategoryEntity categoryEntity = findCategoryByName(name);
+                System.out.println("*********************** " + categoryEntity.getName() + " ***********************");
                 if (categoryEntity != null) {
                     categoryEntity.setName(newName);
                     merge(categoryEntity);
@@ -76,6 +76,7 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
                 edited = false;
             }
         }
+        System.out.println("*********************** EDITED = " + edited + " ***********************");
         return edited;
     }
 }

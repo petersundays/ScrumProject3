@@ -283,12 +283,16 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-                boolean updated = taskBean.updateTask(task, id, token);
+            if (userBean.userIsTaskOwner(token, id) || userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
+                boolean updated = taskBean.updateTask(task, id);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
                     response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
                 }
+            } else {
+                response = Response.status(403).entity("You don't have permission to update this task").build();
+            }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -321,7 +325,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+            if (userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
                 try {
                     boolean switched = taskBean.switchErasedTaskStatus(id);
                     if (switched) {
@@ -341,6 +345,33 @@ public class UserService {
         return response;
     }
 
+    @PUT
+    @Path("/eraseAllTasks/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response eraseAllTasksFromUser(@HeaderParam("token") String token, @PathParam("username") String username) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userBean.userIsProductOwner(token)) {
+                try {
+                    boolean erased = taskBean.eraseAllTasksFromUser(username);
+                    if (erased) {
+                        response = Response.status(200).entity("All tasks were erased successfully").build();
+                    } else {
+                        response = Response.status(404).entity("Impossible to erase tasks").build();
+                    }
+                } catch (Exception e) {
+                    response = Response.status(404).entity("Something went wrong. The tasks were not erased.").build();
+                }
+            } else {
+                response = Response.status(403).entity("You don't have permission to erase these tasks").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
     @DELETE
     @Path("/delete/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -348,7 +379,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+            if (userBean.userIsProductOwner(token)) {
                 try {
                     boolean deleted = taskBean.permanentlyDeleteTask(id);
                     if (deleted) {
@@ -375,7 +406,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+            if (userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
                 ArrayList<Task> tasksByCategory = taskBean.getTasksByCategory(category);
                 response = Response.status(200).entity(tasksByCategory).build();
             } else {
@@ -387,17 +418,33 @@ public class UserService {
         return response;
     }
 
+    @GET
+    @Path("/erasedTasks")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getErasedTasks(@HeaderParam("token") String token) {
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
+                ArrayList<Task> erasedTasks = taskBean.getErasedTasks();
+                response = Response.status(200).entity(erasedTasks).build();
+            } else {
+                response = Response.status(403).entity("You don't have permission for this request").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
 
     @POST
-    @Path("/{username}/newCategory")
+    @Path("/newCategory")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, Category category) {
+    public Response newCategory(@HeaderParam("token") String token, Category category) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                if (userBean.userIsProductOwner(token)) {
                     if (categoryBean.categoryExists(category.getName())) {
                         response = Response.status(409).entity("Category with this name already exists").build();
                     } else {
@@ -414,9 +461,6 @@ public class UserService {
                     }
                 } else {
                     response = Response.status(403).entity("You don't have permission to create a category").build();
-                }
-            } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -425,15 +469,14 @@ public class UserService {
     }
 
     @DELETE
-    @Path("/{username}/deleteCategory/{categoryName}")
+    @Path("/deleteCategory/{categoryName}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response deleteCategory(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("categoryName") String categoryName) {
+    public Response deleteCategory(@HeaderParam("token") String token, @PathParam("categoryName") String categoryName) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                if (userBean.userIsProductOwner(token)) {
                 try {
                     boolean deleted = categoryBean.deleteCategory(categoryName);
                     if (deleted) {
@@ -447,9 +490,6 @@ public class UserService {
                 } else {
                     response = Response.status(403).entity("You don't have permission to delete a category").build();
                 }
-            } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
-            }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -457,17 +497,18 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{username}/editCategory/{categoryName}")
+    @Path("/editCategory/{categoryName}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response editCategory(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("categoryName") String categoryName, String newCategoryName) {
+    public Response editCategory(@HeaderParam("token") String token, @PathParam("categoryName") String categoryName, @HeaderParam("newCategoryName") String newCategoryName) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+                if (userBean.userIsProductOwner(token)) {
                     try {
+                        System.out.println("########################## TRY " + categoryName + " " + newCategoryName);
                         boolean edited = categoryBean.editCategory(categoryName, newCategoryName);
+                        System.out.println("************************** EDITED ENDPOINT " + edited + " *********************************");
                         if (edited) {
                             response = Response.status(200).entity("Category edited successfully").build();
                         } else {
@@ -479,9 +520,6 @@ public class UserService {
                 } else {
                     response = Response.status(403).entity("You don't have permission to edit a category").build();
                 }
-            } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
-            }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -489,20 +527,16 @@ public class UserService {
     }
 
     @GET
-    @Path("/{username}/categories")
+    @Path("/categories")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllCategories(@HeaderParam("token") String token, @PathParam("username") String username) {
+    public Response getAllCategories(@HeaderParam("token") String token) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
             try {
-                if (userDao.findUserByToken(token).getUsername().equals(username)) {
                     List<String> allCategories = categoryBean.findAllCategories();
                     response = Response.status(200).entity(allCategories).build();
-                } else {
-                    response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
-                }
             } catch (Exception e) {
                 response = Response.status(404).entity("Something went wrong. The categories were not found.").build();
             }
@@ -511,5 +545,7 @@ public class UserService {
         }
         return response;
     }
+
+
 
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 @NamedQuery(name="Task.findTasksByCategory", query="SELECT a FROM TaskEntity a WHERE a.category = :category")
 @NamedQuery(name="Task.findErasedTasks", query="SELECT a FROM TaskEntity a WHERE a.erased = true")
 @NamedQuery(name="Task.findAllTasks", query="SELECT a FROM TaskEntity a")
+@NamedQuery(name="DeleteTask", query="DELETE FROM TaskEntity a WHERE a.id = :id")
 
 
 public class TaskEntity implements Serializable{
@@ -47,7 +48,7 @@ public class TaskEntity implements Serializable{
     private LocalDate limitDate;
 
     @ManyToOne
-    @JoinColumn(name = "category_name", referencedColumnName = "name")
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     private CategoryEntity category;
 
     @Column (name="erased", nullable = false, unique = false, updatable = true)
