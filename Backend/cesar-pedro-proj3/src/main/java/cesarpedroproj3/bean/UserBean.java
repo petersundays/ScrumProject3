@@ -21,38 +21,22 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 @Stateless
-public class UserBean implements Serializable{
+public class UserBean implements Serializable {
 
     @EJB
     UserDao userDao;
     @EJB
     private TaskDao taskDao;
 
-    private final String filename = "users.json";
+
     private ArrayList<User> users;
 
-    /*public UserBean() {
-        File f = new File(filename);
-        if (f.exists()) {
-            try {
-                FileReader filereader = new FileReader(f);
-                users = JsonbBuilder.create().fromJson(filereader, new ArrayList<User>() {
-                }.getClass().getGenericSuperclass());
-                System.out.println("Users: " + users);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            users = new ArrayList<>();
-        }
-    }*/
-
     //Permite ao utilizador entrar na app, gera token
-    public String login(Login user){
+    public String login(Login user) {
         UserEntity userEntity = userDao.findUserByUsername(user.getUsername());
-        if (userEntity != null){
+        if (userEntity != null) {
             //Verifica se a password coincide com a password encriptada
-            if (BCrypt.checkpw(user.getPassword(), userEntity.getPassword())){
+            if (BCrypt.checkpw(user.getPassword(), userEntity.getPassword())) {
                 String token = generateNewToken();
                 userEntity.setToken(token);
                 return token;
@@ -62,9 +46,9 @@ public class UserBean implements Serializable{
     }
 
     //Faz o registo do utilizador, adiciona à base de dados
-    public boolean register(User user){
+    public boolean register(User user) {
 
-        if (user!=null){
+        if (user != null) {
             user.setInitialTypeOfUser();
             user.setVisible(true);
 
@@ -77,25 +61,28 @@ public class UserBean implements Serializable{
             //Persist o user
             userDao.persist(convertUserDtotoUserEntity(user));
             return true;
-        }else
+        } else
             return false;
 
     }
 
     //Apaga todos os registos do utilizador da base de dados
     //Verificar tarefas!!!!!!!
-    public boolean delete(String username){
+    public boolean delete(String username) {
 
-        UserEntity u= userDao.findUserByUsername(username);
+        UserEntity u = userDao.findUserByUsername(username);
 
-        if (u != null){
+        if (u != null) {
             userDao.remove(u);
             return true;
-        }else
+        } else
             return false;
     }
 
-    public UserEntity convertUserDtotoUserEntity(User user){
+
+    //Métodos de conversão
+
+    public UserEntity convertUserDtotoUserEntity(User user) {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(user.getUsername());
         userEntity.setPassword(user.getPassword());
@@ -110,7 +97,7 @@ public class UserBean implements Serializable{
         return userEntity;
     }
 
-    public User convertUserEntitytoUserDto(UserEntity userEntity){
+    public User convertUserEntitytoUserDto(UserEntity userEntity) {
         User user = new User();
         user.setUsername(userEntity.getUsername());
         user.setPassword(userEntity.getPassword());
@@ -125,6 +112,24 @@ public class UserBean implements Serializable{
         return user;
     }
 
+    public Task convertTaskEntitytoTaskDto(TaskEntity taskEntity) {
+        Task t = new Task();
+        t.setId(taskEntity.getId());
+        //t.setOwner(taskEntity.getOwner());
+        t.setTitle(taskEntity.getTitle());
+        t.setDescription(taskEntity.getDescription());
+        t.setStateId(taskEntity.getStateId());
+        t.setPriority(taskEntity.getPriority());
+        t.setStartDate(taskEntity.getStartDate());
+        t.setLimitDate(taskEntity.getLimitDate());
+        t.setCategory(taskEntity.getCategory());
+        t.setErased(taskEntity.getErased());
+
+        return t;
+    }
+
+
+    //Gerar token
     private String generateNewToken() {
         SecureRandom secureRandom = new SecureRandom(); //threadsafe
         Base64.Encoder base64Encoder = Base64.getUrlEncoder(); //threadsafe
@@ -133,17 +138,19 @@ public class UserBean implements Serializable{
         return base64Encoder.encodeToString(randomBytes);
     }
 
-    public boolean logout(String token) {
-        UserEntity u= userDao.findUserByToken(token);
 
-        if(u!=null){
+    //Logout
+    public boolean logout(String token) {
+        UserEntity u = userDao.findUserByToken(token);
+
+        if (u != null) {
             u.setToken(null);
             return true;
         }
         return false;
     }
 
-    public boolean tokenExist(String token){
+    public boolean tokenExist(String token) {
         if (userDao.findUserByToken(token) != null)
             return true;
         return false;
@@ -151,7 +158,19 @@ public class UserBean implements Serializable{
     }
 
     public ArrayList<User> getUsers() {
-        return users;
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsers();
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
     }
 
     /*public boolean addUser(User user) {
@@ -165,28 +184,37 @@ public class UserBean implements Serializable{
     }*/
 
     public User getUser(String username) {
-        for (User user : users) {
-            if (user.getUsername().equals(username))
-                return user;
+
+        UserEntity u = userDao.findUserByUsername(username);
+
+        if (u!=null){
+            return convertUserEntitytoUserDto(u);
         }
+
         return null;
     }
 
-    public boolean updateUser(User user) {
+    //Coloco username porque no objeto de atualização pode não estar no objeto
+    public boolean updateUser(User user, String username) {
         boolean status = false;
 
-        for (User a : users) {
-            if (a.getUsername().equals(user.getUsername())) {
-                a.setPassword(user.getPassword());
-                a.setEmail(user.getEmail());
-                a.setFirstName(user.getFirstName());
-                a.setLastName(user.getLastName());
-                a.setPhone(user.getPhone());
-                a.setPhotoURL(user.getPhotoURL());
-                //writeIntoJsonFile();
+        UserEntity u = userDao.findUserByUsername(username);
+
+        System.out.println(u);
+
+        if (u != null){
+            if (u.getUsername().equals(username)) {
+                u.setPassword(user.getPassword());
+                u.setEmail(user.getEmail());
+                u.setFirstName(user.getFirstName());
+                u.setLastName(user.getLastName());
+                u.setPhone(user.getPhone());
+                u.setPhotoURL(user.getPhotoURL());
+
                 status = true;
             }
         }
+
         return status;
     }
 
@@ -201,7 +229,7 @@ public class UserBean implements Serializable{
         UserEntity u = userDao.findUserByUsername(user.getUsername());
         boolean status = false;
 
-        if (u==null) {
+        if (u == null) {
             status = true;
         }
 
@@ -219,13 +247,12 @@ public class UserBean implements Serializable{
 
         UserEntity u = userDao.findUserByEmail(user.getEmail());
         // Check if the email format is valid
-        if (isEmailFormatValid(user.getEmail()) && u==null) {
+        if (isEmailFormatValid(user.getEmail()) && u == null) {
             return true;
         }
 
         return false;
     }
-
 
 
     public boolean isAnyFieldEmpty(User user) {
@@ -247,7 +274,7 @@ public class UserBean implements Serializable{
         boolean status = true;
         int i = 0;
 
-        UserEntity u= userDao.findUserByPhone(user.getPhone());
+        UserEntity u = userDao.findUserByPhone(user.getPhone());
 
         while (status && i < user.getPhone().length() - 1) {
             if (user.getPhone().length() == 9) {
@@ -262,7 +289,7 @@ public class UserBean implements Serializable{
         }
 
         //Se existir contacto na base de dados retorna false
-        if (u != null){
+        if (u != null) {
             status = false;
         }
 
@@ -289,6 +316,26 @@ public class UserBean implements Serializable{
     }
 
 
+    public ArrayList<Task> getUserAndHisTasks(String username) {
+
+        UserEntity u = userDao.findUserByUsername(username);
+
+        if (u != null) {
+            ArrayList<TaskEntity> taskEntities = taskDao.findTaskByUser(u);
+            if (taskEntities != null) {
+                ArrayList<Task> userTasks = new ArrayList<>();
+                for (TaskEntity taskEntity : taskEntities) {
+
+                    userTasks.add(convertTaskEntitytoTaskDto(taskEntity));
+
+                }
+                return userTasks;
+            }
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
 
 /*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();
@@ -310,17 +357,5 @@ public class UserBean implements Serializable{
         return updated;
     }*/
 
-
-
-
-    /*public void writeIntoJsonFile() {
-        Jsonb jsonb = JsonbBuilder.create(new
-                JsonbConfig().withFormatting(true));
-        try {
-            jsonb.toJson(users, new FileOutputStream(filename));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 
 }

@@ -1,7 +1,6 @@
 window.onload = function() {
 
-    localStorage.removeItem("username");
-    localStorage.removeItem("password");
+    localStorage.clear();
 }
 
 
@@ -15,28 +14,33 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
 
     
-    let loginRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/login";
+    let loginRequest = "http://localhost:8080/project_backend/rest/users/login";
     const inputFieldIds = [
         'username', 
         'password'
     ];
+
+    let credentials = {
+        username: loginValue,
+        password: passwordValue
+    }
 
     try {   
         const response = await fetch(loginRequest, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/JSON',
-                'Accept': '*/*',
-                username: loginValue,
-                password: passwordValue
+                'Accept': '*/*'
             },
+            body: JSON.stringify(credentials)
             
         });
 
         if (response.ok) {
+
+            const token = await response.text();
             
-            localStorage.setItem('username', loginValue);
-            localStorage.setItem('password', passwordValue);
+            localStorage.setItem('token', token);
 
             //depois de login com sucesso, apaga os values
 

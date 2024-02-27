@@ -33,6 +33,7 @@ public class TaskBean implements Serializable {
 
     public boolean newTask(Task task, String token) {
         boolean created = false;
+
         task.generateId();
         task.setInitialStateId();
         task.setOwner(userBean.convertUserEntitytoUserDto(userDao.findUserByToken(token)));
@@ -41,6 +42,7 @@ public class TaskBean implements Serializable {
         if (validateTask(task)) {
             taskDao.persist(convertTaskToEntity(task));
             created = true;
+
         }
 
         return created;
