@@ -77,7 +77,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
     }
 
     let newUser = createUserData();
-    let registerRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/register";
+    let registerRequest = "http://localhost:8080/project_backend/rest/users/register";
     const inputFieldIds = [
         'username-register', 
         'password-register', 

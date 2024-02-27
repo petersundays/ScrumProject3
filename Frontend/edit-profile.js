@@ -1,15 +1,16 @@
-window.onload = function() {
+window.onload = async function() {
   
-    let usernameValue = localStorage.getItem('username');
-    let passwordValue = localStorage.getItem('password');
+    let tokenValue = localStorage.getItem('token');
+    let usernameLogged;
   
-    if (usernameValue === null || passwordValue === null) {
+    if (tokenValue === null) {
         window.location.href = "index.html";
       } else {
         try {
-            getFirstName(usernameValue, passwordValue);
-            getPhotoUrl(usernameValue, passwordValue);
-            loadUserData(usernameValue, passwordValue);
+            usernameLogged = await getUsername(tokenValue);
+            getFirstName(tokenValue);
+            getPhotoUrl(tokenValue);
+            loadUserData(usernameLogged, tokenValue);
 
             clearInputValues();
         } catch (error) {
@@ -25,7 +26,7 @@ window.onload = function() {
 //LOGOUT 
 document.getElementById("logout-button-header").addEventListener('click', async function() {
 
-    let logoutRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/logout";
+    let logoutRequest = "http://localhost:8080/project_backend/rest/users/logout";
       
       try {   
           const response = await fetch(logoutRequest, {
@@ -33,12 +34,12 @@ document.getElementById("logout-button-header").addEventListener('click', async 
               headers: {
                   'Content-Type': 'application/JSON',
                   'Accept': '*/*',
+                  token: tokenValue
               }, 
           });
           if (response.ok) {
               
-            localStorage.removeItem("username");
-            localStorage.removeItem("password");
+            localStorage.clear();
   
             window.location.href="index.html";
   
@@ -49,9 +50,9 @@ document.getElementById("logout-button-header").addEventListener('click', async 
       }
   })
 
-  async function getFirstName(usernameValue, passwordValue) {
+  async function getFirstName(tokenValue) {
   
-    let firstNameRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getFirstName";
+    let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getFirstName";
       
       try {
           const response = await fetch(firstNameRequest, {
@@ -59,8 +60,7 @@ document.getElementById("logout-button-header").addEventListener('click', async 
               headers: {
                   'Content-Type': 'application/JSON',
                   'Accept': '*/*',
-                  username: usernameValue,
-                  password: passwordValue
+                  token: tokenValue
               },    
           });
   
@@ -80,10 +80,10 @@ document.getElementById("logout-button-header").addEventListener('click', async 
       }
   }
   
-  async function getPhotoUrl(usernameValue, passwordValue) {
+  async function getPhotoUrl(tokenValue) {
 
 
-    let photoUrlRequest = "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getPhotoUrl";
+    let photoUrlRequest = "http://localhost:8080/project_backend/rest/users/getPhotoUrl";
       
       try {
           const response = await fetch(photoUrlRequest, {
@@ -91,8 +91,7 @@ document.getElementById("logout-button-header").addEventListener('click', async 
               headers: {
                   'Content-Type': 'application/JSON',
                   'Accept': '*/*',
-                  username: usernameValue,
-                  password: passwordValue
+                  token: tokenValue
               },    
           });
   
@@ -113,9 +112,9 @@ document.getElementById("logout-button-header").addEventListener('click', async 
       }
   }
 
-  async function loadUserData(usernameValue, passwordValue) {
+  async function loadUserData(usernameLogged, tokenValue) {
 
-    let loadDataRequest = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}`;
+    let loadDataRequest = `http://localhost:8080/project_backend/rest/users/${usernameLogged}`;
 
     try {
         const response = await fetch(loadDataRequest, {
@@ -123,8 +122,7 @@ document.getElementById("logout-button-header").addEventListener('click', async 
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                username: usernameValue,
-                password: passwordValue
+                token: tokenValue
             },
         });
 
@@ -152,9 +150,6 @@ document.getElementById("logout-button-header").addEventListener('click', async 
 document.getElementById("profile-save-button").addEventListener('click', async function (event) {
     event.preventDefault();
 
-    let usernameValue = localStorage.getItem('username');
-    let passwordValue = localStorage.getItem('password');
-
     let newPassword = document.getElementById('newPassword-editProfile').value.trim();
     let confirmNewPassword = document.getElementById('newPasswordConfirm-editProfile').value.trim();
 
@@ -171,7 +166,8 @@ document.getElementById("profile-save-button").addEventListener('click', async f
     if (newPassword !== '' && confirmNewPassword !== '' && newPassword === confirmNewPassword) {
         updatedPasswordToObejct = confirmNewPassword;
     } else if (newPassword === '' && confirmNewPassword === '') {
-        updatedPasswordToObejct = passwordValue;
+        // Password sem alterações
+        //updatedPasswordToObejct = passwordValue;
     } else {
         alert("Passwords dont match")
         return;
@@ -179,7 +175,7 @@ document.getElementById("profile-save-button").addEventListener('click', async f
 
     let updatedUser = updateUserInfo(updatedPasswordToObejct);
 
-    let updateUserRequest =  `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/update/${usernameValue}`;
+    let updateUserRequest =  `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/update/${usernameLogged}`;
 
 
     //verifica se todos os campos não estão vazios, se estiverem nem faz o request e avisa o user
@@ -191,15 +187,13 @@ document.getElementById("profile-save-button").addEventListener('click', async f
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    username: usernameValue,
-                    password: passwordValue
+                    token: tokenValue
                 },
                 body: JSON.stringify(updatedUser)
             });
 
             if (response.ok) {
                 alert("Profile updated successfully")
-                localStorage.setItem('password', updatedPasswordToObejct);
                 location.reload();
 
             } else {
