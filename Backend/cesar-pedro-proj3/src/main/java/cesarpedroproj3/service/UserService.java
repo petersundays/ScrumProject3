@@ -3,7 +3,9 @@ package cesarpedroproj3.service;
 import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
+import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
+import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
@@ -208,7 +210,7 @@ public class UserService {
     @GET
     @Path("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
+        public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
@@ -232,13 +234,12 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
+            if (userDao.findUserByToken(token).getUsername().equals(username) || userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER){
+                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username);
                 userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
-
             } else {
-                response = Response.status(406).entity("Invalid username on path").build();
+                response = Response.status(406).entity("You don't have permission for this request").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -256,7 +257,7 @@ public class UserService {
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 try {
-                    boolean added = taskBean.newTask(task, username);
+                    boolean added = taskBean.newTask(task, token);
                     if (added) {
                         response = Response.status(201).entity("Task created successfully").build();
                     } else {
@@ -276,22 +277,18 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{username}/{id}")
+    @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateOwnTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id, Task task) {
+    public Response updateTask(@HeaderParam("token") String token, @PathParam("id") String id, Task task) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updated = taskBean.updateOwnTask(task, id, username);
+                boolean updated = taskBean.updateTask(task, id, token);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
                     response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
                 }
-            } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
-            }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -299,21 +296,17 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{username}/tasks/{taskId}/status")
+    @Path("/tasks/{taskId}/{newStateId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTaskStatus(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("taskId") String taskId, int newStatus) {
+    public Response updateTaskStatus(@HeaderParam("token") String token, @PathParam("taskId") String taskId, @PathParam("newStateId") int stateId) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updated = taskBean.updateTaskStatus(taskId, newStatus);
-                if (updated) {
-                    response = Response.status(200).entity("Task status updated successfully").build();
-                } else {
-                    response = Response.status(404).entity("Impossible to update task status. Task not found or invalid status").build();
-                }
+            boolean updated = taskBean.updateTaskStatus(taskId, stateId);
+            if (updated) {
+                response = Response.status(200).entity("Task status updated successfully").build();
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(404).entity("Impossible to update task status. Task not found or invalid status").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -375,22 +368,41 @@ public class UserService {
         return response;
     }
 
+    @GET
+    @Path("/tasks/{category}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTasksByCategory(@HeaderParam("token") String token, @PathParam("category") String category) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+                ArrayList<Task> tasksByCategory = taskBean.getTasksByCategory(category);
+                response = Response.status(200).entity(tasksByCategory).build();
+            } else {
+                response = Response.status(403).entity("You don't have permission for this request").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
 
     @POST
     @Path("/{username}/newCategory")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, String categoryName) {
+    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, Category category) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
-                    if (categoryBean.categoryExists(categoryName)) {
+                    if (categoryBean.categoryExists(category.getName())) {
                         response = Response.status(409).entity("Category with this name already exists").build();
                     } else {
                         try {
-                            boolean added = categoryBean.newCategory(categoryName);
+                            boolean added = categoryBean.newCategory(category.getName());
                             if (added) {
                                 response = Response.status(201).entity("Category created successfully").build();
                             } else {

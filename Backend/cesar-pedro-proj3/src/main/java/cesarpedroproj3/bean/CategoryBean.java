@@ -1,6 +1,7 @@
 package cesarpedroproj3.bean;
 
 import cesarpedroproj3.dao.CategoryDao;
+import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.entity.CategoryEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -58,6 +59,18 @@ public class CategoryBean implements Serializable {
             edited = categoryDao.editCategory(name, newName);
         }
         return edited;
+    }
+
+    public CategoryEntity convertCategoryToEntity(String name){
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(name);
+        return categoryEntity;
+    }
+
+    public Category convertCategoryEntityToCategoryDto(CategoryEntity categoryEntity){
+        Category category = new Category();
+        category.setName(categoryEntity.getName());
+        return category;
     }
 }
 

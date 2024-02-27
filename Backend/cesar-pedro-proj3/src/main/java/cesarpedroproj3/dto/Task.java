@@ -34,7 +34,7 @@ public class Task {
     @XmlElement
     public static final int HIGHPRIORITY = 300;
     @XmlElement
-    public String category;
+    public Category category;
     @XmlElement
     public boolean erased;
     @XmlElement
@@ -84,9 +84,6 @@ public class Task {
     }
 
     public void editStateId(int stateId) {
-        /*if (stateId != TODO && stateId != DOING && stateId != DONE) {
-            throw new IllegalArgumentException("Invalid stateId");
-        } else {*/
         if (stateId == TODO) {
             this.stateId = TODO;
         } else if (stateId == DOING) {
@@ -94,7 +91,7 @@ public class Task {
         } else {
             this.stateId = DONE;
         }
-        //}
+
     }
 
     public int getPriority() {
@@ -135,11 +132,11 @@ public class Task {
         this.owner = owner;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
