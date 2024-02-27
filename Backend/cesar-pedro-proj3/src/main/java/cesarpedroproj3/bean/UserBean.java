@@ -315,6 +315,7 @@ public class UserBean implements Serializable {
         return status;
     }
 
+
     public ArrayList<Task> getUserAndHisTasks(String username) {
 
         UserEntity u = userDao.findUserByUsername(username);

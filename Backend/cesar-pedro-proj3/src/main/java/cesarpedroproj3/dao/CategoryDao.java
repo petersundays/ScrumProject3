@@ -34,6 +34,7 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
     }
 
     public CategoryEntity findCategoryByName(String name) {
+        System.out.println("**********************************"+name);
         try {
             return (CategoryEntity) em.createNamedQuery("Category.findCategoryByName").setParameter("name", name).getSingleResult();
         } catch (Exception e) {
