@@ -24,9 +24,11 @@ import java.util.Base64;
 public class UserBean implements Serializable {
 
     @EJB
-    UserDao userDao;
+    private UserDao userDao;
     @EJB
     private TaskDao taskDao;
+    @EJB
+    private CategoryBean categoryBean;
 
 
     private ArrayList<User> users;
@@ -115,14 +117,14 @@ public class UserBean implements Serializable {
     public Task convertTaskEntitytoTaskDto(TaskEntity taskEntity) {
         Task t = new Task();
         t.setId(taskEntity.getId());
-        //t.setOwner(taskEntity.getOwner());
+        t.setOwner(convertUserEntitytoUserDto(taskEntity.getOwner()));
         t.setTitle(taskEntity.getTitle());
         t.setDescription(taskEntity.getDescription());
         t.setStateId(taskEntity.getStateId());
         t.setPriority(taskEntity.getPriority());
         t.setStartDate(taskEntity.getStartDate());
         t.setLimitDate(taskEntity.getLimitDate());
-        t.setCategory(taskEntity.getCategory());
+        t.setCategory(categoryBean.convertCategoryEntityToCategoryDto(taskEntity.getCategory()));
         t.setErased(taskEntity.getErased());
 
         return t;
@@ -321,7 +323,7 @@ public class UserBean implements Serializable {
         UserEntity u = userDao.findUserByUsername(username);
 
         if (u != null) {
-            ArrayList<TaskEntity> taskEntities = taskDao.findTaskByUser(u);
+            ArrayList<TaskEntity> taskEntities = taskDao.findTasksByUser(u);
             if (taskEntities != null) {
                 ArrayList<Task> userTasks = new ArrayList<>();
                 for (TaskEntity taskEntity : taskEntities) {
@@ -336,6 +338,39 @@ public class UserBean implements Serializable {
         return new ArrayList<>();
     }
 
+    public boolean userIsTaskOwner(String token, String id) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        TaskEntity taskEntity = taskDao.findTaskById(id);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (taskEntity.getOwner().getUsername().equals(userEntity.getUsername())) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsScrumMaster(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.SCRUMMASTER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsProductOwner(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.PRODUCTOWNER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
 
 /*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();
