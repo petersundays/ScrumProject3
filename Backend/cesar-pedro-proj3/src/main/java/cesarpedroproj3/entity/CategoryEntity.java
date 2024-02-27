@@ -1,13 +1,13 @@
 package cesarpedroproj3.entity;
 
-import cesarpedroproj3.dto.Task;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 @Entity
 @Table(name="category")
-@NamedQuery(name="Category.findTasksByCategory", query="SELECT t FROM CategoryEntity c JOIN c.task t WHERE c.name = :name")
+@NamedQuery(name="Category.findTasksByCategory", query="SELECT t FROM CategoryEntity c JOIN c.taskList t WHERE c.name = :name")
 @NamedQuery(name="Category.findCategories", query="SELECT a FROM CategoryEntity a")
 @NamedQuery(name="Category.findCategoryByName", query="SELECT a FROM CategoryEntity a WHERE a.name = :name")
 @NamedQuery(name="Category.deleteCategory", query="DELETE FROM CategoryEntity a WHERE a.name = :name")
@@ -15,16 +15,15 @@ import java.io.Serializable;
 public class CategoryEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable=false, unique = true, updatable = false)
     private int id;
 
+    @Id
     @Column(name="name", nullable=false, unique = true, updatable = true)
     private String name;
-    @ManyToOne
-    @JoinColumn(name = "task_id", referencedColumnName = "id")
-    private TaskEntity task;
+    @OneToMany(mappedBy = "category")
+    private ArrayList<TaskEntity> taskList;
 
     public CategoryEntity() {
     }
@@ -45,11 +44,11 @@ public class CategoryEntity implements Serializable {
         this.name = name;
     }
 
-    public TaskEntity getTask() {
-        return task;
+    public ArrayList<TaskEntity> getTaskList() {
+        return taskList;
     }
 
-    public void setTask(TaskEntity task) {
-        this.task = task;
+    public void setTaskList(ArrayList<TaskEntity> task) {
+        this.taskList = task;
     }
 }

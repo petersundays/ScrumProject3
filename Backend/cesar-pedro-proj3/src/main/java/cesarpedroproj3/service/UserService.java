@@ -3,6 +3,7 @@ package cesarpedroproj3.service;
 import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
+import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
@@ -192,7 +193,7 @@ public class UserService {
     @GET
     @Path("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
+        public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
@@ -216,13 +217,12 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                ArrayList<Task> userTasks = userBean.getUserAndHisTasks(username);
+            if (userDao.findUserByToken(token).getUsername().equals(username) || userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER){
+                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username);
                 userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
-
             } else {
-                response = Response.status(406).entity("Invalid username on path").build();
+                response = Response.status(406).entity("You don't have permission for this request").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -357,6 +357,25 @@ public class UserService {
                 }
             } else {
                 response = Response.status(403).entity("You don't have permission to delete a task").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/tasks/{category}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTasksByCategory(@HeaderParam("token") String token, @PathParam("category") String category) {
+
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+                ArrayList<Task> tasksByCategory = taskBean.getTasksByCategory(category);
+                response = Response.status(200).entity(tasksByCategory).build();
+            } else {
+                response = Response.status(403).entity("You don't have permission for this request").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();

@@ -9,7 +9,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name="task")
 @NamedQuery(name="Task.findTaskById", query="SELECT a FROM TaskEntity a WHERE a.id = :id")// os : significam que, neste caso o id é um parametro/atributo
-@NamedQuery(name="Task.findTaskByUser", query="SELECT a FROM TaskEntity a WHERE a.owner = :owner")
+@NamedQuery(name="Task.findTasksByUser", query="SELECT a FROM TaskEntity a WHERE a.owner = :owner")
+@NamedQuery(name="Task.findTasksByCategory", query="SELECT a FROM TaskEntity a WHERE a.category = :category")
 @NamedQuery(name="Task.findErasedTasks", query="SELECT a FROM TaskEntity a WHERE a.erased = true")
 @NamedQuery(name="Task.findAllTasks", query="SELECT a FROM TaskEntity a")
 
@@ -45,8 +46,9 @@ public class TaskEntity implements Serializable{
     @Column (name="limitDate", nullable = false, unique = false, updatable = true)
     private LocalDate limitDate;
 
-    @Column (name="category", nullable = true, unique = false, updatable = true)
-    private String category;
+    @ManyToOne
+    @JoinColumn (name="name", referencedColumnName = "name")
+    private CategoryEntity category;
 
     @Column (name="erased", nullable = false, unique = false, updatable = true)
     private boolean erased;
@@ -141,11 +143,11 @@ public class TaskEntity implements Serializable{
         this.limitDate = limitDate;
     }
 
-    public String getCategory() {
+    public CategoryEntity getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(CategoryEntity category) {
         this.category = category;
     }
 

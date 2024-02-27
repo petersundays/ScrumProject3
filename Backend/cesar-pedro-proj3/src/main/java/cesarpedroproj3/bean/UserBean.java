@@ -288,16 +288,7 @@ public class UserBean implements Serializable{
         return status;
     }
 
-    public ArrayList<Task> getUserAndHisTasks(String username) {
-        ArrayList<Task> userTasks = null;
 
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                userTasks = user.getUserTasks();
-            }
-        }
-        return userTasks;
-    }
 
 /*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();
