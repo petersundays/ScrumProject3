@@ -47,7 +47,7 @@ public class TaskEntity implements Serializable{
     private LocalDate limitDate;
 
     @ManyToOne
-    @JoinColumn (name="name", referencedColumnName = "name")
+    @JoinColumn(name = "category_name", referencedColumnName = "name")
     private CategoryEntity category;
 
     @Column (name="erased", nullable = false, unique = false, updatable = true)
@@ -55,7 +55,7 @@ public class TaskEntity implements Serializable{
 
     //Owning Side User - task
     @ManyToOne
-    @JoinColumn(name = "username", referencedColumnName = "username")
+    @JoinColumn(name = "owner", referencedColumnName = "username")
     private UserEntity owner;
 
 

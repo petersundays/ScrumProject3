@@ -3,6 +3,7 @@ package cesarpedroproj3.bean;
 import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
+import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import cesarpedroproj3.entity.CategoryEntity;
@@ -30,21 +31,17 @@ public class TaskBean implements Serializable {
 
 
 
-    public boolean newTask(Task task, String username) {
+    public boolean newTask(Task task, String token) {
         boolean created = false;
-        UserEntity userEntity = userDao.findUserByUsername(username);
-        User user = userBean.convertUserEntitytoUserDto(userEntity);
         task.generateId();
         task.setInitialStateId();
-        task.setOwner(user);
+        task.setOwner(userBean.convertUserEntitytoUserDto(userDao.findUserByToken(token)));
         task.setErased(false);
         task.setCategory(task.getCategory());
-        //if (task.getCategory() != null && categoryExists(task.getCategory().getName())) {
-            if (validateTask(task)) {
-                taskDao.persist(convertTaskToEntity(task));
-                created = true;
-            }
-        //}
+        if (validateTask(task)) {
+            taskDao.persist(convertTaskToEntity(task));
+            created = true;
+        }
 
         return created;
     }
@@ -60,14 +57,19 @@ public class TaskBean implements Serializable {
         return userTasks;
     }
 
-    public boolean updateTask(Task task, String id, String ownerUsername) {
+    public boolean updateTask(Task task, String id, String token) {
+        User taskOwner = userBean.convertUserEntitytoUserDto(userDao.findUserByUsername(taskDao.findTaskById(id).getOwner().getUsername()));
+        User loggedUser = userBean.convertUserEntitytoUserDto(userDao.findUserByToken(token));
         boolean edited = false;
-        task.setId(id);
-        task.setOwner(userBean.convertUserEntitytoUserDto(userDao.findUserByUsername(ownerUsername)));
-        if (taskDao.findTaskById(task.getId()) != null) {
-            if (validateTask(task)) {
-                taskDao.merge(convertTaskToEntity(task));
-                edited = true;
+
+        if (loggedUser.getUsername().equals(taskOwner.getUsername()) || loggedUser.getTypeOfUser() == User.SCRUMMASTER || loggedUser.getTypeOfUser() == User.PRODUCTOWNER) {
+            task.setId(id);
+            task.setOwner(taskOwner);
+            if (taskDao.findTaskById(task.getId()) != null) {
+                if (validateTask(task)) {
+                    taskDao.merge(convertTaskToEntity(task));
+                    edited = true;
+                }
             }
         }
         return edited;
@@ -131,6 +133,8 @@ public class TaskBean implements Serializable {
                 || task.getDescription().isBlank()
                 || task.getOwner() == null
                 || task.getPriority() == 0
+                || task.getCategory() == null
+                || !categoryExists(task.getCategory().getName())
                 || (task.getPriority() != Task.LOWPRIORITY && task.getPriority() != Task.MEDIUMPRIORITY && task.getPriority() != Task.HIGHPRIORITY)
                 || (task.getStateId() != Task.TODO && task.getStateId() != Task.DOING && task.getStateId() != Task.DONE)
         )) {

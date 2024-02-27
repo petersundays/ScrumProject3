@@ -5,6 +5,7 @@ import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
+import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
@@ -240,7 +241,7 @@ public class UserService {
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 try {
-                    boolean added = taskBean.newTask(task, username);
+                    boolean added = taskBean.newTask(task, token);
                     if (added) {
                         response = Response.status(201).entity("Task created successfully").build();
                     } else {
@@ -260,31 +261,18 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{username}/{id}")
+    @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTask(@HeaderParam("token") String token, @PathParam("username") String username, @PathParam("id") String id, Task task) {
+    public Response updateTask(@HeaderParam("token") String token, @PathParam("id") String id, Task task) {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updated = taskBean.updateTask(task, id, username);
+                boolean updated = taskBean.updateTask(task, id, token);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
                     response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
                 }
-            } else {
-                if (!userDao.findUserByToken(token).getUsername().equals(username) && (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER)) {
-                    boolean updated = taskBean.updateTask(task, id, username);
-                    if (updated) {
-                        response = Response.status(200).entity("Task from user " + username + " updated successfully").build();
-                    } else {
-                        response = Response.status(404).entity("Impossible to update task. Verify all fields").build();
-                    }
-                } else {
-                    response = Response.status(403).entity("You don't have permission to update this task").build();
-                }
-            }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
@@ -387,18 +375,18 @@ public class UserService {
     @POST
     @Path("/{username}/newCategory")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, String categoryName) {
+    public Response newCategory(@HeaderParam("token") String token, @PathParam("username") String username, Category category) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
             if (userDao.findUserByToken(token).getUsername().equals(username)) {
                 if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
-                    if (categoryBean.categoryExists(categoryName)) {
+                    if (categoryBean.categoryExists(category.getName())) {
                         response = Response.status(409).entity("Category with this name already exists").build();
                     } else {
                         try {
-                            boolean added = categoryBean.newCategory(categoryName);
+                            boolean added = categoryBean.newCategory(category.getName());
                             if (added) {
                                 response = Response.status(201).entity("Category created successfully").build();
                             } else {
