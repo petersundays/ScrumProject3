@@ -153,7 +153,7 @@ public class UserService {
                 response = Response.status(422).entity("Invalid phone number").build();
 
             } else if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                boolean updatedUser = userBean.updateUser(user);
+                boolean updatedUser = userBean.updateUser(user, username);
                 response = Response.status(Response.Status.OK).entity(updatedUser).build(); //status code 200
 
             } else {

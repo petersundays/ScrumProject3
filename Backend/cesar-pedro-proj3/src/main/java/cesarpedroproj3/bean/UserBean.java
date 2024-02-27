@@ -28,24 +28,8 @@ public class UserBean implements Serializable {
     @EJB
     private TaskDao taskDao;
 
-    private final String filename = "users.json";
-    private ArrayList<User> users;
 
-    /*public UserBean() {
-        File f = new File(filename);
-        if (f.exists()) {
-            try {
-                FileReader filereader = new FileReader(f);
-                users = JsonbBuilder.create().fromJson(filereader, new ArrayList<User>() {
-                }.getClass().getGenericSuperclass());
-                System.out.println("Users: " + users);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            users = new ArrayList<>();
-        }
-    }*/
+    private ArrayList<User> users;
 
     //Permite ao utilizador entrar na app, gera token
     public String login(Login user) {
@@ -174,7 +158,19 @@ public class UserBean implements Serializable {
     }
 
     public ArrayList<User> getUsers() {
-        return users;
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsers();
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
     }
 
     /*public boolean addUser(User user) {
@@ -188,28 +184,37 @@ public class UserBean implements Serializable {
     }*/
 
     public User getUser(String username) {
-        for (User user : users) {
-            if (user.getUsername().equals(username))
-                return user;
+
+        UserEntity u = userDao.findUserByUsername(username);
+
+        if (u!=null){
+            return convertUserEntitytoUserDto(u);
         }
+
         return null;
     }
 
-    public boolean updateUser(User user) {
+    //Coloco username porque no objeto de atualização pode não estar no objeto
+    public boolean updateUser(User user, String username) {
         boolean status = false;
 
-        for (User a : users) {
-            if (a.getUsername().equals(user.getUsername())) {
-                a.setPassword(user.getPassword());
-                a.setEmail(user.getEmail());
-                a.setFirstName(user.getFirstName());
-                a.setLastName(user.getLastName());
-                a.setPhone(user.getPhone());
-                a.setPhotoURL(user.getPhotoURL());
-                //writeIntoJsonFile();
+        UserEntity u = userDao.findUserByUsername(username);
+
+        System.out.println(u);
+
+        if (u != null){
+            if (u.getUsername().equals(username)) {
+                u.setPassword(user.getPassword());
+                u.setEmail(user.getEmail());
+                u.setFirstName(user.getFirstName());
+                u.setLastName(user.getLastName());
+                u.setPhone(user.getPhone());
+                u.setPhotoURL(user.getPhotoURL());
+
                 status = true;
             }
         }
+
         return status;
     }
 
@@ -351,17 +356,5 @@ public class UserBean implements Serializable {
         return updated;
     }*/
 
-
-
-
-    /*public void writeIntoJsonFile() {
-        Jsonb jsonb = JsonbBuilder.create(new
-                JsonbConfig().withFormatting(true));
-        try {
-            jsonb.toJson(users, new FileOutputStream(filename));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 
 }

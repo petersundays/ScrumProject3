@@ -1,8 +1,11 @@
 package cesarpedroproj3.dao;
 
+import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
+
+import java.util.ArrayList;
 
 @Stateless
 public class UserDao extends AbstractDao<UserEntity> {
@@ -63,6 +66,14 @@ public class UserDao extends AbstractDao<UserEntity> {
 					.getSingleResult();
 		}catch (NoResultException e){
 			return null; //Nenhum user foi encontrado com estes dados
+		}
+	}
+
+	public ArrayList<UserEntity> findAllUsers() {
+		try {
+			return (ArrayList<UserEntity>) em.createNamedQuery("User.findAllUsers").getResultList();
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
