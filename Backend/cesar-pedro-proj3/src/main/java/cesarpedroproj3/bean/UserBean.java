@@ -24,9 +24,11 @@ import java.util.Base64;
 public class UserBean implements Serializable {
 
     @EJB
-    UserDao userDao;
+    private UserDao userDao;
     @EJB
     private TaskDao taskDao;
+    @EJB
+    private CategoryBean categoryBean;
 
 
     private ArrayList<User> users;
@@ -115,14 +117,14 @@ public class UserBean implements Serializable {
     public Task convertTaskEntitytoTaskDto(TaskEntity taskEntity) {
         Task t = new Task();
         t.setId(taskEntity.getId());
-        //t.setOwner(taskEntity.getOwner());
+        t.setOwner(convertUserEntitytoUserDto(taskEntity.getOwner()));
         t.setTitle(taskEntity.getTitle());
         t.setDescription(taskEntity.getDescription());
         t.setStateId(taskEntity.getStateId());
         t.setPriority(taskEntity.getPriority());
         t.setStartDate(taskEntity.getStartDate());
         t.setLimitDate(taskEntity.getLimitDate());
-        t.setCategory(taskEntity.getCategory());
+        t.setCategory(categoryBean.convertCategoryEntityToCategoryDto(taskEntity.getCategory()));
         t.setErased(taskEntity.getErased());
 
         return t;
@@ -218,9 +220,40 @@ public class UserBean implements Serializable {
         return status;
     }
 
+    public boolean updateUserEntityVisibility(String username) {
+        boolean status = false;
+
+        UserEntity u = userDao.findUserByUsername(username);
+
+        if (u != null){
+
+            u.setVisible(!u.isVisible());
+
+            status = true;
+        }
+
+        return status;
+    }
+
+    public boolean updateUserEntityRole(String username, int typeOfUser) {
+        boolean status = false;
+
+        UserEntity u = userDao.findUserByUsername(username);
+
+        if (u != null && u.getTypeOfUser() != typeOfUser){
+
+            u.setTypeOfUser(typeOfUser);
+
+            status = true;
+        }
+
+        return status;
+    }
+
     public boolean isAuthenticated(String token) {
 
         UserEntity user = userDao.findUserByToken(token);
+
         return user != null;
     }
 
@@ -321,7 +354,7 @@ public class UserBean implements Serializable {
         UserEntity u = userDao.findUserByUsername(username);
 
         if (u != null) {
-            ArrayList<TaskEntity> taskEntities = taskDao.findTaskByUser(u);
+            ArrayList<TaskEntity> taskEntities = taskDao.findTasksByUser(u);
             if (taskEntities != null) {
                 ArrayList<Task> userTasks = new ArrayList<>();
                 for (TaskEntity taskEntity : taskEntities) {
@@ -357,5 +390,49 @@ public class UserBean implements Serializable {
         return updated;
     }*/
 
+    //Chamar método no Bean
+
+
+    //Converte a Entidade com o token "token" para DTO
+    public User convertEntityByToken (String token){
+
+        UserEntity currentUserEntity = userDao.findUserByToken(token);
+        User currentUser = convertUserEntitytoUserDto(currentUserEntity);
+
+        if (currentUser != null){
+            return currentUser;
+        }else return null;
+
+    }
+
+    public boolean thisTokenIsFromThisUsername(String token, String username){
+
+        if(userDao.findUserByToken(token).getUsername().equals(username)){
+            return true;
+        }else return false;
+
+    }
+
+    public boolean userIsScrumMaster(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.SCRUMMASTER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsProductOwner(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.PRODUCTOWNER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
 
 }

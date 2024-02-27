@@ -3,13 +3,10 @@ package cesarpedroproj3.service;
 import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
-import cesarpedroproj3.dao.TaskDao;
-import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Category;
 import cesarpedroproj3.dto.Login;
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
-import cesarpedroproj3.entity.UserEntity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -28,8 +25,7 @@ public class UserService {
     TaskBean taskBean;
     @Inject
     CategoryBean categoryBean;
-    @Inject
-    UserDao userDao;
+
 
     @POST
     @Path("/login")
@@ -94,8 +90,8 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFirstName(@HeaderParam("token") String token) {
         Response response;
-        UserEntity currentUserEntity = userDao.findUserByToken(token);
-        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
+
+        User currentUser = userBean.convertEntityByToken(token);
 
         if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -110,8 +106,8 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getImage(@HeaderParam("token") String token) {
         Response response;
-        UserEntity currentUserEntity = userDao.findUserByToken(token);
-        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
+
+        User currentUser = userBean.convertEntityByToken(token);
 
         if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -126,8 +122,8 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsername(@HeaderParam("token") String token) {
         Response response;
-        UserEntity currentUserEntity = userDao.findUserByToken(token);
-        User currentUser = userBean.convertUserEntitytoUserDto(currentUserEntity);
+
+        User currentUser = userBean.convertEntityByToken(token);
 
         if (!userBean.isAuthenticated(token)) {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -137,6 +133,7 @@ public class UserService {
         return response;
     }
 
+    //Atualizar um user
     @PUT
     @Path("/update/{username}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -144,30 +141,95 @@ public class UserService {
     public Response updateUser(@PathParam("username") String username, @HeaderParam("token") String token, User user) {
         Response response;
 
-        if (userBean.isAuthenticated(token)) {
+        User userUpdate = userBean.getUser(username);
+
+        //Verifica se o username existe na base de dados
+        if (userUpdate==null){
+            response = Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+            return response;
+        }
+
+        //Verifica se token existe de quem consulta e se é Product Owner ou o próprio user
+        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token) || userBean.thisTokenIsFromThisUsername(token,username)) {
             if (!userBean.isEmailValid(user)) {
                 response = Response.status(422).entity("Invalid email").build();
 
             } else if (!userBean.isImageUrlValid(user.getPhotoURL())) {
-                response = Response.status(422).entity("Image URL invalid").build(); //400
+                response = Response.status(422).entity("Image URL invalid").build();
 
             } else if (!userBean.isPhoneNumberValid(user)) {
                 response = Response.status(422).entity("Invalid phone number").build();
 
-            } else if (userDao.findUserByToken(token).getUsername().equals(username)) {
+            } else {
                 boolean updatedUser = userBean.updateUser(user, username);
                 response = Response.status(Response.Status.OK).entity(updatedUser).build(); //status code 200
-
-            } else {
-                response = Response.status(Response.Status.NOT_ACCEPTABLE).entity("Invalid username on path").build();
             }
-        } else {
+        }else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+    return response;
+    }
+
+    @PUT
+    @Path("/updateVisibilty/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateVisibility(@PathParam("username") String username, @HeaderParam("token") String token) {
+        Response response;
+
+        User user = userBean.getUser(username);
+
+        //Verifica se o username existe na base de dados
+        if (user==null){
+            response = Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+            return response;
+        }
+
+        //Verifica se token existe de quem consulta e se é Product Owner
+        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+
+            boolean updatedVisibility = userBean.updateUserEntityVisibility(username);
+            response = Response.status(Response.Status.OK).entity(updatedVisibility).build(); //status code 200
+
+        }else {
             response = Response.status(401).entity("Invalid credentials").build();
         }
         return response;
     }
 
-    //Apagar utilizador
+    //Atualizar tipo de user
+    @PUT
+    @Path("/updateRole/{username}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateRole(@PathParam("username") String username, @HeaderParam("token") String token, @HeaderParam("typeOfUser") int typeOfUser) {
+        Response response;
+
+        User user = userBean.getUser(username);
+
+        //Verifica se o username existe na base de dados
+        if (user==null){
+            response = Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+            return response;
+        }
+
+        //Verifica se token existe de quem consulta e se é Product Owner
+        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+
+            if (typeOfUser == 100 || typeOfUser == 200 || typeOfUser == 300) {
+
+                boolean updatedRole = userBean.updateUserEntityRole(username, typeOfUser);
+                response = Response.status(Response.Status.OK).entity("Role updated with success").build(); //status code 200
+            }else response = Response.status(401).entity("Invalid type of User").build();
+
+        }else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+
+        return response;
+    }
+
+    //Apagar um user
     @DELETE
     @Path("/{username}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -175,7 +237,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+            if (userBean.thisTokenIsFromThisUsername(token, username)) {
 
                 boolean removed = userBean.delete(username);
 
@@ -198,11 +260,11 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token) {
         Response response;
-        if (userBean.isAuthenticated(token)) {
+        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
             List<User> allUsers = userBean.getUsers();
             response = Response.status(200).entity(allUsers).build();
         } else {
-            response = Response.status(401).entity("Invalid credentials").build();
+            response = Response.status(401).entity("You don't have permission").build();
         }
         return response;
     }
@@ -213,15 +275,31 @@ public class UserService {
         public Response getUser(@PathParam("username") String username, @HeaderParam("token") String token) {
         Response response;
 
-        if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                User user = userBean.getUser(username);
-                response = Response.ok().entity(user).build();
+        User userSearched = userBean.getUser(username);
+
+        //Verifica se o username existe na base de dados
+        if (userSearched==null){
+            response = Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+            return response;
+        }
+
+        //Verifica se o token é igual ao username pesquisado
+        if (userBean.thisTokenIsFromThisUsername(token,username)) {
+
+            response = Response.ok().entity(userSearched).build();
+
+        }else {
+            //Verifica se token existe de quem consulta
+            if (userBean.isAuthenticated(token)) {
+                if (userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
+
+                    response = Response.ok().entity(userSearched).build();
+                } else {
+                    response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                }
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(401).entity("Invalid credentials").build();
             }
-        } else {
-            response = Response.status(401).entity("Invalid credentials").build();
         }
         return response;
     }
@@ -234,7 +312,7 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username) || userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER){
+            if (userBean.thisTokenIsFromThisUsername(token, username) || userBean.userIsProductOwner(token) || userBean.userIsScrumMaster(token)){
                 ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username);
                 userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
@@ -255,7 +333,7 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
+            if (userBean.thisTokenIsFromThisUsername(token, username)) {
                 try {
                     boolean added = taskBean.newTask(task, token);
                     if (added) {
@@ -321,7 +399,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+            if (userBean.userIsProductOwner(token) || userBean.userIsScrumMaster(token)) {
                 try {
                     boolean switched = taskBean.switchErasedTaskStatus(id);
                     if (switched) {
@@ -348,7 +426,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+            if (userBean.userIsProductOwner(token)) {
                 try {
                     boolean deleted = taskBean.permanentlyDeleteTask(id);
                     if (deleted) {
@@ -375,7 +453,7 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER || userDao.findUserByToken(token).getTypeOfUser() == User.SCRUMMASTER) {
+            if (userBean.userIsProductOwner(token) || userBean.userIsScrumMaster(token)) {
                 ArrayList<Task> tasksByCategory = taskBean.getTasksByCategory(category);
                 response = Response.status(200).entity(tasksByCategory).build();
             } else {
@@ -396,8 +474,8 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+            if (userBean.thisTokenIsFromThisUsername(token, username)) {
+                if (userBean.userIsProductOwner(token)) {
                     if (categoryBean.categoryExists(category.getName())) {
                         response = Response.status(409).entity("Category with this name already exists").build();
                     } else {
@@ -432,8 +510,8 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+            if (userBean.thisTokenIsFromThisUsername(token, username)) {
+                if (userBean.userIsProductOwner(token)) {
                 try {
                     boolean deleted = categoryBean.deleteCategory(categoryName);
                     if (deleted) {
@@ -464,8 +542,8 @@ public class UserService {
         Response response;
 
         if (userBean.isAuthenticated(token)) {
-            if (userDao.findUserByToken(token).getUsername().equals(username)) {
-                if (userDao.findUserByToken(token).getTypeOfUser() == User.PRODUCTOWNER) {
+            if (userBean.thisTokenIsFromThisUsername(token, username)) {
+                if (userBean.userIsProductOwner(token)) {
                     try {
                         boolean edited = categoryBean.editCategory(categoryName, newCategoryName);
                         if (edited) {
@@ -497,7 +575,7 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             try {
-                if (userDao.findUserByToken(token).getUsername().equals(username)) {
+                if (userBean.thisTokenIsFromThisUsername(token, username)) {
                     List<String> allCategories = categoryBean.findAllCategories();
                     response = Response.status(200).entity(allCategories).build();
                 } else {
