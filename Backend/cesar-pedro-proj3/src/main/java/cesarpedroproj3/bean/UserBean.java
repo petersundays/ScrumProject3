@@ -196,24 +196,51 @@ public class UserBean implements Serializable {
         return null;
     }
 
-    //Coloco username porque no objeto de atualização pode não estar no objeto
+    //Coloco username porque no objeto de atualização não está referenciado
     public boolean updateUser(User user, String username) {
         boolean status = false;
 
+        // Busca o user pelo username
         UserEntity u = userDao.findUserByUsername(username);
 
-        System.out.println(u);
+        if (u != null && u.getUsername().equals(username)){
 
-        if (u != null){
-            if (u.getUsername().equals(username)) {
-                u.setPassword(user.getPassword());
+            // Verifica se o email no objeto User é nulo ou vazio
+            if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                // Se não for nulo nem vazio, atualiza o email
                 u.setEmail(user.getEmail());
-                u.setFirstName(user.getFirstName());
-                u.setLastName(user.getLastName());
-                u.setPhone(user.getPhone());
-                u.setPhotoURL(user.getPhotoURL());
+            }
 
+            // Verifica se o contacto no objeto User é nulo ou vazio
+            if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+                // Se não for nulo nem vazio, atualiza o contacto
+                u.setPhone(user.getPhone());
+            }
+
+            // Verifica se o primeiro nome no objeto User é nulo ou vazio
+            if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+                // Se não for nulo nem vazio, atualiza o primeiro nome
+                u.setFirstName(user.getFirstName());
+            }
+
+            // Verifica se o apelido no objeto User é nulo ou vazio
+            if (user.getLastName() != null && !user.getLastName().isEmpty()) {
+                // Se não for nulo nem vazio, atualiza o apelido
+                u.setLastName(user.getLastName());
+            }
+
+            // Verifica se a foto no objeto User é nulo ou vazio
+            if (user.getPhotoURL() != null && !user.getPhotoURL().isEmpty()) {
+                // Se não for nulo nem vazio, atualiza a foto
+                u.setPhotoURL(user.getPhotoURL());
+            }
+
+            try{
+                userDao.merge(u); //Atualiza o user na base de dados
                 status = true;
+            } catch (Exception e){
+                e.printStackTrace();
+                status = false;
             }
         }
 
@@ -287,6 +314,22 @@ public class UserBean implements Serializable {
         return false;
     }
 
+    public boolean isEmailUpdatedValid(User user) {
+
+        //Se for null é porque não houve nenhuma atualização
+        if (user.getEmail() == null){
+            return true;
+        }
+
+        UserEntity u = userDao.findUserByEmail(user.getEmail());
+        // Check if the email format is valid
+        if (isEmailFormatValid(user.getEmail()) && u == null) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     public boolean isAnyFieldEmpty(User user) {
         boolean status = false;
@@ -329,11 +372,63 @@ public class UserBean implements Serializable {
         return status;
     }
 
+    public boolean isPhoneNumberUpdatedValid(User user) {
+        boolean status = true;
+
+        //Se for null é porque não houve nenhuma atualização
+        if (user.getPhone()==null){
+            return true;
+        }
+
+        int i = 0;
+
+        UserEntity u = userDao.findUserByPhone(user.getPhone());
+
+        while (status && i < user.getPhone().length() - 1) {
+            if (user.getPhone().length() == 9) {
+                for (; i < user.getPhone().length(); i++) {
+                    if (!Character.isDigit(user.getPhone().charAt(i))) {
+                        status = false;
+                    }
+                }
+            } else {
+                status = false;
+            }
+        }
+
+        //Se existir contacto na base de dados retorna false
+        if (u != null) {
+            status = false;
+        }
+
+        return status;
+    }
+
     public boolean isImageUrlValid(String url) {
         boolean status = true;
 
         if (url == null) {
             status = false;
+        }
+
+        try {
+            BufferedImage img = ImageIO.read(new URL(url));
+            if (img == null) {
+                status = false;
+            }
+        } catch (IOException e) {
+            status = false;
+        }
+
+        return status;
+    }
+
+    public boolean isImageUrlUpdatedValid(String url) {
+        boolean status = true;
+
+        //Se for null é porque não houve nenhuma alteração
+        if (url == null) {
+            return true;
         }
 
         try {
@@ -446,26 +541,27 @@ public class UserBean implements Serializable {
 
     }
 
-    public boolean userIsScrumMaster(String token) {
-        UserEntity userEntity = userDao.findUserByToken(token);
-        boolean authorized = false;
-        if (userEntity != null) {
-            if (userEntity.getTypeOfUser() == User.SCRUMMASTER) {
-                authorized = true;
-            }
+    public boolean verifyOldPassword(String username, String oldPassword){
+
+        UserEntity user = userDao.findUserByUsername(username);
+        if (user!=null){
+            return BCrypt.checkpw(oldPassword, user.getPassword());
         }
-        return authorized;
+        return false;
     }
 
-    public boolean userIsProductOwner(String token) {
-        UserEntity userEntity = userDao.findUserByToken(token);
-        boolean authorized = false;
-        if (userEntity != null) {
-            if (userEntity.getTypeOfUser() == User.PRODUCTOWNER) {
-                authorized = true;
-            }
+    public boolean updatePassword(String username, String newPassword) {
+
+        UserEntity user = userDao.findUserByUsername(username);
+        if (user != null) {
+            //Encripta a password usando BCrypt
+            String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+
+            //Define a password encriptada
+            user.setPassword(hashedPassword);
+            return true;
         }
-        return authorized;
+        return false;
     }
 
 }

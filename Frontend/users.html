@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="users-profile">Users profile</title>
+    <link  type="text/css" rel="stylesheet" href="main.css">
+    <link rel="icon" href="multimedia/favicon.png" type="image/x-icon">
+</head>
+<body>
+    <div id="cancel-modal" class="modal">
+        <div class="modal-content">
+            <p>Cancel changes?</p>
+            <button class="modal-button" id="confirm-cancel-button">Yes</button>
+            <button class="modal-button" id="continue-editing-button">No</button>
+        </div>
+    </div>
+    <header>
+        <img src="multimedia/logo-scrum-05.png" id="logo-header" height="50">
+        <nav class="nav-menu-left">
+            <ul>
+                <li id="nav-home"><a href="home.html">My Scrum</a></li>
+            </ul>
+        </nav>
+        <div class="nav-menu-right">
+            <img src="multimedia/JSC_close up.png" id="profile-pic">
+            <a href="edit-profile.html" id="first-name-label"></a>
+            <button class="logout-button" id="logout-button-header">
+                <img src="multimedia/logout.png" alt="Logout Icon">
+                Logout
+            </button>
+        </div>
+    </header>
+    <main class="main-users">
+        <aside>
+            <div class="aside-users-container">
+                <h3 id="addTask-h3">Users</h3>
+                <select id="usersType" name="usersType">
+                    <option value="none" disabled selected>Select an option</option>
+                    <option value="All">See All</option>
+                    <option value="Product Owner">See Product Owners</option>
+                    <option value="Scrum Master">See Scrum Masters</option>
+                    <option value="Developer">See Developers</option>
+                 </select>
+                <button id="showUsers-button">Show Users</button>
+                
+            </div>
+        </aside>
+        <div class="details-editProfile">
+            <div class="container-table">
+                <table class="table">
+                    <thead>
+                        <tr class="table-header">
+                            <th>Username</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Number of Tasks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body">
+                        <tr>
+                            <td>username</td>
+                            <td>firstName</td>
+                            <td>lastName</td>
+                            <td>email</td>
+                            <td>role</td>
+                            <td>#tasks</td>
+                            <td>buttons</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Password Modal -->
+    <div id="passwordModal">
+        <div class="modalContent">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+            </div>
+            <!-- Form de alteração da password -->
+            <form id="changePasswordForm">
+                <label for="profile_oldPassword">Password atual:</label>
+                <input type="password" id="profile_oldPassword" name="profile_oldPassword" placeholder="Coloque a sua password atual" required>
+        
+                <label for="profile_newPassword">Nova Password:</label>
+                <input type="password" id="profile_newPassword" name="profile_newPassword" placeholder="Coloque a sua nova password" required>
+        
+                <label for="profile_confirmPassword">Confirme a nova password:</label>
+                <input type="password" id="profile_confirmPassword" name="profile_confirmPassword" placeholder="Confirme a sua nova password" required>
+        
+                <input type="submit" id="profile_savePass" value="Guardar alterações">
+            </form>
+        </div>
+    </div>
+
+    
+    <footer>
+        <div class="footer-content">
+            <div class="label-left">&copy; João Luís</div>
+            <div class="label-right">Programação Avançada em Java</div>
+            <div class="label-left">&copy; José Sousa Castro</div>
+            <div class="label-right">Projeto 2</div>
+            <div class="label-left">&copy; Pedro Domingos</div>
+        </div>
+    </footer>
+    <script src="users.js" defer></script>
+</body>
+</html>

@@ -12,6 +12,7 @@ window.onload = async function() {
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
         loadTasks(usernameLogged, tokenValue);
+        scrumMasterPage();
     } catch (error) {
         
         console.error("An error occurred:", error);
@@ -20,6 +21,39 @@ window.onload = async function() {
     }
   }
 };
+
+//função para apresentar funções para Scrum Master
+function scrumMasterPage(){
+
+  const usersButton = document.createElement('a');
+  usersButton.href = 'users.html';
+  usersButton.draggable = 'false';
+  usersButton.innerText = 'Agile Users';
+
+  let liElement = document.createElement('li');
+  liElement.id = 'nav-users';
+
+  liElement.appendChild(usersButton);
+  document.getElementById('menu').appendChild(liElement);
+
+}
+
+function productOwnerPage(){
+
+  scrumMasterPage();
+
+  const addUsersButton = document.createElement('a');
+  addUsersButton.href = 'register.html';
+  addUsersButton.draggable = 'false';
+  addUsersButton.innerText = 'Add User';
+
+  let liElement = document.createElement('li');
+  liElement.id = 'nav-users';
+
+  liElement.appendChild(addUsersButton);
+  document.getElementById('menu').appendChild(liElement);
+
+}
 
 const tokenValue = localStorage.getItem('token');
 

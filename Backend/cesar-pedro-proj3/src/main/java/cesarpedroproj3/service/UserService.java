@@ -151,13 +151,13 @@ public class UserService {
 
         //Verifica se token existe de quem consulta e se é Product Owner ou o próprio user
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token) || userBean.thisTokenIsFromThisUsername(token,username)) {
-            if (!userBean.isEmailValid(user)) {
+            if (!userBean.isEmailUpdatedValid(user) && user.getEmail() != null) {
                 response = Response.status(422).entity("Invalid email").build();
 
-            } else if (!userBean.isImageUrlValid(user.getPhotoURL())) {
+            } else if (!userBean.isImageUrlUpdatedValid(user.getPhotoURL()) && user.getPhotoURL() != null) {
                 response = Response.status(422).entity("Image URL invalid").build();
 
-            } else if (!userBean.isPhoneNumberValid(user)) {
+            } else if (!userBean.isPhoneNumberUpdatedValid(user) && user.getPhone() != null) {
                 response = Response.status(422).entity("Invalid phone number").build();
 
             } else {
@@ -171,7 +171,31 @@ public class UserService {
     }
 
     @PUT
-    @Path("/updateVisibilty/{username}")
+    @Path("/update/{username}/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updatePassword(@PathParam("username") String username,
+                                   @HeaderParam("token") String token,
+                                   @HeaderParam("oldpassword") String oldPassword,
+                                   @HeaderParam("newpassword") String newPassword) {
+
+        //Verica se user está autentificado
+        if (userBean.isAuthenticated(token)){
+            // Verificar password antiga
+            boolean isOldPasswordValid = userBean.verifyOldPassword(username, oldPassword);
+            if (!isOldPasswordValid) {
+                return Response.status(401).entity("Incorrect old password").build();
+            }
+            // Se a password antiga é válida, update a password
+            boolean updated = userBean.updatePassword(username, newPassword);
+            if (!updated) {
+                return Response.status(400).entity("User with this username is not found").build();
+            }else return Response.status(200).entity("User password updated").build();
+        }else
+            return Response.status(401).entity("User is not logged in").build();
+    }
+
+    @PUT
+    @Path("/update/{username}/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateVisibility(@PathParam("username") String username, @HeaderParam("token") String token) {
@@ -185,11 +209,11 @@ public class UserService {
             return response;
         }
 
-        //Verifica se token existe de quem consulta e se é Product Owner
+        //Verifica se token de quem consulta existe e se é Product Owner
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
 
             boolean updatedVisibility = userBean.updateUserEntityVisibility(username);
-            response = Response.status(Response.Status.OK).entity(updatedVisibility).build(); //status code 200
+            response = Response.status(Response.Status.OK).entity(username + " visibility: " + user.isVisible()).build(); //status code 200
 
         }else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -199,7 +223,7 @@ public class UserService {
 
     //Atualizar tipo de user
     @PUT
-    @Path("/updateRole/{username}")
+    @Path("/update/{username}/role")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateRole(@PathParam("username") String username, @HeaderParam("token") String token, @HeaderParam("typeOfUser") int typeOfUser) {
