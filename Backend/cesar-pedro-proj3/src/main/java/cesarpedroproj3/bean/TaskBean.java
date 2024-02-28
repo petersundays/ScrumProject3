@@ -18,8 +18,7 @@ import java.util.ArrayList;
 public class TaskBean implements Serializable {
 
     @EJB
-    TaskDao taskDao;
-
+    private TaskDao taskDao;
     @EJB
     private CategoryDao categoryDao;
     @EJB
@@ -28,6 +27,9 @@ public class TaskBean implements Serializable {
     private UserBean userBean;
     @EJB
     private CategoryBean categoryBean;
+    @EJB
+    private TaskBean taskBean;
+
 
 
 
@@ -59,21 +61,21 @@ public class TaskBean implements Serializable {
         return userTasks;
     }
 
-    public boolean updateTask(Task task, String id, String token) {
-        User taskOwner = userBean.convertUserEntitytoUserDto(userDao.findUserByUsername(taskDao.findTaskById(id).getOwner().getUsername()));
-        User loggedUser = userBean.convertUserEntitytoUserDto(userDao.findUserByToken(token));
-        boolean edited = false;
+    public boolean updateTask(Task task, String id) {
+        TaskEntity taskEntity = taskDao.findTaskById(id);
+        Task taskDto = taskBean.convertTaskEntityToTaskDto(taskEntity);
+        User taskOwner = taskDto.getOwner();
 
-        if (loggedUser.getUsername().equals(taskOwner.getUsername()) || loggedUser.getTypeOfUser() == User.SCRUMMASTER || loggedUser.getTypeOfUser() == User.PRODUCTOWNER) {
-            task.setId(id);
-            task.setOwner(taskOwner);
-            if (taskDao.findTaskById(task.getId()) != null) {
-                if (validateTask(task)) {
-                    taskDao.merge(convertTaskToEntity(task));
-                    edited = true;
-                }
+        boolean edited = false;
+        task.setId(id);
+        task.setOwner(taskOwner);
+        if (taskDao.findTaskById(task.getId()) != null) {
+            if (validateTask(task)) {
+                taskDao.merge(convertTaskToEntity(task));
+                edited = true;
             }
         }
+
         return edited;
     }
 
@@ -109,7 +111,7 @@ public class TaskBean implements Serializable {
         boolean removed = false;
         TaskEntity taskEntity = taskDao.findTaskById(id);
         if(taskEntity != null) {
-            taskDao.remove(taskEntity);
+            taskDao.deleteTask(id);
             removed = true;
         }
         return removed;
@@ -136,7 +138,7 @@ public class TaskBean implements Serializable {
                 || task.getOwner() == null
                 || task.getPriority() == 0
                 || task.getCategory() == null
-                || !categoryExists(task.getCategory().getName())
+                || !categoryBean.categoryExists(task.getCategory().getName())
                 || (task.getPriority() != Task.LOWPRIORITY && task.getPriority() != Task.MEDIUMPRIORITY && task.getPriority() != Task.HIGHPRIORITY)
                 || (task.getStateId() != Task.TODO && task.getStateId() != Task.DOING && task.getStateId() != Task.DONE)
         )) {
@@ -144,6 +146,34 @@ public class TaskBean implements Serializable {
         }
         return valid;
     }
+
+    public ArrayList<Task> getErasedTasks() {
+        ArrayList<TaskEntity> entityTasks = taskDao.findErasedTasks();
+        ArrayList<Task> tasks = new ArrayList<>();
+        if (entityTasks != null) {
+            for (TaskEntity taskEntity : entityTasks) {
+                tasks.add(convertTaskEntityToTaskDto(taskEntity));
+            }
+        }
+        return tasks;
+    }
+
+    public boolean eraseAllTasksFromUser(String username) {
+        boolean erased = false;
+        UserEntity userEntity = userDao.findUserByUsername(username);
+        if (userEntity != null) {
+            ArrayList<TaskEntity> userTasks = taskDao.findTasksByUser(userEntity);
+            if (userTasks != null) {
+                for (TaskEntity taskEntity : userTasks) {
+                    taskEntity.setErased(true);
+                    taskDao.merge(taskEntity);
+                }
+                erased = true;
+            }
+        }
+        return erased;
+    }
+
 
     private TaskEntity convertTaskToEntity(Task task) {
         TaskEntity taskEntity = new TaskEntity();
@@ -175,12 +205,6 @@ public class TaskBean implements Serializable {
         return task;
     }
 
-    private boolean categoryExists(String category) {
-        boolean exists = false;
-        if(categoryDao.findCategoryByName(category) != null) {
-            exists = true;
-        }
-        return exists;
-    }
+
 
 }

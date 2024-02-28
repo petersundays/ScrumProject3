@@ -369,6 +369,39 @@ public class UserBean implements Serializable {
         return new ArrayList<>();
     }
 
+    public boolean userIsTaskOwner(String token, String id) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        TaskEntity taskEntity = taskDao.findTaskById(id);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (taskEntity.getOwner().getUsername().equals(userEntity.getUsername())) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsScrumMaster(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.SCRUMMASTER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsProductOwner(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.PRODUCTOWNER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
 
 /*    public boolean addTaskToUser(String username, Task temporaryTask) {
         TaskBean taskBean = new TaskBean();

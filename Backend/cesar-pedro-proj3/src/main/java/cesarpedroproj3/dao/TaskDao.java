@@ -52,4 +52,19 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 		}
 	}
 
+	public boolean deleteTask(String id) {
+		boolean deleted = false;
+		if (id == null) {
+			deleted = false;
+		} else {
+			try {
+				em.createNamedQuery("DeleteTask").setParameter("id", id).executeUpdate();
+				deleted = true;
+			} catch (Exception e) {
+				deleted = false;
+			}
+		}
+		return deleted;
+	}
+
 }
