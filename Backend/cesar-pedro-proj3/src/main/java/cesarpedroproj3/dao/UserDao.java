@@ -1,6 +1,5 @@
 package cesarpedroproj3.dao;
 
-import cesarpedroproj3.entity.TaskEntity;
 import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;

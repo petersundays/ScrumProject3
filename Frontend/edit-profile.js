@@ -1,27 +1,27 @@
 window.onload = async function() {
-  
-    let tokenValue = localStorage.getItem('token');
-    let usernameLogged;
-  
-    if (tokenValue === null) {
-        window.location.href = "index.html";
-      } else {
-        try {
-            usernameLogged = await getUsername(tokenValue);
-            getFirstName(tokenValue);
-            getPhotoUrl(tokenValue);
-            loadUserData(usernameLogged, tokenValue);
 
-            clearInputValues();
-        } catch (error) {
-            
-            console.error("An error occurred:", error);
-            window.location.href = "index.html";
-            
-        }
-      }
-    };
+ let tokenValue = localStorage.getItem('token');
+
+ if (tokenValue === null) {
+    window.location.href = "index.html";
+    } else {
+    try {
+        const usernameLogged = await getUsername(tokenValue);
+        getFirstName(tokenValue);
+        getPhotoUrl(tokenValue);
+        loadUserData(usernameLogged, tokenValue);
+
+        clearInputValues();
+    } catch (error) {
+        
+        console.error("An error occurred:", error);
+        window.location.href = "index.html";
+        
+    }
+    }
+};
     
+const tokenValue = localStorage.getItem('token');
 
 //LOGOUT 
 document.getElementById("logout-button-header").addEventListener('click', async function() {
@@ -40,7 +40,6 @@ document.getElementById("logout-button-header").addEventListener('click', async 
           if (response.ok) {
               
             localStorage.clear();
-  
             window.location.href="index.html";
   
           } 
@@ -67,7 +66,7 @@ document.getElementById("logout-button-header").addEventListener('click', async 
           if (response.ok) {
   
             const data = await response.text();
-            console.log(data.firstName)
+            
             document.getElementById("first-name-label").innerText = data;
   
           } else if (!response.ok) {
@@ -81,7 +80,6 @@ document.getElementById("logout-button-header").addEventListener('click', async 
   }
   
   async function getPhotoUrl(tokenValue) {
-
 
     let photoUrlRequest = "http://localhost:8080/project_backend/rest/users/getPhotoUrl";
       
@@ -128,15 +126,14 @@ document.getElementById("logout-button-header").addEventListener('click', async 
 
         if (response.ok) {
             const data = await response.json();
-
             
-            document.getElementById("username-title-editProfile").textContent = data.username || '';
+            document.getElementById("username-title-editProfile").textContent = "Bem vindo " + data.username || '';
             document.getElementById("firstName-editProfile").placeholder = data.firstName || '';
             document.getElementById("lastName-editProfile").placeholder = data.lastName || '';
             document.getElementById("phone-editProfile").placeholder = data.phone || '';
             document.getElementById("photoURL-editProfile").placeholder = data.photoURL || '';
             document.getElementById("email-editProfile").placeholder = data.email || '';
-            document.getElementById("currentPass-editProfile").placeholder = '******';
+            //document.getElementById("currentPass-editProfile").placeholder = '******';
 
         } else {
 
@@ -150,8 +147,9 @@ document.getElementById("logout-button-header").addEventListener('click', async 
 document.getElementById("profile-save-button").addEventListener('click', async function (event) {
     event.preventDefault();
 
-    let newPassword = document.getElementById('newPassword-editProfile').value.trim();
-    let confirmNewPassword = document.getElementById('newPasswordConfirm-editProfile').value.trim();
+    //let newPassword = document.getElementById('newPassword-editProfile').value.trim();
+    //let confirmNewPassword = document.getElementById('newPasswordConfirm-editProfile').value.trim();
+    let usernameLogged = await getUsername(tokenValue);
 
 
     /*
@@ -161,28 +159,26 @@ document.getElementById("profile-save-button").addEventListener('click', async f
     null e vai rebentar não deixando o user fazer update ao perfil
     
     */
-    let updatedPasswordToObejct;
+    /*let updatedPasswordToObejct;
 
     if (newPassword !== '' && confirmNewPassword !== '' && newPassword === confirmNewPassword) {
         updatedPasswordToObejct = confirmNewPassword;
     } else if (newPassword === '' && confirmNewPassword === '') {
         // Password sem alterações
-        //updatedPasswordToObejct = passwordValue;
+        // updatedPasswordToObejct = passwordValue;
     } else {
-        alert("Passwords dont match")
+        alert("Passwords don't match")
         return;
     }
 
-    let updatedUser = updateUserInfo(updatedPasswordToObejct);
-
-    let updateUserRequest =  `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/update/${usernameLogged}`;
+    let updatedUser = updateUserInfo(updatedPasswordToObejct);*/
 
 
     //verifica se todos os campos não estão vazios, se estiverem nem faz o request e avisa o user
     if (!isEveryFieldUnchanged()) {
 
         try {
-            const response = await fetch(updateUserRequest, {
+            const response = await fetch(`http://localhost:8080/project_backend/rest/users/update/${usernameLogged}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -220,8 +216,8 @@ document.getElementById("profile-save-button").addEventListener('click', async f
                     alert("Wrong username on path");
                     break;
                 case 401: 
-                alert("Invalid credentials");
-                break;
+                    alert("Invalid credentials");
+                    break;
                 default:
                     alert("Something went wrong");
             }
@@ -236,51 +232,49 @@ document.getElementById("profile-save-button").addEventListener('click', async f
     }
 });
 
+//Apenas envia dados que foram modificados
+function updateUserInfo() { 
 
-function updateUserInfo(updatedPassword) { 
+    let updatedUser = {};
 
+    let email = getInputValue('email-editProfile');
+    if (email !== '') {
+        updatedUser.email = email;
+    }
 
-        let username = document.getElementById('username-title-editProfile').textContent.trim();
-        let email = getInputValue('email-editProfile');
-        let firstName = getInputValue('firstName-editProfile');
-        let lastName = getInputValue('lastName-editProfile');
-        let phone = getInputValue('phone-editProfile');
-        let photoURL = getInputValue('photoURL-editProfile');
+    let firstName = getInputValue('firstName-editProfile');
+    if(firstName !== '') {
+        updatedUser.firstName = firstName;
+    }
 
-        return {
-            username: username,
-            password: updatedPassword,
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
-            phone: phone,
-            photoURL: photoURL
-        };
+    let lastName = getInputValue('lastName-editProfile');
+    if(lastName!== '') {
+        updatedUser.lastName = lastName;
+    }
+
+    let phone = getInputValue('phone-editProfile');
+    if(phone!== '') {
+        updatedUser.phone = phone;
+    }
+
+    let photoURL = getInputValue('photoURL-editProfile');
+    if(photoURL!== '') {
+        updatedUser.photoURL = photoURL;
+    }
+
+    return updatedUser;
 
 
 }
 
 function clearInputValues() {
-    document.getElementById('newPassword-editProfile').value = '';
-    document.getElementById('newPasswordConfirm-editProfile').value = ''; 
+    //document.getElementById('newPassword-editProfile').value = '';
+    //document.getElementById('newPasswordConfirm-editProfile').value = ''; 
     document.getElementById('email-editProfile').value = '';
     document.getElementById('firstName-editProfile').value = '';
     document.getElementById('lastName-editProfile').value = '';
     document.getElementById('phone-editProfile').value = '';
     document.getElementById('photoURL-editProfile').value = '';
-}
-
-function getInputValue(elementId) {
-    let inputValue;
-    let valueElement = document.getElementById(elementId);
-    
-    if (valueElement.value === '') {
-        inputValue = valueElement.placeholder.trim();
-    } else {
-        inputValue = valueElement.value.trim();
-    }
-
-    return inputValue;
 }
 
 function isEveryFieldUnchanged() {
@@ -299,4 +293,140 @@ function isEveryFieldUnchanged() {
 }
 
 
+//Obter o username a partir do token
+async function getUsername(tokenValue) {
 
+    let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsername";
+      
+      try {
+          const response = await fetch(firstNameRequest, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+          if (response.ok) {
+  
+            const data = await response.text();
+            return data;
+  
+          } else if (!response.ok) {
+              alert("Invalid credentials")
+          }
+  
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong");
+      }
+  }
+
+//Atualiza foto instantaneamente
+document.getElementById('photoURL-editprofile').addEventListener('input', function(){
+    let url = this.value.trim(); // Obter o value do input
+    let photoInst = document.getElementById('profile-pic');
+
+    // Verificar URL
+    if (url !== '') {
+        // Update o src para o novo URL
+        photoInst.src = url;
+        document.getElementById('profile-pic').src = url;
+    } else {
+        // Se o URL é vazio, atualiza o src para a imagem padrão
+        photoInst.src = this.placeholder;
+    }
+});
+
+
+//Se campo não for preenchido, retorna null
+function getInputValue(elementId) {
+    let inputValue;
+    let valueElement = document.getElementById(elementId);
+    
+    if (valueElement.value === '') {
+        inputValue = '';
+    } else {
+        inputValue = valueElement.value.trim();
+    }
+
+    return inputValue;
+}
+
+// Alteração apenas da password
+async function save_editPass(oldPassword, newPassword, token) {
+
+    const response = await fetch(`http://localhost:8080/project_backend/rest/users/update/${usernameLogged}/password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+        'oldpassword': oldPassword,
+        'newpassword': newPassword
+      },
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
+  
+    return response.status;
+  };
+
+// Botão para abrir a Modal da password
+const btnOpenPasswordModal = document.getElementById('profile-changePass-button');
+
+// Abrir Modal Password no clique
+btnOpenPasswordModal.addEventListener('click', function(){
+    openPassModal;
+});
+
+// Obter a Modal da password
+const passwordModal = document.getElementById("passwordModal");
+
+// Obter o  <span> que fecha a Modal
+const spanClosePasswordModal = document.getElementsByClassName("close")[0];
+
+// Fechar Modal Password no clique
+spanClosePasswordModal.onclick = closePassModal;
+
+//Abrir Modal Password
+function openPassModal(){
+
+    console.log('Abrir Modal');
+    //Desfoca o background do modal
+    document.getElementsByClassName("main-editProfile")[0].style.filter = "blur(5px)";
+    //Torna modal visivel
+    passwordModal.style.display = "block";
+}
+
+function closePassModal(){
+    document.getElementsByClassName("main-editProfile")[0].style.filter = "none";
+    passwordModal.style.display = "none";
+    document.getElementById('changePasswordForm').reset();
+};
+
+document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+
+    e.preventDefault();
+
+    const oldPassword = document.getElementById("profile_oldPassword").value;
+    const newPassword = document.getElementById("profile_newPassword").value;
+    const confirmPassword = document.getElementById("profile_confirmPassword").value;
+
+    // Valida nova password com confirmação
+    if (newPassword !== confirmPassword) {
+        alert("Nova password e confirmação não são iguais.");
+        return;
+    }
+
+    const save_newPass = await save_editPass(oldPassword, newPassword);
+
+    if (save_newPass === 200) {
+        alert('Password changed successfully.');
+        passwordModal.style.display = "none";
+        document.getElementsByClassName("container")[0].style.filter = "none";
+        localStorage.setItem("password", newPassword);
+
+    } else {
+        alert('Failed to change password.');
+    }
+});
