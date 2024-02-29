@@ -171,8 +171,8 @@ async function getCategories(tokenValue) {
   
   categories.forEach(category => {
     let option = document.createElement('option');
-    option.value = category.name;
-    option.textContent = category.name;
+    option.value = category;
+    option.textContent = category;
     document.getElementById("task-category").appendChild(option);
   });
 }
@@ -210,8 +210,9 @@ async function getAllCategories(tokenValue) {
   }
 
 
-async function newTask(usernameLogged, tokenValue, task) {
-console.log('In newTask - username: ' + usernameLogged);
+async function newTask(tokenValue, task) {
+
+  const usernameLogged = await getUsername(tokenValue);
   let newTask = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/addTask`;
     
     try {
@@ -273,16 +274,20 @@ console.log('In newTask - username: ' + usernameLogged);
     };
 
 
-function createTask(title, description, priority, startDate, limitDate) { // Cria uma nova task com os dados inseridos pelo utilizador
+function createTask(title, description, priority, startDate, limitDate, categoryName) { // Cria uma nova task com os dados inseridos pelo utilizador
   let todoStateId = 'todo';
   let newPriority = parsePriorityToInt(priority);
+  const category = {
+    name: categoryName
+  } 
   const task = {
   title: title,
   description: description,
   stateId: parseStateIdToInt(todoStateId),
   priority: newPriority,
   startDate: startDate,
-  limitDate: limitDate
+  limitDate: limitDate,
+  category: category
   }
   return task;
 }
@@ -295,14 +300,14 @@ function createTask(title, description, priority, startDate, limitDate) { // Cri
   let priority = taskPriority;
   let startDate = document.getElementById('task-startDate').value;
   let limitDate = document.getElementById('task-limitDate').value;
+  let categoryName = document.getElementById('task-category').value;
             
-  if (title === '' || description === '' || priority === null || startDate === '' || limitDate === '' || startDate > limitDate || document.getElementsByClassName('selected').length === 0) {
-    console.log('entrou no if para verificar se os campos estão preenchidos');
-    document.getElementById('warningMessage2').innerText = 'Fill in all fields and define a priority';
+  if (title === '' || description === '' || priority === null || startDate === '' || limitDate === '' || startDate > limitDate || document.getElementsByClassName('selected').length === 0 || document.getElementById('task-category').value === ''){
+      document.getElementById('warningMessage2').innerText = 'Fill in all fields, define a priority and select a category';
   } else {
-    let task = createTask(title, description, priority, startDate, limitDate);
+    let task = createTask(title, description, priority, startDate, limitDate, categoryName);
     
-    newTask(usernameLogged, tokenValue, task).then (async() => {
+    newTask(tokenValue, task).then (async() => {
       removeAllTaskElements();
       await loadTasks(tokenValue);
       cleanAllTaskFields();
@@ -464,9 +469,37 @@ function parsePriorityToInt (priority) {
   return newPriority;
 }
 
-async function deleteTask(id, usernameLogged, tokenValue) {
-   
+async function eraseTask(tokenValue, taskId) {
 
+  let eraseTask = `http://localhost:8080/project_backend/rest/users/${taskId}`;
+      
+      try {
+          const response = await fetch(eraseTask, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+            if (response.ok) {
+              alert("Task deleted successfully");
+            } else if (response.status === 401) {
+              alert("Invalid credentials")
+            } else if (response.status === 404) {
+              alert("Something went wrong. The task was not deleted.")
+            }
+        
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Task was not deleted. Something went wrong");
+      }
+    }
+
+async function deleteTask(id, tokenValue) {
+   
+  const usernameLogged = await getUsername(tokenValue);
   let deleteTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/${id}`;
 
   try {
