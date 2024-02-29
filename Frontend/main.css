@@ -393,7 +393,9 @@ aside h3 {
 #taskDescription-retro,
 #commentDescription-retro,
 #name-addMember,
-#retroTitle {
+#retroTitle,
+#search-input,
+#usersType {
   padding-left: 10px;
   width: 170px;
   background-color: var(--white);
@@ -404,7 +406,9 @@ aside h3 {
 }
 #taskName,
 #name-addMember,
-#retroTitle {
+#retroTitle,
+#search-input,
+#usersType  {
   height: 20px;
 }
 #retroTitle {
@@ -518,7 +522,8 @@ aside h3 {
 }
 /* Botão add task e de show users*/
 #addTask,
-#showUsers-button {
+#showUsers-button,
+#search-button {
   text-align: center;
   margin-top: 25px;
   width: 120px;
@@ -533,7 +538,8 @@ aside h3 {
   cursor: pointer;
 }
 #addTask:hover,
-#showUsers-button:hover {
+#showUsers-button:hover
+#search-button:hover {
   background-color: var(--green3);
   color: var(--green1);
 }
@@ -1236,14 +1242,14 @@ aside h3 {
   position: sticky;
   top: 0;
 }
-.table-header {
+/*.table-header {
   text-align: center;
   padding: 5px;
   width: 700px;
   letter-spacing: 1px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
-}
+}*/
 .retros-table-body {
   color: var(--green3);
   font-size: 13px;
@@ -1489,10 +1495,21 @@ aside h3 {
   margin: 10px;
 }
 
+.users-details-container{
+  display: flex;
+  width: 20%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4%;
+}
+
 .container-table {
   margin-top: 20px;
   margin-left: 30px;
-  overflow-x: auto; /* Adiciona rolagem horizontal se a tabela for muito larga */
+  overflow-y: auto;
+  width: 98%;
+  max-height: 90%;
 }
 
 .table {
@@ -1501,10 +1518,12 @@ aside h3 {
 }
 
 .table-header {
+  text-align: center;
   background-color: var(--green3);
   color: var(--white);
   font-size: 16px;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .table-body {
@@ -1522,11 +1541,41 @@ aside h3 {
   border-bottom: 1px solid var(--green2);
 }
 
-/* Estilização para quando o cursor passa sobre uma linha da tabela */
 .table-body tr:hover {
   background-color: #ddd;
 }
 
-.main-users{
+.editUser-fields {
+  margin-bottom: 15px;
+  padding: 5px;
+  width: 50%;
+  height: 25px;
+  border: var(--green2) 2px solid;
+  border-top-right-radius: 7px;
+  border-top-left-radius: 7px;
+}
+
+.editUser-fields:focus::placeholder {
+  opacity: 0.5;
+}
+
+#profile-clicked-pic {
+  width: 84px;
+  height: auto;
+  border-radius: 50%;
+  margin: 0 30px;
+  margin-bottom: 10%;
+}
+
+#search-input{
+  margin-top: 10%;
+}
+
+#edit-user-form{
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
   justify-content: flex-start;
+  padding-top: 4%;
 }

@@ -169,9 +169,9 @@ document.getElementById("profile-save-button").addEventListener('click', async f
     } else {
         alert("Passwords don't match")
         return;
-    }
+    }*/
 
-    let updatedUser = updateUserInfo(updatedPasswordToObejct);*/
+    let updatedUser = updateUserInfo();
 
 
     //verifica se todos os campos não estão vazios, se estiverem nem faz o request e avisa o user

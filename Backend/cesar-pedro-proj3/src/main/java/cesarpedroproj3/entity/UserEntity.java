@@ -8,6 +8,8 @@ import java.util.Set;
 @Entity
 @Table(name="user")
 @NamedQuery(name = "User.findAllUsers", query = "SELECT u FROM UserEntity u")
+@NamedQuery(name = "User.findAllUsersByTypeOfUser", query = "SELECT u FROM UserEntity u WHERE u.typeOfUser = :typeOfUser")
+@NamedQuery(name = "User.findAllUsersByVisibility", query = "SELECT u FROM UserEntity u WHERE u.visible = :visible")
 @NamedQuery(name = "User.findUserByUsername", query = "SELECT u FROM UserEntity u WHERE u.username = :username")
 @NamedQuery(name = "User.findUserByEmail", query = "SELECT u FROM UserEntity u WHERE u.email = :email")
 @NamedQuery(name = "User.findUserByPhone", query = "SELECT  u FROM UserEntity u WHERE u.phone = :phone")

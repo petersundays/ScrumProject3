@@ -13,6 +13,7 @@ window.onload = async function() {
         getPhotoUrl(tokenValue);
         loadTasks(usernameLogged, tokenValue);
         scrumMasterPage();
+        productOwnerPage();
     } catch (error) {
         
         console.error("An error occurred:", error);
@@ -39,8 +40,6 @@ function scrumMasterPage(){
 }
 
 function productOwnerPage(){
-
-  scrumMasterPage();
 
   const addUsersButton = document.createElement('a');
   addUsersButton.href = 'register.html';

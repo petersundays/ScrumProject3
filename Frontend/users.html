@@ -38,11 +38,14 @@
                 <select id="usersType" name="usersType">
                     <option value="none" disabled selected>Select an option</option>
                     <option value="All">See All</option>
-                    <option value="Product Owner">See Product Owners</option>
-                    <option value="Scrum Master">See Scrum Masters</option>
-                    <option value="Developer">See Developers</option>
+                    <option value="300">See Product Owners</option>
+                    <option value="200">See Scrum Masters</option>
+                    <option value="100">See Developers</option>
                  </select>
                 <button id="showUsers-button">Show Users</button>
+
+                <input type="text" id="search-input" placeholder="Search"/>
+                <button id="search-button">Search</button>
                 
             </div>
         </aside>
@@ -60,20 +63,11 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="table-body">
-                        <tr>
-                            <td>username</td>
-                            <td>firstName</td>
-                            <td>lastName</td>
-                            <td>email</td>
-                            <td>role</td>
-                            <td>#tasks</td>
-                            <td>buttons</td>
-                        </tr>
-                    </tbody>
+                    <tbody class="table-body"> </tbody>
                 </table>
             </div>
         </div>
+        <div class="users-details-container">  </div>
     </main>
 
     <!-- Password Modal -->

@@ -76,4 +76,12 @@ public class UserDao extends AbstractDao<UserEntity> {
 		}
 	}
 
+	public ArrayList<UserEntity> findAllUsersByTypeOfUser(int typeOfUser) {
+		try {
+			return (ArrayList<UserEntity>) em.createNamedQuery("User.findAllUsersByTypeOfUser").setParameter("typeOfUser", typeOfUser).getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 }

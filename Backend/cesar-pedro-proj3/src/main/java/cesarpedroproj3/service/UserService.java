@@ -101,6 +101,7 @@ public class UserService {
         return response;
     }
 
+    //Retorna o url da foto do token enviado
     @GET
     @Path("/getPhotoUrl")
     @Produces(MediaType.APPLICATION_JSON)
@@ -117,6 +118,7 @@ public class UserService {
         return response;
     }
 
+    //Retorna username do token enviado
     @GET
     @Path("/getUsername")
     @Produces(MediaType.APPLICATION_JSON)
@@ -129,6 +131,22 @@ public class UserService {
             response = Response.status(401).entity("Invalid credentials").build();
         } else {
             response = Response.status(200).entity(currentUser.getUsername()).build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/getUsernameFromEmail")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsernameFromEmail(@HeaderParam("email") String email, @HeaderParam("token") String token) {
+        Response response;
+
+        User user = userBean.convertEntityByEmail(email);
+
+        if (!userBean.isAuthenticated(token)) {
+            response = Response.status(401).entity("Invalid credentials").build();
+        } else {
+            response = Response.status(200).entity(user.getUsername()).build();
         }
         return response;
     }
@@ -287,6 +305,20 @@ public class UserService {
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
             List<User> allUsers = userBean.getUsers();
             response = Response.status(200).entity(allUsers).build();
+        } else {
+            response = Response.status(401).entity("You don't have permission").build();
+        }
+        return response;
+    }
+
+    @GET
+    @Path("/all/{type}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsers(@HeaderParam("token") String token, @PathParam("type") int typeOfUser) {
+        Response response;
+        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+            List<User> users = userBean.getUsersByType(typeOfUser);
+            response = Response.status(200).entity(users).build();
         } else {
             response = Response.status(401).entity("You don't have permission").build();
         }
