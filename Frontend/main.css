@@ -491,8 +491,10 @@ aside h3 {
     transform: translateY(4px);
   }
 /* Definições do botão de adicionar task */
+#label-priority,
 #label-startDate,
-#label-limitDate {
+#label-limitDate,
+#label-category {
   margin-block: 20px;
   margin-inline: 60px;
   text-align: center;
@@ -504,7 +506,8 @@ aside h3 {
 /* merdas e cenas */
 
 #task-startDate,
-#task-limitDate {
+#task-limitDate,
+#task-category {
     margin-inline: 20px;
     text-align: center;
     margin-block: 10px;
@@ -1162,6 +1165,7 @@ aside h3 {
 #taskDescription-retro,
 #commentDescription-retro {
   margin-top: 20px;
+  margin-bottom: 10px;
   padding: 10px;
   width: 180px;
   height: 150px;
