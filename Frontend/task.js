@@ -1,27 +1,28 @@
-window.onload = function () {
-  const usernameValue = localStorage.getItem("username");
-  const passwordValue = localStorage.getItem("password");
-  const taskId = sessionStorage.getItem("taskId");
+window.onload = async function() {
 
-  if (usernameValue === null || passwordValue === null) {
+  const taskId = sessionStorage.getItem("taskId");
+  const tokenValue = localStorage.getItem('token');
+  let usernameLogged;
+  
+  if (tokenValue === null) {
     window.location.href = "index.html";
-  } else {
+  } else { 
     try {
-      getFirstName(usernameValue, passwordValue);
-      getPhotoUrl(usernameValue, passwordValue);
-      showTask(taskId);
+        usernameLogged = await getUsername(tokenValue);
+        const task = await findTaskById(taskId);
+        getFirstName(tokenValue);
+        getPhotoUrl(tokenValue);
+        showTask(task);
+        await getCategories(task,tokenValue);
     } catch (error) {
         
         console.error("An error occurred:", error);
         window.location.href = "index.html";
         
     }
-}
-
+  }
 };
 
-const usernameValue = localStorage.getItem("username");
-const passwordValue = localStorage.getItem("password");
 const taskId = sessionStorage.getItem("taskId");
 
 // Definir os botões de status
@@ -34,6 +35,36 @@ const lowButton = document.getElementById("low-button");
 const mediumButton = document.getElementById("medium-button");
 const highButton = document.getElementById("high-button");
 
+async function getAllCategories(tokenValue) {
+  
+  let getCategories = "http://localhost:8080/project_backend/rest/users/categories";
+    
+    try {
+        const response = await fetch(getCategories, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+
+        if (response.ok) {
+          const categories = await response.json();
+          return categories;
+
+        } else if (response.status === 401) {
+          alert("Invalid credentials")
+        } else if (response.status === 404) {
+          alert("No categories found")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+}
+
 async function updateTask() {
 
   const priority = returnPriorityFromSelectedButton();
@@ -45,6 +76,9 @@ async function updateTask() {
     description: document.getElementById("descricao-task").value,
     priority: priority,
     stateId: stateId,
+    category: {
+      name: document.getElementById("task-category-edit").value
+    }
          
   };
   let firstNameRequest = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/${taskId}`;
@@ -79,95 +113,137 @@ async function updateTask() {
   }
 }
 
-async function getFirstName(usernameValue, passwordValue) {
-  let firstNameRequest =
-    "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getFirstName";
+async function getFirstName(tokenValue) {
 
-  try {
-    const response = await fetch(firstNameRequest, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/JSON",
-        Accept: "*/*",
-        username: usernameValue,
-        password: passwordValue,
-      },
-    });
+  let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getFirstName";
+    
+    try {
+        const response = await fetch(firstNameRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
 
-    if (response.ok) {
-      const data = await response.text();
-      document.getElementById("first-name-label").innerText = data;
-    } else if (!response.ok) {
-      alert("Invalid credentials");
+        if (response.ok) {
+
+          const data = await response.text();
+          document.getElementById("first-name-label").innerText = data;
+
+        } else if (!response.ok) {
+            alert("Invalid credentials")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
     }
-  } catch (error) {
-    alert("Something went wrong");
-  }
 }
 
-async function getPhotoUrl(usernameValue, passwordValue) {
-  let photoUrlRequest =
-    "http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/getPhotoUrl";
+async function getPhotoUrl(tokenValue) {
 
-  try {
-    const response = await fetch(photoUrlRequest, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/JSON",
-        Accept: "*/*",
-        username: usernameValue,
-        password: passwordValue,
-      },
-    });
+  
+  let photoUrlRequest = "http://localhost:8080/project_backend/rest/users/getPhotoUrl";
+    
+    try {
+        const response = await fetch(photoUrlRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue,
+            },    
+        });
 
-    if (response.ok) {
-      const data = await response.text();
-      document.getElementById("profile-pic").src = data;
-    } else if (response.stateId === 401) {
-      alert("Invalid credentials");
-    } else if (response.stateId === 404) {
-      alert("teste 404");
+        if (response.ok) {
+
+          const data = await response.text();
+          document.getElementById("profile-pic").src = data;
+
+        } else if (response.stateId === 401) {
+            alert("Invalid credentials")
+        } else if (response.stateId === 404) {
+          alert("teste 404")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
     }
-  } catch (error) {
-    alert("Something went wrong");
-  }
 }
 
-async function getAllUsersTasks(usernameValue, passwordValue) {
-  let getTasks = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/tasks`;
+async function getUsername(tokenValue) {
 
-  try {
-    const response = await fetch(getTasks, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/JSON",
-        Accept: "*/*",
-        username: usernameValue,
-        password: passwordValue,
-      },
-    });
+  let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsername";
+    
+    try {
+        const response = await fetch(firstNameRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
 
-    if (response.ok) {
-      const tasks = await response.json();
-      return tasks;
-    } else if (response.status === 401) {
-      alert("Invalid credentials");
-    } else if (response.status === 406) {
-      alert("Unauthorized access");
+        if (response.ok) {
+
+          const data = await response.text();
+          return data;
+
+        } else if (!response.ok) {
+            alert("Invalid credentials")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
     }
-  } catch (error) {
-    alert("Something went wrong");
-  }
 }
 
-async function showTask(taskId) {
-  const task = await findTaskById(taskId);
+async function getAllUsersTasks(tokenValue) {
+
+  const usernameLogged = await getUsername(tokenValue);
+    let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
+      
+      try {
+          const response = await fetch(getTasks, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  username: usernameLogged,
+                  token: tokenValue
+              },    
+          });
+  
+            if (response.ok) {
+              const tasks = await response.json(); 
+              return tasks;
+            } else if (response.status === 401) {
+              alert("Invalid credentials")
+            } else if (response.status === 406) {
+              alert("Unauthorized access")
+            }
+        
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Task not created. Something went wrong");
+      }
+    };
+
+async function showTask(task) {
+  //const task = await findTaskById(taskId);
   if (task) {
     document.getElementById("titulo-task").textContent = task.title; // Colocar o título no input title
     document.getElementById("descricao-task").textContent = task.description; // Colocar a descrição na text area
     document.getElementById("tasktitle").innerHTML = task.title; // Colocar o título no título da página
     document.getElementById("startDate-editTask").value = task.startDate;
     document.getElementById("endDate-editTask").value = task.limitDate;
+    
+  
 
     let taskStateId = task.stateId;
   
@@ -249,13 +325,33 @@ function setPriorityButtonSelected(button) {
 }
 
 async function findTaskById(taskId) {
+  const token = localStorage.getItem("token");
   try {
-    const tasksArray = await getAllUsersTasks(usernameValue, passwordValue);
-    const task = tasksArray.find((task_1) => task_1.id === taskId);
+    const tasksArray = await getAllUsersTasks(token);
+    const task = tasksArray.find((backEndTask) => backEndTask.id === taskId);
     return task;
   } catch (error) {
     alert("Something went wrong while loading tasks");
   }
+}
+
+async function getCategories(task,tokenValue) {
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.hidden = true;
+  defaultOption.textContent = task.category.name;
+  document.getElementById("task-category-edit").appendChild(defaultOption); 
+
+  let categories = await getAllCategories(tokenValue);
+  
+  categories.forEach(category => {
+    let option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    document.getElementById("task-category-edit").appendChild(option);
+  });
 }
 
 function parseStateIdToInt(stateId) {
@@ -329,3 +425,32 @@ savebutton.addEventListener("click", async () => {
     alert("Something went wrong while updating the task");
   }
 });
+
+async function getUsername(tokenValue) {
+
+  let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsername";
+    
+    try {
+        const response = await fetch(firstNameRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+
+        if (response.ok) {
+
+          const data = await response.text();
+          return data;
+
+        } else if (!response.ok) {
+            alert("Invalid credentials")
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+}

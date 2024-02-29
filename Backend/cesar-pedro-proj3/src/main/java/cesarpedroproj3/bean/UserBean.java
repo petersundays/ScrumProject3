@@ -279,9 +279,13 @@ public class UserBean implements Serializable {
 
     public boolean isAuthenticated(String token) {
 
+        boolean validUser = false;
         UserEntity user = userDao.findUserByToken(token);
+        if (user != null && user.isVisible()) {
+            validUser = true;
+        }
 
-        return user != null;
+        return validUser;
     }
 
     public boolean isUsernameAvailable(User user) {
