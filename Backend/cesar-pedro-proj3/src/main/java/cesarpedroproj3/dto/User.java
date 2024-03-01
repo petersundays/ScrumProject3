@@ -32,6 +32,8 @@ public class User {
     @XmlElement
     public static final int PRODUCTOWNER = 300;
     @XmlElement
+    public static final int NOTASSIGNED = 400;
+    @XmlElement
     private ArrayList<Task> userTasks = new ArrayList<>(); //ser array de ids das tasks assim as tasks ficavam no json das tasks
 
     public User() {
@@ -120,12 +122,12 @@ public class User {
     }
 
     public void editTypeOfUser(int stateId) {
-        if (stateId == DEVELOPER) {
-            this.typeOfUser = DEVELOPER;
-        } else if (stateId == SCRUMMASTER) {
+         if (stateId == SCRUMMASTER) {
             this.typeOfUser = SCRUMMASTER;
-        } else {
+        } else if (stateId == PRODUCTOWNER) {
             this.typeOfUser = PRODUCTOWNER;
+        } else {
+            this.typeOfUser = DEVELOPER;
         }
     }
 
