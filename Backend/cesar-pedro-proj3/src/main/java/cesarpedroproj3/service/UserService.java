@@ -312,13 +312,13 @@ public class UserService {
     }
 
     @GET
-    @Path("/all/{visible}")
+    @Path("/all/visible/{visible}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsersByVisibility(@PathParam("visible") boolean visible , @HeaderParam("token") String token) {
+    public Response getUsersByVisibility(@HeaderParam("token") String token, @PathParam("visible") boolean visible) {
         Response response;
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
-            List<User> allUsers = userBean.getUsersByVisibility(visible);
-            response = Response.status(200).entity(allUsers).build();
+            List<User> users = userBean.getUsersByVisibility(visible);
+            response = Response.status(200).entity(users).build();
         } else {
             response = Response.status(401).entity("You don't have permission").build();
         }

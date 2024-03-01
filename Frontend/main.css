@@ -393,9 +393,7 @@ aside h3 {
 #taskDescription-retro,
 #commentDescription-retro,
 #name-addMember,
-#retroTitle,
-#usersType,
-#usersVisibility {
+#retroTitle {
   padding-left: 10px;
   width: 170px;
   background-color: var(--white);
@@ -406,9 +404,7 @@ aside h3 {
 }
 #taskName,
 #name-addMember,
-#retroTitle,
-#usersType,
-#usersVisibility  {
+#retroTitle {
   height: 20px;
 }
 #retroTitle {
@@ -558,7 +554,6 @@ aside h3 {
 /* Definições gerais de ambos os main (home.html e task.html) */
 main {
   width: calc(100% - 300px);
-  padding-right: 30px;
   height: 720px;
   background-color: var(--white);
   display: flex;
@@ -1517,8 +1512,16 @@ aside h3 {
 }
 
 #usersType,
-#usersVisibility {
+#usersVisibility,
+#select_role {
   margin: 10px;
+  border: var(--green2) 2px solid;
+  margin-bottom: 15px;
+  padding: 5px;
+  width: 50%;
+  height: 8%;
+  border-top-right-radius: 7px;
+  border-top-left-radius: 7px;
 }
 
 .users-details-container{

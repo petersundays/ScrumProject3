@@ -26,6 +26,7 @@ async function getAllUsers(tokenValue) {
 
 //Definir os users filtrados fora das funções
 let filteredUsers = [];
+let usersList = [];
 
 //Receber todos os users mediante o tipo
 async function getAllUsersByType(tokenValue, typeOfUser) {
@@ -57,7 +58,7 @@ async function getAllUsersByType(tokenValue, typeOfUser) {
 //Receber todos os users mediante a visibilidade
 async function getAllUsersByVisibility(tokenValue, visible) {
 
-    let getUsersByStatus = `http://localhost:8080/project_backend/rest/users/all/${visible}`;
+    let getUsersByStatus = `http://localhost:8080/project_backend/rest/users/all/visible/${visible}`;
       
       try {
           const response = await fetch(getUsersByStatus, {
@@ -118,7 +119,6 @@ document.getElementById('showUsers-button').addEventListener('click', async func
 
         let typeOfUser = document.getElementById('usersType').value;
         let userStatus = document.getElementById('usersVisibility').value;
-        let usersList;
 
         if(typeOfUser === 'All' && userStatus === 'All') {
             usersList = await getAllUsers(tokenValue);
@@ -149,12 +149,29 @@ document.getElementById('showUsers-button').addEventListener('click', async func
     }
 });
 
+//Pesquisa na tabela
+document.getElementById('search-input').addEventListener('input', function(event) {
+    const searchValue = event.target.value.toLowerCase().trim(); // Obtém o valor da pesquisa e o limpa
 
-function cleanInputs(){
-    document.getElementById('search-input').value = '';
-    document.getElementById('usersType').value = 'none';
-    document.querySelector('.table tbody').innerHTML = '';
-}
+        // Se o valor da pesquisa estiver vazio, restaura a lista de usuários para a lista original
+        if (searchValue === '') {
+            filteredUsers = usersList.slice(0);
+        } else {
+            // Filtra os usuários com base no valor da pesquisa
+            filteredUsers = usersList.filter(user => {
+            // Verificar se o nome de usuário, primeiro nome, último nome ou e-mail contém o valor da pesquisa
+            return (
+                user.username.toLowerCase().includes(searchValue) ||
+                user.firstName.toLowerCase().includes(searchValue) ||
+                user.lastName.toLowerCase().includes(searchValue) ||
+                user.email.toLowerCase().includes(searchValue)
+            );
+            });
+        }
+
+    // Renderizar a tabela com os usuários filtrados
+    renderTable();
+});
 
 //Escrever os botões de edição e de apagar na tabela
 function writeTableButtons(cell){
@@ -210,6 +227,7 @@ async function loadUserData(username, tokenValue) {
             document.getElementById("photo url-editUser").placeholder = data.photoURL || '';
             document.getElementById("email-editUser").placeholder = data.email || '';
             document.getElementById("profile-clicked-pic").src = data.photoURL || "multimedia/default-profile-pic.png";
+            document.getElementById("user_role_loaded").innerText = parseTypeToString(data.typeOfUser) || '';
 
         } else {
 
@@ -273,6 +291,28 @@ function createEditProfileForm() {
         form.appendChild(input);
     }
 
+    const select_role = document.createElement('select');
+    select_role.id='select_role';
+
+
+    const roles = ["user_role_loaded", "Developer", "Scrum Master", "Product Owner"];
+
+    roles.forEach((role, index) => {
+        const option = document.createElement('option');
+        if (index ===0){
+            option.disabled = true;
+            option.selected = true;
+            option.value = '';
+        }else {
+            option.value = index * 100;
+        }
+        option.textContent = role;
+        option.id = role;
+        select_role.appendChild(option);
+    });    
+
+    form.appendChild(select_role);
+
     const btn_edit = document.createElement("button");
     btn_edit.innerHTML = "&#9998";
     btn_edit.id="save_edit";
@@ -309,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Inverte a ordem para a próxima vez que for clicado
             header.setAttribute('data-order', currentOrder === 'asc' ? 'desc' : 'asc');
 
-            // Re-renderiza a tabela com os usuários ordenados
+            // Rescreve a tabela com os usuários ordenados
             renderTable();
         });
     });
@@ -395,10 +435,11 @@ async function saveEdit(event) {
                 if (index !== -1) {
                     // Atualiza apenas os campos alterados na lista filteredUsers
                     for (let key in updatedUser) {
-                        if (updatedUser[key] !== "") {
+                        if (updatedUser[key] !== null && updatedUser[key] !== undefined) {
                             filteredUsers[index][key] = updatedUser[key];
                         }
                     }
+
                 }
 
                 renderTable();
@@ -474,6 +515,11 @@ function updateUserInfo() {
         updatedUser.photoURL = photoURL;
     }
 
+    let typeOfUser = getInputValue('select_role');
+    if(typeOfUser!== '') {
+        updatedUser.typeOfUser = typeOfUser;
+    }
+
     return updatedUser;
 }
 
@@ -481,8 +527,6 @@ function updateUserInfo() {
 async function getUsernameFromEmail(email, tokenValue) {
 
     let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsernameFromEmail";
-
-    console.log(email);
       
       try {
           const response = await fetch(firstNameRequest, {
@@ -517,12 +561,18 @@ function isEveryFieldUnchanged() {
 
     let form = document.getElementById('edit-user-form');
     let fieldsArray = [...form.querySelectorAll('input')];
+    let selectField = form.querySelector('select');
 
     fieldsArray.forEach(function(field) {
         if (field.value !== '') {
             allFieldsUnchanged = false;
         }
     });
+
+    if (selectField.selectedIndex !== 0) {
+        allFieldsUnchanged = false;
+    }
+
     return allFieldsUnchanged;
 }
 

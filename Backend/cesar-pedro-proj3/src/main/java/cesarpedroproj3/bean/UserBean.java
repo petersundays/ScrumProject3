@@ -286,6 +286,12 @@ public class UserBean implements Serializable {
                 u.setPhotoURL(user.getPhotoURL());
             }
 
+            // Verifica se o typeOfUser no objeto User é nulo ou vazio
+            if (user.getTypeOfUser() != 0) {
+                // Se não for nulo nem vazio, atualiza a foto
+                u.setTypeOfUser(user.getTypeOfUser());
+            }
+
             try{
                 userDao.merge(u); //Atualiza o user na base de dados
                 status = true;

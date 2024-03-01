@@ -12,6 +12,7 @@ window.onload = async function() {
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
         scrumMasterPage();
+        productOwnerPage();
         await loadTasks(tokenValue);
         await getCategories(tokenValue);
     } catch (error) {
