@@ -76,4 +76,31 @@ public class UserDao extends AbstractDao<UserEntity> {
 		}
 	}
 
+	public ArrayList<UserEntity> findAllUsersByTypeOfUser(int typeOfUser) {
+		try {
+			return (ArrayList<UserEntity>) em.createNamedQuery("User.findAllUsersByTypeOfUser").setParameter("typeOfUser", typeOfUser).getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public ArrayList<UserEntity> findAllUsersByVisibility(boolean visible) {
+		try {
+			return (ArrayList<UserEntity>) em.createNamedQuery("User.findAllUsersByVisibility").setParameter("visible", visible).getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public ArrayList<UserEntity> findAllUsersByTypeOfUserAndVisibility(int typeOfUser, boolean visible) {
+		try {
+			return (ArrayList<UserEntity>) em.createNamedQuery("User.findAllUsersByTypeOfUserByVisibility").setParameter("typeOfUser", typeOfUser)
+					.setParameter("visible", visible).getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+
+
 }

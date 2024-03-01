@@ -12,6 +12,7 @@ window.onload = async function() {
         usernameLogged = await getUsername(tokenValue);
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
+        scrumMasterPage();
         await loadTasks(tokenValue);
         await getCategories(tokenValue);
     } catch (error) {
@@ -22,9 +23,40 @@ window.onload = async function() {
     }
   }
 };
-const tokenValue = localStorage.getItem('token');
-//let usernameLogged = getUsername(tokenValue);
 
+const tokenValue = localStorage.getItem('token');
+let usernameLogged = getUsername(tokenValue);
+
+
+function scrumMasterPage(){
+
+  const usersButton = document.createElement('a');
+  usersButton.href = 'users.html';
+  usersButton.draggable = 'false';
+  usersButton.innerText = 'Agile Users';
+
+  let liElement = document.createElement('li');
+  liElement.id = 'nav-users';
+
+  liElement.appendChild(usersButton);
+  document.getElementById('menu').appendChild(liElement);
+
+}
+
+function productOwnerPage(){
+
+  const addUsersButton = document.createElement('a');
+  addUsersButton.href = 'register.html';
+  addUsersButton.draggable = 'false';
+  addUsersButton.innerText = 'Add User';
+
+  let liElement = document.createElement('li');
+  liElement.id = 'nav-users';
+
+  liElement.appendChild(addUsersButton);
+  document.getElementById('menu').appendChild(liElement);
+
+}
 
   function cleanAllTaskFields() {
     document.getElementById('warningMessage2').innerText = '';

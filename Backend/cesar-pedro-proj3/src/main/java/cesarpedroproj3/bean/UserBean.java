@@ -189,6 +189,57 @@ public class UserBean implements Serializable {
         return new ArrayList<>();
     }
 
+    //Receber users pelo tipo de user
+    public ArrayList<User> getUsersByType(int typeOfUser) {
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsersByTypeOfUser(typeOfUser);
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
+    //Receber users pelo tipo de visibilidade
+    public ArrayList<User> getUsersByVisibility(boolean visible) {
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsersByVisibility(visible);
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
+    //Receber users pelo tipo de user e de visibilidade
+    public ArrayList<User> getUsersByTypeAndVisibility(int typeOfUser, boolean visible) {
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsersByTypeOfUserAndVisibility(typeOfUser, visible);
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
     /*public boolean addUser(User user) {
 
         boolean status = false;
@@ -547,6 +598,18 @@ public class UserBean implements Serializable {
 
         if (currentUser != null){
             return currentUser;
+        }else return null;
+
+    }
+
+    //Converte a Entidade com o email "email" para DTO
+    public User convertEntityByEmail (String email){
+
+        UserEntity userEntity = userDao.findUserByEmail(email);
+        User user = convertUserEntitytoUserDto(userEntity);
+
+        if (user != null){
+            return user;
         }else return null;
 
     }
