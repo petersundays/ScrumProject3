@@ -4,6 +4,7 @@ import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Category;
+
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import cesarpedroproj3.entity.CategoryEntity;
@@ -12,6 +13,7 @@ import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Stateless
@@ -63,14 +65,19 @@ public class TaskBean implements Serializable {
         return userTasks;
     }
 
-    public boolean updateTask(Task task, String id) {
+    public boolean updateTask(Task task, String id, String categoryName, String startDate, String limitDate) {
         TaskEntity taskEntity = taskDao.findTaskById(id);
         Task taskDto = taskBean.convertTaskEntityToTaskDto(taskEntity);
         User taskOwner = taskDto.getOwner();
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate limit = LocalDate.parse(limitDate);
 
         boolean edited = false;
         task.setId(id);
         task.setOwner(taskOwner);
+        task.setStartDate(start);
+        task.setLimitDate(limit);
+        task.setCategory(categoryBean.convertCategoryEntityToCategoryDto(categoryDao.findCategoryByName(categoryName)));
         if (taskDao.findTaskById(task.getId()) != null) {
             if (validateTask(task)) {
                 taskDao.merge(convertTaskToEntity(task));
@@ -134,7 +141,7 @@ public class TaskBean implements Serializable {
         boolean valid = true;
         if ((task.getStartDate() == null
                 || task.getLimitDate() == null
-                || task.getLimitDate().isBefore(task.getStartDate())
+              //  || task.getLimitDate().isBefore(task.getStartDate())
                 || task.getTitle().isBlank()
                 || task.getDescription().isBlank()
                 || task.getOwner() == null
