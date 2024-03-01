@@ -69,6 +69,16 @@ async function updateTask() {
 
   const priority = returnPriorityFromSelectedButton();
   const stateId = returnStateIdFromSelectedButton();
+  const category = {
+    name: document.getElementById("task-category-edit").value,
+  }
+  const categoryName = category.name;
+  console.log('CategoryName = ', categoryName);
+
+
+  startDate = document.getElementById("startDate-editTask").value.toString(),
+  limitDate = document.getElementById("endDate-editTask").value.toString()
+
 
   const task = {
     id: taskId,
@@ -76,35 +86,72 @@ async function updateTask() {
     description: document.getElementById("descricao-task").value,
     priority: priority,
     stateId: stateId,
-    category: {
-      name: document.getElementById("task-category-edit").value
-    }
-         
   };
-  let firstNameRequest = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/${taskId}`;
+  let updateTaskRequest = `http://localhost:8080/project_backend/rest/users/updatetask/${taskId}`;
   try {
-    const response = await fetch(
-      firstNameRequest,
-      {
+    console.log("Task to update: ", task);
+    const response = await fetch(updateTaskRequest, {
         method: "PUT",
         headers: {
           "Content-Type": "application/JSON",
           Accept: "*/*",
-          username: usernameValue,
-          password: passwordValue,
+          token: localStorage.getItem("token"),
+          categoryName: categoryName,
+          startDate: startDate,
+          limitDate: limitDate
         },
         body: JSON.stringify(task),
       }
     );
 
+    console.log("Response: ", response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     } else if (response.status === 401) {
       alert("Invalid credentials");
     } else if (response.status === 404) {
-      alert("Impossible to create task. Verify all fields");
+      alert("Impossible to update task. Verify all fields");
+    } else if (response.status === 403){
+      alert("You don't have permission to update this task");
     } else {
       console.log("Task updated successfully");
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
+    alert("Something went wrong");
+    throw error; // Propagar o erro para ser tratado no catch do bloco que chamou a função
+  }
+}
+
+async function updateDates(taskId, startDate, limitDate) {
+  const dates = {
+    startDate: startDate,
+    limitDate: limitDate
+  
+  }
+  let updateDatesRequest = `http://localhost:8080/project_backend/rest/users/${taskId}/dates`;
+  try {
+    console.log("Dates to update: ", dates);
+    const response = await fetch(updateDatesRequest, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/JSON",
+          Accept: "*/*",
+          token: localStorage.getItem("token"),
+        },
+        body: JSON.stringify(dates),
+      }
+    );
+
+    console.log("Response: ", response);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } else if (response.status === 401) {
+      alert("Invalid credentials");
+    } else if (response.status === 404) {
+      alert("Impossible to update dates. Verify all fields");
+    } else {
+      console.log("Dates updated successfully");
     }
   } catch (error) {
     console.error("An error occurred:", error);
