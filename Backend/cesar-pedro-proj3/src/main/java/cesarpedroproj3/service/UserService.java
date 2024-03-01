@@ -3,10 +3,7 @@ package cesarpedroproj3.service;
 import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
-import cesarpedroproj3.dto.Category;
-import cesarpedroproj3.dto.Login;
-import cesarpedroproj3.dto.Task;
-import cesarpedroproj3.dto.User;
+import cesarpedroproj3.dto.*;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -169,6 +166,7 @@ public class UserService {
         }
     return response;
     }
+
 
     @PUT
     @Path("/update/{username}/password")
@@ -379,14 +377,13 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("/updatetask/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTask(@HeaderParam("token") String token, @PathParam("id") String id, Task task) {
-
+    public Response updateTask(@HeaderParam("token") String token, @HeaderParam("categoryName") String categoryName, @HeaderParam("startDate") String startDate, @HeaderParam("limitDate") String limitDate,  @PathParam("id") String id, Task task) {
         Response response;
         if (userBean.isAuthenticated(token)) {
             if (userBean.userIsTaskOwner(token, id) || userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
-                boolean updated = taskBean.updateTask(task, id);
+                boolean updated = taskBean.updateTask(task, id, categoryName, startDate, limitDate);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
@@ -400,6 +397,29 @@ public class UserService {
         }
         return response;
     }
+
+    /*@PUT
+    @Path("/{id}/dates")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateDates(@HeaderParam("token") String token, @PathParam("id") String id, Dates dates) {
+        //System.out.println("******************* DATAS: " + dates.getStartDate() + " " + dates.getLimitDate());
+        Response response;
+        if (userBean.isAuthenticated(token)) {
+            if (userBean.userIsTaskOwner(token, id) || userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
+                boolean updated = taskBean.updateDates(id, dates);
+                if (updated) {
+                    response = Response.status(200).entity("Dates updated successfully").build();
+                } else {
+                    response = Response.status(404).entity("Impossible to update dates. Verify all fields").build();
+                }
+            } else {
+                response = Response.status(403).entity("You don't have permission to update this.").build();
+            }
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }*/
 
     @PUT
     @Path("/tasks/{taskId}/{newStateId}")
