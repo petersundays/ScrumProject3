@@ -24,6 +24,10 @@ async function getAllUsers(tokenValue) {
       }
 };
 
+//Definir os users filtrados fora das funções
+let filteredUsers = [];
+
+//Receber todos os users mediante o tipo
 async function getAllUsersByType(tokenValue, typeOfUser) {
 
     let getUsersByType = `http://localhost:8080/project_backend/rest/users/all/${typeOfUser}`;
@@ -49,9 +53,61 @@ async function getAllUsersByType(tokenValue, typeOfUser) {
           alert("Something went wrong. Please try again later.");
       }
 };
-    
-//Definir os users filtrados fora das funções
-let filteredUsers = [];
+
+//Receber todos os users mediante a visibilidade
+async function getAllUsersByVisibility(tokenValue, visible) {
+
+    let getUsersByStatus = `http://localhost:8080/project_backend/rest/users/all/${visible}`;
+      
+      try {
+          const response = await fetch(getUsersByStatus, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+        if (response.ok) {
+            return response.json();
+        } else {
+            alert("Invalid credentials")
+        }
+        
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong. Please try again later.");
+      }
+};
+
+//Receber todos os users mediante o tipo e a visibilidade
+async function getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, visible) {
+
+    let getUsersByTypeAndStatus = `http://localhost:8080/project_backend/rest/users/all/${typeOfUser}/${visible}`;
+      
+      try {
+          const response = await fetch(getUsersByTypeAndStatus, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+        if (response.ok) {
+            return response.json();
+        } else {
+            alert("Invalid credentials")
+        }
+        
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong. Please try again later.");
+      }
+};
+
     
 document.getElementById('showUsers-button').addEventListener('click', async function () {
     try {
@@ -61,13 +117,27 @@ document.getElementById('showUsers-button').addEventListener('click', async func
         document.querySelector('.table tbody').innerHTML = '';
 
         let typeOfUser = document.getElementById('usersType').value;
+        let userStatus = document.getElementById('usersVisibility').value;
+        let usersList;
 
-        if(typeOfUser === 'All') {
-            const allUsers = await getAllUsers(tokenValue);
-            filteredUsers = allUsers;
-        } else {
-            const allUsersFromType = await getAllUsersByType(tokenValue, typeOfUser);
-            filteredUsers = allUsersFromType;
+        if(typeOfUser === 'All' && userStatus === 'All') {
+            usersList = await getAllUsers(tokenValue);
+            filteredUsers = usersList;
+        } else if(typeOfUser === 'All' && userStatus !== 'All') {
+            usersList = await getAllUsersByVisibility(tokenValue, userStatus);
+            filteredUsers = usersList;
+        }else if(typeOfUser === '300' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+            filteredUsers = usersList;
+        } else if(typeOfUser === '200' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+            filteredUsers = usersList;
+        } else if(typeOfUser === '100' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+            filteredUsers = usersList;
+        }else {
+            usersList = await getAllUsersByType(tokenValue, typeOfUser);
+            filteredUsers = usersList;
         }
 
         // Adiciona os users à tabela
@@ -94,6 +164,10 @@ function writeTableButtons(cell){
     btn_delete_user.innerHTML = "&times;";
     btn_delete_user.setAttribute("id", "deleteUser");
     btn_delete_user.type = "button";
+
+    btn_delete_user.addEventListener("click", async function(event) {
+        await changeUserVisibility(event);
+    });
 
     cell.appendChild(btn_delete_user);
 
@@ -210,17 +284,6 @@ function createEditProfileForm() {
     btn_edit.addEventListener('click', saveEdit);
 }
 
-//Ação de apagar user
-function deleteAction(){
-    //Apenas elimina se ação for confirmada
-    if (confirmDelete()) {
-        //Elimina no HTML
-        this.parentNode.parentNode.remove();
-
-        //Elimina
-        //ação para apagar na base de dados
-    }
-}
 
 // Função para ordenar e escrever a tabela
 document.addEventListener('DOMContentLoaded', function () {
@@ -503,7 +566,58 @@ function getInputValue(elementId) {
 }
 
 
-//Função para confirmar delete
+//Alterar visibilidade do user 
+async function changeUserVisibility(event) {
+    event.preventDefault();
+
+    let token = localStorage.getItem('token');
+    let username;
+
+    const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
+    if (clickedRow) {
+        username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+    }
+
+        try {
+
+            const response = await fetch(`http://localhost:8080/project_backend/rest/users/update/${username}/visibility`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    token: token
+                },
+            });
+
+            if (response.ok && confirmDelete()) {
+
+                console.log("certo");
+                alert(await response.text());
+
+                renderTable();
+
+            } else {
+                alert("No changes occured");
+
+                console.log("fora");
+
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Something went wrong");
+        }
+};
+
+document.querySelectorAll('#deleteUser').forEach(btn => {
+    btn.addEventListener('click', async function (event) {
+        await changeUserVisibility(event);
+    });
+});
+
+
+
+//Função para confirmar "delete"
 function confirmDelete() {
-    return confirm("Are you sure you want to delete this?");
+    return confirm("Are you sure you want to change this user state?");
  }

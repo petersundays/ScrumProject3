@@ -394,8 +394,8 @@ aside h3 {
 #commentDescription-retro,
 #name-addMember,
 #retroTitle,
-#search-input,
-#usersType {
+#usersType,
+#usersVisibility {
   padding-left: 10px;
   width: 170px;
   background-color: var(--white);
@@ -407,8 +407,8 @@ aside h3 {
 #taskName,
 #name-addMember,
 #retroTitle,
-#search-input,
-#usersType  {
+#usersType,
+#usersVisibility  {
   height: 20px;
 }
 #retroTitle {
@@ -1516,7 +1516,8 @@ aside h3 {
   align-items: center;
 }
 
-#usersType{
+#usersType,
+#usersVisibility {
   margin: 10px;
 }
 
@@ -1604,3 +1605,45 @@ aside h3 {
   justify-content: flex-start;
   padding-top: 4%;
 }
+
+#deleteUser,
+#save_edit {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: var(--done);
+  color: var(--green3);
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+#deleteUser:hover,
+#save_edit:hover {
+  background-color: var(--green3);
+  color: var(--green1);
+}
+
+#search-input {
+  display: block;
+  padding-left: 10px;
+  width: 170px;
+  height: 30px;
+  background-color: var(--white);
+  font-size: 12px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+#search-input::before {
+  content: '\F52A'; /* Unicode do ícone */
+  font-family: Arial, sans-serif; 
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+

@@ -41,11 +41,16 @@
                     <option value="300">See Product Owners</option>
                     <option value="200">See Scrum Masters</option>
                     <option value="100">See Developers</option>
-                 </select>
+                </select>
+                <select id="usersVisibility" name="usersVisibility">
+                    <option value="All" disabled selected>Select an option</option>
+                    <option value="All">See All</option>
+                    <option value="true">Active</option>
+                    <option value="false">Deleted</option>
+                </select>
                 <button id="showUsers-button">Show Users</button>
 
-                <input type="text" id="search-input" placeholder="Search"/>
-                <button id="search-button">Search</button>
+                <input type="search" id="search-input" placeholder=Search />
                 
             </div>
         </aside>

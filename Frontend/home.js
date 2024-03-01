@@ -11,6 +11,7 @@ window.onload = async function() {
         usernameLogged = await getUsername(tokenValue);
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
+        scrumMasterPage();
         await loadTasks(tokenValue);
         await getCategories(tokenValue);
     } catch (error) {
@@ -21,9 +22,12 @@ window.onload = async function() {
     }
   }
 };
-const tokenValue = localStorage.getItem('token');
-//let usernameLogged = getUsername(tokenValue);
 
+const tokenValue = localStorage.getItem('token');
+let usernameLogged = getUsername(tokenValue);
+
+
+function scrumMasterPage(){
 
   const usersButton = document.createElement('a');
   usersButton.href = 'users.html';
@@ -52,8 +56,6 @@ function productOwnerPage(){
   document.getElementById('menu').appendChild(liElement);
 
 }
-
-const tokenValue = localStorage.getItem('token');
 
   function cleanAllTaskFields() {
     document.getElementById('warningMessage2').innerText = '';

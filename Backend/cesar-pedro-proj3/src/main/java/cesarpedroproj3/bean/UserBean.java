@@ -192,6 +192,40 @@ public class UserBean implements Serializable {
         return new ArrayList<>();
     }
 
+    //Receber users pelo tipo de visibilidade
+    public ArrayList<User> getUsersByVisibility(boolean visible) {
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsersByVisibility(visible);
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
+    //Receber users pelo tipo de user e de visibilidade
+    public ArrayList<User> getUsersByTypeAndVisibility(int typeOfUser, boolean visible) {
+
+        ArrayList<UserEntity> userEntities = userDao.findAllUsersByTypeOfUserAndVisibility(typeOfUser, visible);
+        if (userEntities != null) {
+            ArrayList<User> users = new ArrayList<>();
+            for (UserEntity userE : userEntities) {
+
+                users.add(convertUserEntitytoUserDto(userE));
+
+            }
+            return users;
+        }
+        //Retorna uma lista vazia se não forem encontradas tarefas
+        return new ArrayList<>();
+    }
+
     /*public boolean addUser(User user) {
 
         boolean status = false;
