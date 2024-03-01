@@ -250,7 +250,7 @@ async function getUsername(tokenValue) {
     }
 }
 
-async function getAllUsersTasks(tokenValue) {
+async function getAllTasksFromUser(tokenValue) {
 
   const usernameLogged = await getUsername(tokenValue);
     let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
@@ -374,7 +374,7 @@ function setPriorityButtonSelected(button) {
 async function findTaskById(taskId) {
   const token = localStorage.getItem("token");
   try {
-    const tasksArray = await getAllUsersTasks(token);
+    const tasksArray = await getAllTasksFromUser(token);
     const task = tasksArray.find((backEndTask) => backEndTask.id === taskId);
     return task;
   } catch (error) {
@@ -384,11 +384,12 @@ async function findTaskById(taskId) {
 
 async function getCategories(task,tokenValue) {
   const defaultOption = document.createElement('option');
-  defaultOption.value = '';
+  //defaultOption.value = '';
   defaultOption.disabled = true;
   defaultOption.selected = true;
   defaultOption.hidden = true;
   defaultOption.textContent = task.category.name;
+  defaultOption.value = task.category.name;
   document.getElementById("task-category-edit").appendChild(defaultOption); 
 
   let categories = await getAllCategories(tokenValue);
@@ -501,3 +502,29 @@ async function getUsername(tokenValue) {
         alert("Something went wrong");
     }
 }
+
+document.getElementById("logout-button-header").addEventListener('click', async function() {
+
+  let logoutRequest = "http://localhost:8080/project_backend/rest/users/logout";
+     const tokenValue = localStorage.getItem('token');
+    try {   
+        const response = await fetch(logoutRequest, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            }, 
+        });
+        if (response.ok) {
+            
+          localStorage.clear();
+
+          window.location.href="index.html";
+
+        } 
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+})

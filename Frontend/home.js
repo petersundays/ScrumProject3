@@ -8,6 +8,7 @@ window.onload = async function() {
     window.location.href = "index.html";
   } else {
     try {
+        cleanAllTaskFields();
         usernameLogged = await getUsername(tokenValue);
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
@@ -32,6 +33,7 @@ const tokenValue = localStorage.getItem('token');
     document.getElementById('taskDescription').value = '';
     document.getElementById('task-startDate').value = '';
     document.getElementById('task-limitDate').value = '';
+    document.getElementById('task-category').value = '';
     removeSelectedPriorityButton();
     taskPriority = null;
   }
@@ -242,7 +244,7 @@ async function newTask(tokenValue, task) {
   };
 
 
-  async function getAllUsersTasks(tokenValue) {
+  async function getAllTasksFromUser(tokenValue) {
 
   const usernameLogged = await getUsername(tokenValue);
     let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
@@ -391,7 +393,7 @@ document.addEventListener('click', function (event) {
 
 // Carrega as tarefas guardadas na local storage
 async function loadTasks(tokenValue) {
-  getAllUsersTasks(tokenValue).then(tasksArray => {
+  getAllTasksFromUser(tokenValue).then(tasksArray => {
       tasksArray.forEach(task => {
       const taskElement = createTaskElement(task);
       

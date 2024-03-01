@@ -259,17 +259,12 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userBean.thisTokenIsFromThisUsername(token, username)) {
 
-                boolean removed = userBean.delete(username);
-
-                if (removed) {
-                    response = Response.status(200).entity("User removed successfully").build();
-                } else {
-                    response = Response.status(404).entity("User is not found").build();
-                }
+            boolean removed = userBean.delete(username);
+            if (removed) {
+                response = Response.status(200).entity("User removed successfully").build();
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(404).entity("User is not found").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -327,15 +322,32 @@ public class UserService {
     }
 
     @GET
+    @Path("/tasks")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllTasks(@HeaderParam("token") String token) {
+
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            ArrayList<Task> allTasks = taskBean.getAllTasks(token);
+            allTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
+            response = Response.status(Response.Status.OK).entity(allTasks).build();
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
     @Path("/{username}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsersTasks(@HeaderParam("token") String token, @PathParam("username") String username) {
+    public Response getAllTasksFromUser(@HeaderParam("token") String token, @PathParam("username") String username) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
             if (userBean.thisTokenIsFromThisUsername(token, username) || userBean.userIsProductOwner(token) || userBean.userIsScrumMaster(token)){
-                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username);
+                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username, token);
                 userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
             } else {
@@ -398,28 +410,6 @@ public class UserService {
         return response;
     }
 
-    /*@PUT
-    @Path("/{id}/dates")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDates(@HeaderParam("token") String token, @PathParam("id") String id, Dates dates) {
-        //System.out.println("******************* DATAS: " + dates.getStartDate() + " " + dates.getLimitDate());
-        Response response;
-        if (userBean.isAuthenticated(token)) {
-            if (userBean.userIsTaskOwner(token, id) || userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
-                boolean updated = taskBean.updateDates(id, dates);
-                if (updated) {
-                    response = Response.status(200).entity("Dates updated successfully").build();
-                } else {
-                    response = Response.status(404).entity("Impossible to update dates. Verify all fields").build();
-                }
-            } else {
-                response = Response.status(403).entity("You don't have permission to update this.").build();
-            }
-        } else {
-            response = Response.status(401).entity("Invalid credentials").build();
-        }
-        return response;
-    }*/
 
     @PUT
     @Path("/tasks/{taskId}/{newStateId}")

@@ -36,7 +36,7 @@ public class UserBean implements Serializable {
     //Permite ao utilizador entrar na app, gera token
     public String login(Login user) {
         UserEntity userEntity = userDao.findUserByUsername(user.getUsername());
-        if (userEntity != null) {
+        if (userEntity != null && userEntity.isVisible()) {
             //Verifica se a password coincide com a password encriptada
             if (BCrypt.checkpw(user.getPassword(), userEntity.getPassword())) {
                 String token = generateNewToken();
@@ -51,22 +51,30 @@ public class UserBean implements Serializable {
     public boolean register(User user) {
 
         if (user != null) {
-            user.setInitialTypeOfUser();
-            user.setVisible(true);
+            if (user.getUsername().equalsIgnoreCase("notAssigned")) {
+                user.setUsername(user.getUsername().toUpperCase());
+                user.setVisible(false);
+                user.setTypeOfUser(User.NOTASSIGNED);
+            } else {
+                user.setInitialTypeOfUser();
+                user.setVisible(true);
 
-            //Encripta a password usando BCrypt
-            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+                //Encripta a password usando BCrypt
+                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 
-            //Define a password encriptada
-            user.setPassword(hashedPassword);
+                //Define a password encriptada
+                user.setPassword(hashedPassword);
 
-            //Persist o user
-            userDao.persist(convertUserDtotoUserEntity(user));
-            return true;
-        } else
+                //Persist o user
+                userDao.persist(convertUserDtotoUserEntity(user));
+                return true;
+            }
+        } else {
             return false;
-
+        }
+        return false;
     }
+
 
     //Apaga todos os registos do utilizador da base de dados
     //Verificar tarefas!!!!!!!
@@ -75,6 +83,12 @@ public class UserBean implements Serializable {
         UserEntity u = userDao.findUserByUsername(username);
 
         if (u != null) {
+            ArrayList<TaskEntity> tasks = taskDao.findTasksByUser(u);
+            UserEntity notAssigned = userDao.findUserByUsername("NOTASSIGNED");
+            for (TaskEntity t : tasks) {
+                t.setOwner(notAssigned);
+                taskDao.merge(t);
+            }
             userDao.remove(u);
             return true;
         } else
