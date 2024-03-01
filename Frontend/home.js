@@ -11,9 +11,8 @@ window.onload = async function() {
         usernameLogged = await getUsername(tokenValue);
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        loadTasks(usernameLogged, tokenValue);
-        scrumMasterPage();
-        productOwnerPage();
+        await loadTasks(tokenValue);
+        await getCategories(tokenValue);
     } catch (error) {
         
         console.error("An error occurred:", error);
@@ -22,9 +21,9 @@ window.onload = async function() {
     }
   }
 };
+const tokenValue = localStorage.getItem('token');
+//let usernameLogged = getUsername(tokenValue);
 
-//função para apresentar funções para Scrum Master
-function scrumMasterPage(){
 
   const usersButton = document.createElement('a');
   usersButton.href = 'users.html';
@@ -75,10 +74,14 @@ const panels = document.querySelectorAll('.panel')
 function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and drop a uma tarefa criada dinamicamente
   task.addEventListener('dragstart', () => {
       task.classList.add('dragging')
+      console.log('added dragging');
   });
 
-  task.addEventListener('dragend', () => {
+  task.addEventListener('dragend', async () => {
       task.classList.remove('dragging')
+      removeAllTaskElements();
+      await updateTaskStatus(localStorage.getItem('token'), task.id, task.stateId);
+      await loadTasks(tokenValue);    
   });
 }
 
@@ -87,6 +90,7 @@ panels.forEach(panel => {
     e.preventDefault()
     const afterElement = getDragAfterElement(panel, e.clientY);
     const task = document.querySelector('.dragging');
+    console.log('banana' , e);
     
     const panelID = panel.id; 
 
@@ -99,15 +103,12 @@ panels.forEach(panel => {
         task.stateId = panelID;
       }
     }
-
-    updateTaskStatus(usernameLogged, localStorage.getItem('token'), task.id, panelID);
-    removeAllTaskElements();
-    loadTasks(usernameLogged, tokenValue);    
-    
   })
 })
 
-async function updateTaskStatus(usernameLogged, token, taskId, newStatus) {
+async function updateTaskStatus(token, taskId, newStatus) {
+
+  console.log('Entrei no updateTasksatus');
 
   let numericStatus;
   switch (newStatus) {
@@ -122,17 +123,20 @@ async function updateTaskStatus(usernameLogged, token, taskId, newStatus) {
       break;
     default:
       console.error('Invalid status:', newStatus);
+      console.log('numericStatus: ', numericStatus);
       return numericStatus;
   }
 
-  const updateTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks/${taskId}/status`;
+  console.log('numericStatus: ', numericStatus);
+
+  const updateTaskUrl = `http://localhost:8080/project_backend/rest/users/tasks/${taskId}/${numericStatus}`;
   try {
+    console.log('Entrei no try', updateTaskUrl, taskId, numericStatus, token);
     const response = await fetch(updateTaskUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        username: usernameLogged,
         token: token
       },
       body: JSON.stringify(numericStatus)
@@ -173,21 +177,72 @@ function setPriorityButtonSelected(button, priority) {
   button.classList.add("selected");
   taskPriority = priority;
 }
+
 function removeSelectedPriorityButton() {
   const buttons = [lowButton, mediumButton, highButton];
   buttons.forEach(btn => btn.classList.remove("selected"));
 }
-
-
 
 // Event listeners para os botões priority
 lowButton.addEventListener("click", () => setPriorityButtonSelected(lowButton, "low"));
 mediumButton.addEventListener("click", () => setPriorityButtonSelected(mediumButton, "medium"));
 highButton.addEventListener("click", () => setPriorityButtonSelected(highButton, "high"));
 
- 
-async function newTask(usernameLogged, tokenValue, task) {
-console.log('In newTask - username: ' + usernameLogged);
+async function getCategories(tokenValue) {
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.hidden = true;
+  defaultOption.textContent = 'Select Category';
+  document.getElementById("task-category").appendChild(defaultOption);
+
+  let categories = await getAllCategories(tokenValue);
+  
+  categories.forEach(category => {
+    let option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    document.getElementById("task-category").appendChild(option);
+  });
+}
+
+
+
+async function getAllCategories(tokenValue) {
+  
+    let getCategories = "http://localhost:8080/project_backend/rest/users/categories";
+      
+      try {
+          const response = await fetch(getCategories, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+          if (response.ok) {
+            const categories = await response.json();
+            return categories;
+  
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          } else if (response.status === 404) {
+            alert("No categories found")
+          }
+  
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong");
+      }
+  }
+
+
+async function newTask(tokenValue, task) {
+
+  const usernameLogged = await getUsername(tokenValue);
   let newTask = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/addTask`;
     
     try {
@@ -217,8 +272,9 @@ console.log('In newTask - username: ' + usernameLogged);
   };
 
 
-  async function getAllUsersTasks(usernameLogged, tokenValue) {
+  async function getAllUsersTasks(tokenValue) {
 
+  const usernameLogged = await getUsername(tokenValue);
     let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
       
       try {
@@ -233,8 +289,8 @@ console.log('In newTask - username: ' + usernameLogged);
           });
   
             if (response.ok) {
-              //const tasks = await response; 
-              //return tasks;
+              const tasks = await response.json(); 
+              return tasks;
             } else if (response.status === 401) {
               alert("Invalid credentials")
             } else if (response.status === 406) {
@@ -248,39 +304,42 @@ console.log('In newTask - username: ' + usernameLogged);
     };
 
 
-function createTask(title, description, priority, startDate, limitDate) { // Cria uma nova task com os dados inseridos pelo utilizador
+function createTask(title, description, priority, startDate, limitDate, categoryName) { // Cria uma nova task com os dados inseridos pelo utilizador
   let todoStateId = 'todo';
   let newPriority = parsePriorityToInt(priority);
+  const category = {
+    name: categoryName
+  } 
   const task = {
   title: title,
   description: description,
   stateId: parseStateIdToInt(todoStateId),
   priority: newPriority,
   startDate: startDate,
-  limitDate: limitDate
+  limitDate: limitDate,
+  category: category
   }
   return task;
 }
 
  // Event listener do botão add task para criar uma nova task e colocá-la no painel To Do (default para qualquer task criada)
  document.getElementById('addTask').addEventListener('click', function() {
-console.log('addTask button clicked')
 
   let description = document.getElementById('taskDescription').value.trim();
   let title = document.getElementById('taskName').value.trim();
   let priority = taskPriority;
   let startDate = document.getElementById('task-startDate').value;
   let limitDate = document.getElementById('task-limitDate').value;
+  let categoryName = document.getElementById('task-category').value;
             
-  if (title === '' || description === '' || priority === null || startDate === '' || limitDate === '' || startDate > limitDate || document.getElementsByClassName('selected').length === 0) {
-    console.log('entrou no if para verificar se os campos estão preenchidos');
-    document.getElementById('warningMessage2').innerText = 'Fill in all fields and define a priority';
+  if (title === '' || description === '' || priority === null || startDate === '' || limitDate === '' || startDate > limitDate || document.getElementsByClassName('selected').length === 0 || document.getElementById('task-category').value === ''){
+      document.getElementById('warningMessage2').innerText = 'Fill in all fields, define a priority and select a category';
   } else {
-    let task = createTask(title, description, priority, startDate, limitDate);
+    let task = createTask(title, description, priority, startDate, limitDate, categoryName);
     
-    newTask(usernameLogged, tokenValue, task).then (() => {
+    newTask(tokenValue, task).then (async() => {
       removeAllTaskElements();
-      loadTasks(usernameLogged, tokenValue);
+      await loadTasks(tokenValue);
       cleanAllTaskFields();
     });
   }
@@ -361,16 +420,18 @@ document.addEventListener('click', function (event) {
 
 
 // Carrega as tarefas guardadas na local storage
-function loadTasks(usernameLogged, tokenValue) {
-  getAllUsersTasks(usernameLogged, tokenValue).then(tasksArray => {
-    tasksArray.forEach(task => {
+async function loadTasks(tokenValue) {
+  getAllUsersTasks(tokenValue).then(tasksArray => {
+      tasksArray.forEach(task => {
       const taskElement = createTaskElement(task);
+      
       if (!taskElement) {
-        console.error('Task element not created for task:', task);
         return;
       }
+
       task.stateId = parseStateIdToString(task.stateId);
       const panel = document.getElementById(task.stateId);
+      
       if (!panel) {
         console.error('Panel not found for stateId:', task.stateId);
         return;
@@ -386,7 +447,6 @@ function loadTasks(usernameLogged, tokenValue) {
 
 
 function removeAllTaskElements() {
-  console.log("estou a ser chamada");
   const tasks = document.querySelectorAll('.task');
   tasks.forEach(task => task.remove());
 }
@@ -439,9 +499,37 @@ function parsePriorityToInt (priority) {
   return newPriority;
 }
 
-async function deleteTask(id, usernameLogged, tokenValue) {
-   
+async function eraseTask(tokenValue, taskId) {
 
+  let eraseTask = `http://localhost:8080/project_backend/rest/users/${taskId}`;
+      
+      try {
+          const response = await fetch(eraseTask, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+            if (response.ok) {
+              alert("Task deleted successfully");
+            } else if (response.status === 401) {
+              alert("Invalid credentials")
+            } else if (response.status === 404) {
+              alert("Something went wrong. The task was not deleted.")
+            }
+        
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Task was not deleted. Something went wrong");
+      }
+    }
+
+async function deleteTask(id, tokenValue) {
+   
+  const usernameLogged = await getUsername(tokenValue);
   let deleteTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/${id}`;
 
   try {

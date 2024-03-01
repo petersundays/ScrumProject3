@@ -495,8 +495,10 @@ aside h3 {
     transform: translateY(4px);
   }
 /* Definições do botão de adicionar task */
+#label-priority,
 #label-startDate,
-#label-limitDate {
+#label-limitDate,
+#label-category {
   margin-block: 20px;
   margin-inline: 60px;
   text-align: center;
@@ -508,7 +510,8 @@ aside h3 {
 /* merdas e cenas */
 
 #task-startDate,
-#task-limitDate {
+#task-limitDate,
+#task-category {
     margin-inline: 20px;
     text-align: center;
     margin-block: 10px;
@@ -936,7 +939,7 @@ match ao arredondamento do painel (home.html) */
   margin-left: 100px;
   margin-top: 90px;
   width: 520px;
-  height: 393px;
+  height: 500px;
   background-color: color-mix(in srgb, var(--todo), transparent 75%);
   border: 2px solid var(--green3);
   border-top-right-radius: 8px;
@@ -965,6 +968,24 @@ match ao arredondamento do painel (home.html) */
   display: flex;
   gap: 35px;
 }
+
+#task-category-edit {
+  display: flex;
+  justify-content: center;
+  width: 150px;
+  height: 30px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px var(--grey);
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background: transparent;
+  margin-left: 185px;
+}
+
 .status-button,
 .priority-button {
   --button-shadow-color: #c3c3c3;
@@ -1041,19 +1062,22 @@ match ao arredondamento do painel (home.html) */
 .priority-button.selected {
   background-color: color-mix(in srgb, var(--grey), white 30%) !important;
 }
-.startDateDiv,
-.updateDateDiv,
-.endDateDiv {
+.startDateDiv {
   margin-top: 20px;
   letter-spacing: 0.5px;
   font-style: italic;
   font-size: 15px;
   font-weight: bold;
   color: var(--green3);
-  text-align: center;
+  text-align: left;
 }
 .startDateDiv {
   margin-top: 40px;
+  display: flex;
+}
+.label-start-date {
+  margin-right: 40px;
+  margin-left: 40px;
 }
 
 /* Definições do footer */
@@ -1168,6 +1192,7 @@ aside h3 {
 #taskDescription-retro,
 #commentDescription-retro {
   margin-top: 20px;
+  margin-bottom: 10px;
   padding: 10px;
   width: 180px;
   height: 150px;

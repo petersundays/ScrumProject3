@@ -56,7 +56,9 @@ public class TaskBean implements Serializable {
         ArrayList<Task> userTasks = new ArrayList<>();
         if (entityUserTasks != null)
             for (TaskEntity taskEntity : entityUserTasks) {
-                userTasks.add(convertTaskEntityToTaskDto(taskEntity));
+                if (!taskEntity.getErased()) {
+                    userTasks.add(convertTaskEntityToTaskDto(taskEntity));
+                }
             }
         return userTasks;
     }

@@ -24,7 +24,7 @@
             </ul>
         </nav>
         <div class="nav-menu-right">
-            <img src="multimedia/JSC_close up.png" id="profile-pic">
+            <img src="multimedia/prf-img-placeholder.PNG" id="profile-pic">
             <a href="edit-profile.html" id="first-name-label">Profile</a>
             <button class="logout-button" id="logout-button-header">
                 <img src="multimedia/logout.png" alt="Logout Icon">
@@ -64,11 +64,21 @@
                         <button class="priority-button high" id="high-button">High</button>
                     </div>
                 </div>
-                <div class="startDateDiv">
-                    <label for="startDate-editTask">Start date: <input type="date" id="startDate-editTask" ></label> <!-- This label will be updated on JavaScript with the start date -->
+                <div class="dates">
+                    <h4 class="taskH4">Dates</h4>
+                    <div class="startDateDiv">
+                        <label for="startDate-editTask" class="label-start-date">Start date: <input type="date" id="startDate-editTask" ></label> <!-- This label will be updated on JavaScript with the start date -->
+                
+                        <label for="endDate-editTask">End date: <input type="date" id="endDate-editTask" ></label> <!-- This label will be updated on JavaScript with the end date -->
+                    </div>
                 </div>
-                <div class="endDateDiv">
-                    <label for="endDate-editTask">End date: <input type="date" id="endDate-editTask" ></label> <!-- This label will be updated on JavaScript with the end date -->
+                <div class="category">
+                    <h4 class="taskH4">Category</h4>
+                    <div id="div-dropdown">
+                        <select id="task-category-edit" required>
+                            <option value="" disabled selected>Category</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
