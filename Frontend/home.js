@@ -2,6 +2,9 @@ window.onload = async function() {
 
   sessionStorage.clear();
   const tokenValue = localStorage.getItem('token');
+  const user = await getUser(tokenValue);
+  const typeOfUser = user.typeOfUser;
+
   let usernameLogged;
   
   if (tokenValue === null) {
@@ -12,8 +15,8 @@ window.onload = async function() {
         usernameLogged = await getUsername(tokenValue);
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        scrumMasterPage();
-        await loadTasks(tokenValue);
+        pageToLoad(typeOfUser);
+        await loadTasks(tokenValue, typeOfUser);
         await getCategories(tokenValue);
     } catch (error) {
         
@@ -26,6 +29,16 @@ window.onload = async function() {
 
 const tokenValue = localStorage.getItem('token');
 let usernameLogged = getUsername(tokenValue);
+const DEVELOPER = 100;
+const SCRUM_MASTER = 200;
+const PRODUCT_OWNER = 300;
+
+
+function pageToLoad(typeOfUser) {
+ if (typeOfUser === SCRUM_MASTER) {
+    scrumMasterPage();
+  }
+}
 
 
 function scrumMasterPage(){
@@ -273,7 +286,40 @@ async function newTask(tokenValue, task) {
         console.error('Error:', error);
         alert("Task not created. Something went wrong");
     }
-  };
+};
+
+
+async function getAllTasks(tokenValue) {
+
+  let getAllTasks = `http://localhost:8080/project_backend/rest/users/tasks`;
+
+  try {
+      const response = await fetch(getAllTasks, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/JSON',
+              'Accept': '*/*',
+              token: tokenValue
+          },    
+      });
+
+      if (response.ok) {
+        const tasks = await response.json();
+        return tasks;
+
+      } else if (response.status === 401) {
+        alert("Invalid credentials")
+      } else if (response.status === 404) {
+        alert("No tasks found")
+      }
+
+  } catch (error) {
+      console.error('Error:', error);
+      alert("Something went wrong");
+  }
+}
+
+
 
 
   async function getAllTasksFromUser(tokenValue) {
@@ -349,7 +395,30 @@ function createTask(title, description, priority, startDate, limitDate, category
   }
 });
 
-function createTaskElement(task) {
+
+document.getElementById('nav-all-tasks').addEventListener('click', async function() {
+  
+  let button = document.getElementById('nav-all-tasks');
+  let tasksButton = document.querySelector('#nav-all-tasks a');
+
+  removeAllTaskElements();
+  
+   if (button.classList.contains('selected')) {
+    tasksButton.innerHTML= 'All Tasks';
+    removeAllTaskElements();
+    await loadTasks(tokenValue);
+    button.classList.remove('selected');
+   } else {
+    button.classList.add('selected');
+    tasksButton.innerHTML= 'My Tasks';
+    await loadAllTasks(tokenValue);
+}
+});
+
+
+
+
+  function createTaskElement(task, typeOfUser, ownerUsername, usernameLogged) {
   const taskElement = document.createElement('div');
   taskElement.id = task.id;
   task.priority = parsePriorityToString(task.priority);
@@ -377,22 +446,29 @@ function createTaskElement(task) {
   const displayDescription = document.createElement('p');
   displayDescription.textContent = task.description;
 
-  const deleteButton = document.createElement('img');
-  deleteButton.src = 'multimedia/dark-cross-01.png';
-  deleteButton.className = 'apagarButton';
-  deleteButton.dataset.taskId = task.id;
+  
+  if (usernameLogged === ownerUsername || typeOfUser === SCRUM_MASTER || typeOfUser === PRODUCT_OWNER) {
+    const deleteButton = document.createElement('img');
+    deleteButton.src = 'multimedia/dark-cross-01.png';
+    deleteButton.className = 'apagarButton';
+    deleteButton.dataset.taskId = task.id;
+    postIt.appendChild(deleteButton);
+  }
 
 
   descriptionContainer.appendChild(displayDescription);
   postIt.appendChild(taskTitle);
-  postIt.appendChild(deleteButton);
+  
   postIt.appendChild(descriptionContainer); 
   taskElement.appendChild(postIt);
 
+
+  taskElement.classList.add('not-draggable');
   taskElement.addEventListener('dblclick', function () {
-    sessionStorage.setItem("taskId", taskElement.id);
-    window.location.href = 'task.html';
-  });
+  sessionStorage.setItem("taskId", taskElement.id);
+  window.location.href = 'task.html';
+  }
+  );
 
   return taskElement;
 }
@@ -406,7 +482,7 @@ document.addEventListener('click', function (event) {
     deletemodal.style.display = "grid";
 
     function deleteButtonClickHandler() {
-      deleteTask(taskId, usernameLogged, tokenValue);
+      eraseTask(tokenValue, taskId);
       taskElement.remove();
       deletemodal.style.display = "none";
       deletebtn.removeEventListener('click', deleteButtonClickHandler); 
@@ -423,11 +499,14 @@ document.addEventListener('click', function (event) {
 });
 
 
-// Carrega as tarefas guardadas na local storage
-async function loadTasks(tokenValue) {
+
+async function loadTasks(tokenValue, typeOfUser) {
+  const usernameLogged = await getUsername(tokenValue);
   getAllTasksFromUser(tokenValue).then(tasksArray => {
       tasksArray.forEach(task => {
-      const taskElement = createTaskElement(task);
+        console.log('OBJETO task:', task.owner.username); 
+      const taskElement = createTaskElement(task, typeOfUser, task.owner.username, usernameLogged);
+
       
       if (!taskElement) {
         return;
@@ -449,6 +528,33 @@ async function loadTasks(tokenValue) {
   });
 }
 
+async function loadAllTasks(tokenValue, typeOfUser) {
+  const usernameLogged = await getUsername(tokenValue);
+  getAllTasks(tokenValue).then(tasksArray => {
+      tasksArray.forEach(task => {
+        console.log('username task:', task.owner.username);
+      const taskElement = createTaskElement(task, typeOfUser, task.owner.username, usernameLogged);
+
+      
+      if (!taskElement) {
+        return;
+      }
+
+      task.stateId = parseStateIdToString(task.stateId);
+      const panel = document.getElementById(task.stateId);
+      
+      if (!panel) {
+        console.error('Panel not found for stateId:', task.stateId);
+        return;
+      }
+      panel.appendChild(taskElement);
+      attachDragAndDropListeners(taskElement);
+    });
+  }).catch(error => {
+    console.error('Error:', error);
+    alert("Something went wrong while loading tasks");
+  });
+}
 
 function removeAllTaskElements() {
   const tasks = document.querySelectorAll('.task');
@@ -563,6 +669,7 @@ async function deleteTask(id, tokenValue) {
 window.onclose = function () { // Guarda as tarefas na local storage quando a página é fechada
 
   localStorage.clear();
+  sessionStorage.clear();
 }
 
 //LOGOUT 
@@ -591,6 +698,40 @@ document.getElementById("logout-button-header").addEventListener('click', async 
         alert("Something went wrong");
     }
 })
+
+
+
+
+async function getUser (tokenValue) {
+  const usernameLogged = await getUsername(tokenValue);
+  let getUserRequest = `http://localhost:8080/project_backend/rest/users/${usernameLogged}`;
+      
+      try {
+          const response = await fetch(getUserRequest, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+          if (response.ok) {
+            const user = await response.json();
+            return user;
+  
+          } else if (!response.ok) {
+              alert("Invalid username on path")
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          }
+  
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong");
+      }
+  }
+
 
 
 async function getFirstName(tokenValue) {
