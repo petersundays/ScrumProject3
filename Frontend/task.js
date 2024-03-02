@@ -1,7 +1,10 @@
 window.onload = async function() {
 
   const taskId = sessionStorage.getItem("taskId");
+  const owner = sessionStorage.getItem("owner");
+  console.log("OWNER ON LOAD: ", owner);
   const tokenValue = localStorage.getItem('token');
+  const user = await getUser(tokenValue);
   let usernameLogged;
   
   if (tokenValue === null) {
@@ -9,11 +12,13 @@ window.onload = async function() {
   } else { 
     try {
         usernameLogged = await getUsername(tokenValue);
-        const task = await findTaskById(taskId);
-        getFirstName(tokenValue);
-        getPhotoUrl(tokenValue);
-        showTask(task);
+        const task = await taskToShow(tokenValue, taskId);
+        console.log("Task: ", task);
+        await getFirstName(tokenValue);
+        await getPhotoUrl(tokenValue);
         await getCategories(task,tokenValue);
+        pageToLoad(task, user);
+
     } catch (error) {
         
         console.error("An error occurred:", error);
@@ -24,6 +29,45 @@ window.onload = async function() {
 };
 
 const taskId = sessionStorage.getItem("taskId");
+const DEVELOPER = 100;
+const SCRUM_MASTER = 200;
+const PRODUCT_OWNER = 300;
+
+async function taskToShow (tokenValue, taskId) {
+  const allTasks = await getAllTasks(tokenValue);
+  let task = null;
+  allTasks.forEach(t => {
+    if (t.id == taskId) {
+      task = t;
+    }
+  });
+  return task;
+}
+
+
+function disableAllElements() {
+  const elements = document.querySelectorAll("input, textarea, button, select");
+  elements.forEach((element) => {
+    element.disabled = true;
+  });
+  document.getElementById("save-button").remove();
+  document.getElementById("cancel-button").remove();
+ }
+
+function pageToLoad(task, user) {
+  if ((task.owner.username === user.username || user.typeOfUser === SCRUM_MASTER || user.typeOfUser === PRODUCT_OWNER) && task.erased === false) {
+    showTask(task);
+  } else if ((user.typeOfUser === SCRUM_MASTER || user.typeOfUser === PRODUCT_OWNER) && task.erased === true) {
+    showTask(task);
+    disableAllElements();
+  } else {
+    alert("You don't have permission to access this task");
+    window.location.href = "home.html";
+  }
+}
+
+
+
 
 // Definir os botões de status
 const todoButton = document.getElementById("todo-button"); // Atribuir o elemento respetivo à variável todoButton
@@ -69,6 +113,16 @@ async function updateTask() {
 
   const priority = returnPriorityFromSelectedButton();
   const stateId = returnStateIdFromSelectedButton();
+  const category = {
+    name: document.getElementById("task-category-edit").value,
+  }
+  const categoryName = category.name;
+  console.log('CategoryName = ', categoryName);
+
+
+  startDate = document.getElementById("startDate-editTask").value.toString(),
+  limitDate = document.getElementById("endDate-editTask").value.toString()
+
 
   const task = {
     id: taskId,
@@ -76,35 +130,72 @@ async function updateTask() {
     description: document.getElementById("descricao-task").value,
     priority: priority,
     stateId: stateId,
-    category: {
-      name: document.getElementById("task-category-edit").value
-    }
-         
   };
-  let firstNameRequest = `http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/${usernameValue}/${taskId}`;
+  let updateTaskRequest = `http://localhost:8080/project_backend/rest/users/updatetask/${taskId}`;
   try {
-    const response = await fetch(
-      firstNameRequest,
-      {
+    console.log("Task to update: ", task);
+    const response = await fetch(updateTaskRequest, {
         method: "PUT",
         headers: {
           "Content-Type": "application/JSON",
           Accept: "*/*",
-          username: usernameValue,
-          password: passwordValue,
+          token: localStorage.getItem("token"),
+          categoryName: categoryName,
+          startDate: startDate,
+          limitDate: limitDate
         },
         body: JSON.stringify(task),
       }
     );
 
+    console.log("Response: ", response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     } else if (response.status === 401) {
       alert("Invalid credentials");
     } else if (response.status === 404) {
-      alert("Impossible to create task. Verify all fields");
+      alert("Impossible to update task. Verify all fields");
+    } else if (response.status === 403){
+      alert("You don't have permission to update this task");
     } else {
       console.log("Task updated successfully");
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
+    alert("Something went wrong");
+    throw error; // Propagar o erro para ser tratado no catch do bloco que chamou a função
+  }
+}
+
+async function updateDates(taskId, startDate, limitDate) {
+  const dates = {
+    startDate: startDate,
+    limitDate: limitDate
+  
+  }
+  let updateDatesRequest = `http://localhost:8080/project_backend/rest/users/${taskId}/dates`;
+  try {
+    console.log("Dates to update: ", dates);
+    const response = await fetch(updateDatesRequest, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/JSON",
+          Accept: "*/*",
+          token: localStorage.getItem("token"),
+        },
+        body: JSON.stringify(dates),
+      }
+    );
+
+    console.log("Response: ", response);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } else if (response.status === 401) {
+      alert("Invalid credentials");
+    } else if (response.status === 404) {
+      alert("Impossible to update dates. Verify all fields");
+    } else {
+      console.log("Dates updated successfully");
     }
   } catch (error) {
     console.error("An error occurred:", error);
@@ -203,24 +294,26 @@ async function getUsername(tokenValue) {
     }
 }
 
-async function getAllUsersTasks(tokenValue) {
+async function getAllTasksFromUser(tokenValue) {
 
-  const usernameLogged = await getUsername(tokenValue);
+  const usernameLogged = localStorage.getItem('username');
+  console.log("Username ENDPOINT: ", usernameLogged);
     let getTasks = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/tasks`;
       
       try {
+        console.log("Entrein no try do getTasks");
           const response = await fetch(getTasks, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/JSON',
                   'Accept': '*/*',
-                  username: usernameLogged,
                   token: tokenValue
               },    
           });
   
             if (response.ok) {
               const tasks = await response.json(); 
+              //console.log("Tasks: ", tasks);
               return tasks;
             } else if (response.status === 401) {
               alert("Invalid credentials")
@@ -232,10 +325,39 @@ async function getAllUsersTasks(tokenValue) {
           console.error('Error:', error);
           alert("Task not created. Something went wrong");
       }
-    };
+};
 
-async function showTask(task) {
-  //const task = await findTaskById(taskId);
+async function getAllTasks(tokenValue) {
+
+  let getAllTasks = `http://localhost:8080/project_backend/rest/users/tasks`;
+
+  try {
+      const response = await fetch(getAllTasks, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/JSON',
+              'Accept': '*/*',
+              token: tokenValue
+          },    
+      });
+
+      if (response.ok) {
+        const tasks = await response.json();
+        return tasks;
+
+      } else if (response.status === 401) {
+        alert("Invalid credentials")
+      } else if (response.status === 404) {
+        alert("No tasks found")
+      }
+
+  } catch (error) {
+      console.error('Error:', error);
+      alert("Something went wrong");
+  }
+}
+
+function showTask(task) {
   if (task) {
     document.getElementById("titulo-task").textContent = task.title; // Colocar o título no input title
     document.getElementById("descricao-task").textContent = task.description; // Colocar a descrição na text area
@@ -324,24 +446,14 @@ function setPriorityButtonSelected(button) {
   button.classList.add("selected");
 }
 
-async function findTaskById(taskId) {
-  const token = localStorage.getItem("token");
-  try {
-    const tasksArray = await getAllUsersTasks(token);
-    const task = tasksArray.find((backEndTask) => backEndTask.id === taskId);
-    return task;
-  } catch (error) {
-    alert("Something went wrong while loading tasks");
-  }
-}
-
 async function getCategories(task,tokenValue) {
   const defaultOption = document.createElement('option');
-  defaultOption.value = '';
+  //defaultOption.value = '';
   defaultOption.disabled = true;
   defaultOption.selected = true;
   defaultOption.hidden = true;
   defaultOption.textContent = task.category.name;
+  defaultOption.value = task.category.name;
   document.getElementById("task-category-edit").appendChild(defaultOption); 
 
   let categories = await getAllCategories(tokenValue);
@@ -454,3 +566,59 @@ async function getUsername(tokenValue) {
         alert("Something went wrong");
     }
 }
+
+document.getElementById("logout-button-header").addEventListener('click', async function() {
+
+  let logoutRequest = "http://localhost:8080/project_backend/rest/users/logout";
+     const tokenValue = localStorage.getItem('token');
+    try {   
+        const response = await fetch(logoutRequest, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            }, 
+        });
+        if (response.ok) {
+            
+          localStorage.clear();
+
+          window.location.href="index.html";
+
+        } 
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+});
+
+async function getUser (tokenValue) {
+  const usernameLogged = await getUsername(tokenValue);
+  let getUserRequest = `http://localhost:8080/project_backend/rest/users/${usernameLogged}`;
+      
+      try {
+          const response = await fetch(getUserRequest, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/JSON',
+                  'Accept': '*/*',
+                  token: tokenValue
+              },    
+          });
+  
+          if (response.ok) {
+            const user = await response.json();
+            return user;
+  
+          } else if (!response.ok) {
+              alert("Invalid username on path")
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          }
+  
+      } catch (error) {
+          console.error('Error:', error);
+          alert("Something went wrong");
+      }
+  }

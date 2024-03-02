@@ -4,6 +4,7 @@ import cesarpedroproj3.dao.CategoryDao;
 import cesarpedroproj3.dao.TaskDao;
 import cesarpedroproj3.dao.UserDao;
 import cesarpedroproj3.dto.Category;
+
 import cesarpedroproj3.dto.Task;
 import cesarpedroproj3.dto.User;
 import cesarpedroproj3.entity.CategoryEntity;
@@ -12,6 +13,7 @@ import cesarpedroproj3.entity.UserEntity;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Stateless
@@ -50,27 +52,53 @@ public class TaskBean implements Serializable {
         return created;
     }
 
-    public ArrayList<Task> getAllTasksFromUser(String username) {
-        ArrayList<TaskEntity> entityUserTasks = taskDao.findTasksByUser(userDao.findUserByUsername(username));
+    public ArrayList<Task> getAllTasks(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        ArrayList<TaskEntity> entityTasks = taskDao.findAllTasks();
+        ArrayList<Task> tasks = new ArrayList<>();
+        if (entityTasks != null) {
+            for (TaskEntity taskEntity : entityTasks) {
+                if (userEntity.getTypeOfUser() == User.DEVELOPER && !taskEntity.getErased()) {
+                    tasks.add(convertTaskEntityToTaskDto(taskEntity));
+                } else if (userEntity.getTypeOfUser() == User.SCRUMMASTER || userEntity.getTypeOfUser() == User.PRODUCTOWNER) {
+                    tasks.add(convertTaskEntityToTaskDto(taskEntity));
+                }
+            }
+        }
+        return tasks;
+    }
+
+    public ArrayList<Task> getAllTasksFromUser(String username, String token) {
+        UserEntity loggedUser = userDao.findUserByToken(token);
+        UserEntity tasksOwner = userDao.findUserByUsername(username);
+        ArrayList<TaskEntity> entityUserTasks = taskDao.findTasksByUser(tasksOwner);
 
         ArrayList<Task> userTasks = new ArrayList<>();
-        if (entityUserTasks != null)
+        if (entityUserTasks != null) {
             for (TaskEntity taskEntity : entityUserTasks) {
-                if (!taskEntity.getErased()) {
+                if (loggedUser.getTypeOfUser() == User.DEVELOPER && !taskEntity.getErased()) {
+                    userTasks.add(convertTaskEntityToTaskDto(taskEntity));
+                } else if (loggedUser.getTypeOfUser() == User.SCRUMMASTER || loggedUser.getTypeOfUser() == User.PRODUCTOWNER) {
                     userTasks.add(convertTaskEntityToTaskDto(taskEntity));
                 }
             }
+        }
         return userTasks;
     }
 
-    public boolean updateTask(Task task, String id) {
+    public boolean updateTask(Task task, String id, String categoryName, String startDate, String limitDate) {
         TaskEntity taskEntity = taskDao.findTaskById(id);
         Task taskDto = taskBean.convertTaskEntityToTaskDto(taskEntity);
         User taskOwner = taskDto.getOwner();
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate limit = LocalDate.parse(limitDate);
 
         boolean edited = false;
         task.setId(id);
         task.setOwner(taskOwner);
+        task.setStartDate(start);
+        task.setLimitDate(limit);
+        task.setCategory(categoryBean.convertCategoryEntityToCategoryDto(categoryDao.findCategoryByName(categoryName)));
         if (taskDao.findTaskById(task.getId()) != null) {
             if (validateTask(task)) {
                 taskDao.merge(convertTaskToEntity(task));
@@ -134,7 +162,7 @@ public class TaskBean implements Serializable {
         boolean valid = true;
         if ((task.getStartDate() == null
                 || task.getLimitDate() == null
-                || task.getLimitDate().isBefore(task.getStartDate())
+              //  || task.getLimitDate().isBefore(task.getStartDate())
                 || task.getTitle().isBlank()
                 || task.getDescription().isBlank()
                 || task.getOwner() == null
@@ -168,6 +196,7 @@ public class TaskBean implements Serializable {
             if (userTasks != null) {
                 for (TaskEntity taskEntity : userTasks) {
                     taskEntity.setErased(true);
+                    taskEntity.setOwner(userDao.findUserByUsername("NotAssigned"));
                     taskDao.merge(taskEntity);
                 }
                 erased = true;

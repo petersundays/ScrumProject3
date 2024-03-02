@@ -3,10 +3,7 @@ package cesarpedroproj3.service;
 import cesarpedroproj3.bean.CategoryBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
-import cesarpedroproj3.dto.Category;
-import cesarpedroproj3.dto.Login;
-import cesarpedroproj3.dto.Task;
-import cesarpedroproj3.dto.User;
+import cesarpedroproj3.dto.*;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -206,6 +203,7 @@ public class UserService {
     return response;
     }
 
+
     @PUT
     @Path("/update/{username}/password")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -297,17 +295,12 @@ public class UserService {
 
         Response response;
         if (userBean.isAuthenticated(token)) {
-            if (userBean.thisTokenIsFromThisUsername(token, username)) {
 
-                boolean removed = userBean.delete(username);
-
-                if (removed) {
-                    response = Response.status(200).entity("User removed successfully").build();
-                } else {
-                    response = Response.status(404).entity("User is not found").build();
-                }
+            boolean removed = userBean.delete(username);
+            if (removed) {
+                response = Response.status(200).entity("User removed successfully").build();
             } else {
-                response = Response.status(Response.Status.BAD_REQUEST).entity("Invalid username on path").build();
+                response = Response.status(404).entity("User is not found").build();
             }
         } else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -407,15 +400,32 @@ public class UserService {
     }
 
     @GET
+    @Path("/tasks")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllTasks(@HeaderParam("token") String token) {
+
+        Response response;
+
+        if (userBean.isAuthenticated(token)) {
+            ArrayList<Task> allTasks = taskBean.getAllTasks(token);
+            allTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
+            response = Response.status(Response.Status.OK).entity(allTasks).build();
+        } else {
+            response = Response.status(401).entity("Invalid credentials").build();
+        }
+        return response;
+    }
+
+    @GET
     @Path("/{username}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsersTasks(@HeaderParam("token") String token, @PathParam("username") String username) {
+    public Response getAllTasksFromUser(@HeaderParam("token") String token, @PathParam("username") String username) {
 
         Response response;
 
         if (userBean.isAuthenticated(token)) {
             if (userBean.thisTokenIsFromThisUsername(token, username) || userBean.userIsProductOwner(token) || userBean.userIsScrumMaster(token)){
-                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username);
+                ArrayList<Task> userTasks = taskBean.getAllTasksFromUser(username, token);
                 userTasks.sort(Comparator.comparing(Task::getPriority, Comparator.reverseOrder()).thenComparing(Comparator.comparing(Task::getStartDate).thenComparing(Task::getLimitDate)));
                 response = Response.status(Response.Status.OK).entity(userTasks).build();
             } else {
@@ -457,14 +467,13 @@ public class UserService {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("/updatetask/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateTask(@HeaderParam("token") String token, @PathParam("id") String id, Task task) {
-
+    public Response updateTask(@HeaderParam("token") String token, @HeaderParam("categoryName") String categoryName, @HeaderParam("startDate") String startDate, @HeaderParam("limitDate") String limitDate,  @PathParam("id") String id, Task task) {
         Response response;
         if (userBean.isAuthenticated(token)) {
             if (userBean.userIsTaskOwner(token, id) || userBean.userIsScrumMaster(token) || userBean.userIsProductOwner(token)) {
-                boolean updated = taskBean.updateTask(task, id);
+                boolean updated = taskBean.updateTask(task, id, categoryName, startDate, limitDate);
                 if (updated) {
                     response = Response.status(200).entity("Task updated successfully").build();
                 } else {
@@ -478,6 +487,7 @@ public class UserService {
         }
         return response;
     }
+
 
     @PUT
     @Path("/tasks/{taskId}/{newStateId}")
