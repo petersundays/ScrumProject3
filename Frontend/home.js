@@ -3,7 +3,9 @@ window.onload = async function() {
   sessionStorage.clear();
   const tokenValue = localStorage.getItem('token');
   const user = await getUser(tokenValue);
-  const typeOfUser = user.typeOfUser;
+  const typeOfUser = await getTypeOfUser(tokenValue);
+
+  console.log(typeOfUser);
 
   let usernameLogged;
   
@@ -13,24 +15,11 @@ window.onload = async function() {
     try {
         cleanAllTaskFields();
         usernameLogged = await getUsername(tokenValue);
-        const typeOfUser = await getTypeOfUser(tokenValue);
-        
-
-        if(typeOfUser){
-
-            const userType = parseInt(typeOfUser);
-            if(userType === 200){
-                scrumMasterPage();
-            }else if(userType === 300){
-                productOwnerPage();
-            }
-        }
 
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
       
-        await loadTasks(tokenValue);
-        pageToLoad(typeOfUser);
+        await pageToLoad(typeOfUser);
         await loadTasks(tokenValue, typeOfUser);
         await getCategories(tokenValue);
     } catch (error) {
@@ -49,10 +38,13 @@ const SCRUM_MASTER = 200;
 const PRODUCT_OWNER = 300;
 
 
-function pageToLoad(typeOfUser) {
- if (typeOfUser === SCRUM_MASTER) {
+async function pageToLoad(typeOfUser) {
+ if (parseInt(typeOfUser) === SCRUM_MASTER) {
     scrumMasterPage();
-  }
+
+  }else if(parseInt(typeOfUser) === PRODUCT_OWNER){
+    productOwnerPage();
+}
 }
 
 
@@ -115,7 +107,7 @@ function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and
       task.classList.remove('dragging')
       removeAllTaskElements();
       await updateTaskStatus(localStorage.getItem('token'), task.id, task.stateId);
-      await loadTasks(tokenValue);    
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));    
   });
 }
 
@@ -406,7 +398,7 @@ function createTask(title, description, priority, startDate, limitDate, category
     
     newTask(tokenValue, task).then (async() => {
       removeAllTaskElements();
-      await loadTasks(tokenValue);
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
       cleanAllTaskFields();
     });
   }
@@ -423,12 +415,12 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
    if (button.classList.contains('selected')) {
     tasksButton.innerHTML= 'All Tasks';
     removeAllTaskElements();
-    await loadTasks(tokenValue);
+    await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
     button.classList.remove('selected');
    } else {
     button.classList.add('selected');
     tasksButton.innerHTML= 'My Tasks';
-    await loadAllTasks(tokenValue);
+    await loadAllTasks(tokenValue, await getTypeOfUser(tokenValue));
 }
 });
 
