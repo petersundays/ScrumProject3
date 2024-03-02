@@ -116,7 +116,6 @@ panels.forEach(panel => {
     e.preventDefault()
     const afterElement = getDragAfterElement(panel, e.clientY);
     const task = document.querySelector('.dragging');
-    console.log('banana' , e);
     
     const panelID = panel.id; 
 
@@ -134,8 +133,6 @@ panels.forEach(panel => {
 
 async function updateTaskStatus(token, taskId, newStatus) {
 
-  console.log('Entrei no updateTasksatus');
-
   let numericStatus;
   switch (newStatus) {
     case "todo":
@@ -149,15 +146,12 @@ async function updateTaskStatus(token, taskId, newStatus) {
       break;
     default:
       console.error('Invalid status:', newStatus);
-      console.log('numericStatus: ', numericStatus);
       return numericStatus;
   }
 
-  console.log('numericStatus: ', numericStatus);
 
   const updateTaskUrl = `http://localhost:8080/project_backend/rest/users/tasks/${taskId}/${numericStatus}`;
   try {
-    console.log('Entrei no try', updateTaskUrl, taskId, numericStatus, token);
     const response = await fetch(updateTaskUrl, {
       method: 'PUT',
       headers: {
@@ -409,6 +403,8 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
   
   let button = document.getElementById('nav-all-tasks');
   let tasksButton = document.querySelector('#nav-all-tasks a');
+  const userLogged = await getUser(tokenValue);
+  const typeOfUser = userLogged.typeOfUser;
 
   removeAllTaskElements();
   
@@ -427,7 +423,7 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
 
 
 
-  function createTaskElement(task, typeOfUser, ownerUsername, usernameLogged) {
+  function createTaskElement(task, typeOfUser) {
   const taskElement = document.createElement('div');
   taskElement.id = task.id;
   task.priority = parsePriorityToString(task.priority);
@@ -444,6 +440,10 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
   taskElement.description = task.description;
   taskElement.title = task.title;
   taskElement.stateId = task.stateId;
+  taskElement.erased = task.erased;
+  if (task.erased === true) {
+    taskElement.classList.add('erased');
+  }
 
   const postIt = document.createElement('div');
   postIt.className = 'post-it';
@@ -456,12 +456,28 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
   displayDescription.textContent = task.description;
 
   
-  if (usernameLogged === ownerUsername || typeOfUser === SCRUM_MASTER || typeOfUser === PRODUCT_OWNER) {
+  if (typeOfUser === SCRUM_MASTER || (typeOfUser === PRODUCT_OWNER && task.erased === false)) {  
+    
     const deleteButton = document.createElement('img');
     deleteButton.src = 'multimedia/dark-cross-01.png';
     deleteButton.className = 'apagarButton';
     deleteButton.dataset.taskId = task.id;
     postIt.appendChild(deleteButton);
+
+  }  else if (typeOfUser === PRODUCT_OWNER && task.erased === true) {
+
+    const permanentlyDeleteButton = document.createElement('img');
+    permanentlyDeleteButton.src = 'multimedia/dark-cross-01.png';
+    permanentlyDeleteButton.className = 'permanent-delete-button';
+    permanentlyDeleteButton.dataset.taskId = task.id;
+    postIt.appendChild(permanentlyDeleteButton);
+
+    const restoreButton = document.createElement('img');
+    restoreButton.src = 'multimedia/restoreIcon.png';
+    restoreButton.className = 'restore-button';
+    restoreButton.dataset.taskId = task.id;
+    postIt.appendChild(restoreButton);
+
   }
 
 
@@ -507,14 +523,66 @@ document.addEventListener('click', function (event) {
   }
 });
 
+document.addEventListener('click', function (event) {
+  if (event.target.matches('.permanent-delete-button')) {
+    const taskElement = event.target.closest('.task');
+    const taskId = event.target.dataset.taskId;
+
+    const deletemodal = document.getElementById('delete-modal');
+    deletemodal.style.display = "grid";
+
+    function deleteButtonClickHandler() {
+      deleteTask(taskId, tokenValue);
+      taskElement.remove();
+      deletemodal.style.display = "none";
+      deletebtn.removeEventListener('click', deleteButtonClickHandler); 
+    }
+
+    const deletebtn = document.getElementById('delete-button');
+    deletebtn.addEventListener('click', deleteButtonClickHandler);
+
+    const cancelbtn = document.getElementById('cancel-delete-button');
+    cancelbtn.addEventListener('click', () => {
+      deletemodal.style.display = "none";
+    });
+  }
+});
+
+document.addEventListener('click', function (event) {
+  console.log('tokenValue:', tokenValue);
+  console.log('task:', event.target.dataset.taskId);
+  if (event.target.matches('.restore-button')) {
+    const taskElement = event.target.closest('.task');
+    const taskId = event.target.dataset.taskId;
+
+    const restoremodal = document.getElementById('restore-modal');
+    restoremodal.style.display = "grid";
+
+    function restoreButtonClickHandler() {
+      eraseTask(tokenValue, taskId);
+      taskElement.classList.remove('erased');
+      restoremodal.style.display = "none";
+      restorebtn.removeEventListener('click', restoreButtonClickHandler); 
+    }
+
+    const restorebtn = document.getElementById('restore-button');
+    restorebtn.addEventListener('click', restoreButtonClickHandler);
+
+    const cancelbtn = document.getElementById('cancel-restore-button');
+    cancelbtn.addEventListener('click', () => {
+      restoremodal.style.display = "none";
+    });
+  }
+});
+
+
 
 
 async function loadTasks(tokenValue, typeOfUser) {
   const usernameLogged = await getUsername(tokenValue);
   getAllTasksFromUser(tokenValue).then(tasksArray => {
       tasksArray.forEach(task => {
-        console.log('OBJETO task:', task.owner.username); 
-      const taskElement = createTaskElement(task, typeOfUser, task.owner.username, usernameLogged);
+      const taskElement = createTaskElement(task, typeOfUser);
 
       
       if (!taskElement) {
@@ -538,11 +606,10 @@ async function loadTasks(tokenValue, typeOfUser) {
 }
 
 async function loadAllTasks(tokenValue, typeOfUser) {
-  const usernameLogged = await getUsername(tokenValue);
+  
   getAllTasks(tokenValue).then(tasksArray => {
       tasksArray.forEach(task => {
-        console.log('username task:', task.owner.username);
-      const taskElement = createTaskElement(task, typeOfUser, task.owner.username, usernameLogged);
+      const taskElement = createTaskElement(task, typeOfUser);
 
       
       if (!taskElement) {
@@ -648,8 +715,7 @@ async function eraseTask(tokenValue, taskId) {
 
 async function deleteTask(id, tokenValue) {
    
-  const usernameLogged = await getUsername(tokenValue);
-  let deleteTaskUrl = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/${id}`;
+  let deleteTaskUrl = `http://localhost:8080/project_backend/rest/users/delete/${id}`;
 
   try {
     const response = await fetch(deleteTaskUrl, {
@@ -657,7 +723,6 @@ async function deleteTask(id, tokenValue) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        username: usernameLogged,
         token: tokenValue
       },
     });
