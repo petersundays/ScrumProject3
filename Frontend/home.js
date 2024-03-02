@@ -9,10 +9,22 @@ window.onload = async function() {
   } else {
     try {
         usernameLogged = await getUsername(tokenValue);
+        const typeOfUser = await getTypeOfUser(tokenValue);
+        
+
+        if(typeOfUser){
+
+            const userType = parseInt(typeOfUser);
+            if(userType === 200){
+                scrumMasterPage();
+            }else if(userType === 300){
+                productOwnerPage();
+            }
+        }
+
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        scrumMasterPage();
-        productOwnerPage();
+      
         await loadTasks(tokenValue);
         await getCategories(tokenValue);
     } catch (error) {
@@ -45,8 +57,10 @@ function scrumMasterPage(){
 
 function productOwnerPage(){
 
+  scrumMasterPage();
+
   const addUsersButton = document.createElement('a');
-  addUsersButton.href = 'register.html';
+  addUsersButton.href = 'register.html?fromAddUser=true';
   addUsersButton.draggable = 'false';
   addUsersButton.innerText = 'Add User';
 
@@ -680,4 +694,30 @@ async function getUsername(tokenValue) {
         console.error('Error:', error);
         alert("Something went wrong");
     }
+}
+
+//Obter o tipo de user a partir do token
+async function getTypeOfUser(tokenValue) {
+  let typeOfUserRequest = "http://localhost:8080/project_backend/rest/users/getTypeOfUser";
+
+  try {
+      const response = await fetch(typeOfUserRequest, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/JSON',
+              'Accept': '*/*',
+              token: tokenValue
+          },
+      });
+
+      if (response.ok) {
+          const data = await response.text();
+          return data;
+      } else {
+          return null;
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      return null;
+  }
 }

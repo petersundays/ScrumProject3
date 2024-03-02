@@ -523,6 +523,32 @@ function updateUserInfo() {
     return updatedUser;
 }
 
+//Obter o tipo de user a partir do token
+async function getTypeOfUser(tokenValue) {
+    let typeOfUserRequest = "http://localhost:8080/project_backend/rest/users/getTypeOfUser";
+
+    try {
+        const response = await fetch(typeOfUserRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.text();
+            return data;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
 //Obter o username através do email
 async function getUsernameFromEmail(email, tokenValue) {
 

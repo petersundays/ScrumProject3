@@ -135,6 +135,24 @@ public class UserService {
         return response;
     }
 
+
+    //Retorna tipo de user do token enviado
+    @GET
+    @Path("/getTypeOfUser")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTypeOfUser(@HeaderParam("token") String token) {
+        Response response;
+
+        User currentUser = userBean.convertEntityByToken(token);
+
+        if (!userBean.isAuthenticated(token)) {
+            response = Response.status(401).entity("Invalid credentials").build();
+        } else {
+            response = Response.status(200).entity(currentUser.getTypeOfUser()).build();
+        }
+        return response;
+    }
+
     @GET
     @Path("/getUsernameFromEmail")
     @Produces(MediaType.APPLICATION_JSON)

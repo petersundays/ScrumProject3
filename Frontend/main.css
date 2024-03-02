@@ -1300,10 +1300,13 @@ aside h3 {
   background-repeat: no-repeat;
 }
 .details-editProfile {
+  display: flex;
   margin-top: 40px;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
 }
-#username-title-editProfile {
+#username-title-editProfile,
+#typeOfUser-title-editProfile {
   margin-left: 260px;
   color: var(--green3);
   font-size: 20px;
@@ -1328,7 +1331,8 @@ aside h3 {
   font-size: 15px;
   width: 300px;
 }
-.editProfile-fields {
+.editProfile-fields,
+#changePasswordForm input[type="password"] {
   margin-bottom: 15px;
   padding: 5px;
   width: 100%;
@@ -1360,7 +1364,8 @@ aside h3 {
 }
 #profile-save-button,
 #profile-cancel-button,
-#profile-changePass-button {
+#profile-changePass-button,
+#profile_savePass {
   width: 180px;
   height: 45px;
   padding: 10px;
@@ -1376,13 +1381,15 @@ aside h3 {
 }
 #profile-save-button:hover,
 #profile-cancel-button:hover,
-#profile-changePass-button:hover {
+#profile-changePass-button:hover,
+#profile_savePass:hover {
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
   transition: box-shadow 0.8s ease;
   transform: translateY(4px);
 }
 #profile-save-button,
-#profile-changePass-button {
+#profile-changePass-button,
+#profile_savePass {
   background-color: var(--black);
   color: var(--green1);
   border-color: var(--green1);
@@ -1444,64 +1451,56 @@ aside h3 {
   border-radius: 8px;
   flex-direction: column;
   align-items: center;
-  background: white;
-  border: 2px solid gray;
+  background-color: #f9f9f9; /* Cor de fundo */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+  border: 2px solid #ddd; /* Borda */
 }
 
+/* Estilo para o cabeçalho do modal */
 .modal-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center; 
-  border-radius: 3px;
-  padding: 5px 10px;
+  justify-content: flex-end;
   width: 100%;
 }
 
+/* Estilo para o botão de fechar */
 .close {
-  color: #000000;
+  color: #aaa; /* Cor do ícone */
+  font-size: 20px;
   cursor: pointer;
-  margin-left: auto;
 }
 
 .close:hover,
 .close:focus {
-  color: #242424;
+  color: #000; /* Cor do ícone ao passar o mouse */
 }
 
+/* Estilo para o modal */
 #passwordModal {
   display: none;
   position: fixed;
   z-index: 10;
-  padding-top: 100px;
   left: 0;
   top: 0;
-  align-items: center;
   width: 100%;
   height: 100%;
   overflow: auto;
-  }
-  
-  #changePasswordForm{
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-  }
-  
-  #profile_savePass{
-      width: 225px;
-      padding: 10px 10px;
-      margin: 5px;
-      border: none;
-      border-radius: 10px;
-      outline: none;
-      text-transform: uppercase;
-      font-weight: bold;
-      color: var(--white);
-      background: var(--color_regular);
-      cursor: pointer;
-      box-shadow: 5px 5px 20px -12px;
-      font-size: medium;
-  }
+  background-color: rgba(0, 0, 0, 0.4); /* Fundo semi-transparente */
+}
+
+/* Centraliza o modal verticalmente */
+.modalContent {
+  margin-top: 18%;
+}
+
+/* Estilo para o formulário de alteração de senha */
+#changePasswordForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 
 /*Página de Users*/
 

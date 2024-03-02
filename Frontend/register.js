@@ -1,4 +1,19 @@
 
+window.onload = function() {
+    // Verificar se a página foi carregada através do botão "Add User"
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromAddUser = urlParams.has('fromAddUser'); 
+    console.log(fromAddUser);
+
+    // Alterar dinamicamente o link "Voltar"
+    const backButton = document.getElementById('backToLoginLink');
+    if (fromAddUser) {
+        console.log('bababa');
+        backButton.innerHTML = '';
+        backButton.innerText = 'Back';
+        backButton.href = 'home.html';
+    }
+}
 
 document.getElementById('registrationForm').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -170,6 +185,3 @@ function createUserData() {
         };
     
 }
-
-
-
