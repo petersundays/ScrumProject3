@@ -37,6 +37,8 @@ const PRODUCT_OWNER = 300;
 function pageToLoad(typeOfUser) {
  if (typeOfUser === SCRUM_MASTER) {
     scrumMasterPage();
+  } else if (typeOfUser === PRODUCT_OWNER) {
+    productOwnerPage();
   }
 }
 
@@ -68,7 +70,7 @@ function productOwnerPage(){
 
   liElement.appendChild(addUsersButton);
   document.getElementById('menu').appendChild(liElement);
-
+  createSearchMenu();
 }
 
   function cleanAllTaskFields() {
@@ -389,7 +391,6 @@ function createTask(title, description, priority, startDate, limitDate, category
   }
 });
 
-
 document.getElementById('nav-all-tasks').addEventListener('click', async function() {
   
   let button = document.getElementById('nav-all-tasks');
@@ -410,6 +411,104 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
     await loadAllTasks(tokenValue, typeOfUser);
 }
 });
+
+function createSearchMenu() {
+  
+  const asideElement = document.querySelector('aside');
+  const searchNav = document.createElement('li');
+  searchNav.id = 'nav-search-tasks';
+  const searchLink = document.createElement('a');
+  searchLink.innerText = "Search";
+  searchNav.appendChild(searchLink);
+  document.getElementById('menu').appendChild(searchNav);
+
+  searchNav.addEventListener('click', function() {
+    removeAsideElements();
+    createAsideElements();
+  });
+
+  
+}
+
+
+
+
+
+
+function removeAsideElements() {
+ 
+  const asideElement = document.querySelector('aside');
+  const childElements = asideElement.children;
+
+  for (let i = 0; i < childElements.length; i++) {
+   const childElement = childElements[i];
+    childElement.remove();
+  }
+
+}
+
+function createAsideElements() {
+  
+  const asideElement = document.querySelector('aside');
+  const asideTitle = document.createElement('h3');
+  asideTitle.innerText = "Search Tasks";
+  asideElement.appendChild(asideTitle);
+
+  const userLabel = document.createElement('label');
+  userLabel.innerText = "User";
+  userLabel.id = 'label-search-user';
+  asideElement.appendChild(userLabel);
+
+  const usernameInput = document.createElement('input');
+  usernameInput.type = 'text';
+  usernameInput.id = 'search-input-home';
+  usernameInput.placeholder = 'Username';
+  asideElement.appendChild(usernameInput);
+
+  const dropdownUsers = document.createElement('select');
+  dropdownUsers.id = 'usersType-home';
+  dropdownUsers.name = 'usersType';
+  asideElement.appendChild(dropdownUsers);
+
+  const searchUserButton = document.createElement('button');
+  searchUserButton.id = 'search-user-button';
+  searchUserButton.innerText = 'Search User';
+  asideElement.appendChild(searchUserButton);
+
+  const categoryLabel = document.createElement('label');
+  categoryLabel.innerText = "Category";
+  categoryLabel.id = 'label-search-category';
+  asideElement.appendChild(categoryLabel);
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'text';
+  categoryInput.id = 'search-category-home';
+  categoryInput.placeholder = 'Category';
+  asideElement.appendChild(categoryInput);
+
+  const dropdownCategories = document.createElement('select');
+  dropdownCategories.id = 'categoriesType-home';
+  dropdownCategories.name = 'categoriesType';
+  asideElement.appendChild(dropdownCategories);
+
+  const searchCategoryButton = document.createElement('button');
+  searchCategoryButton.id = 'search-category-button';
+  searchCategoryButton.innerText = 'Search Category';
+  asideElement.appendChild(searchCategoryButton);
+
+  const deletedTasksLabel = document.createElement('label');
+  deletedTasksLabel.innerText = "Deleted Tasks";
+  deletedTasksLabel.id = 'label-search-deleted';
+  asideElement.appendChild(deletedTasksLabel);
+
+  const deletedTasksButton = document.createElement('button');
+  deletedTasksButton.id = 'search-deleted-button';
+  deletedTasksButton.innerText = 'Deleted Tasks';
+  asideElement.appendChild(deletedTasksButton);
+
+}
+
+
 
 
 
