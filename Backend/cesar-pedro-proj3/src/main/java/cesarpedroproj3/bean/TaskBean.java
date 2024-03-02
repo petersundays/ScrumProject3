@@ -140,7 +140,10 @@ public class TaskBean implements Serializable {
     public boolean permanentlyDeleteTask(String id) {
         boolean removed = false;
         TaskEntity taskEntity = taskDao.findTaskById(id);
-        if(taskEntity != null) {
+        if (taskEntity != null && !taskEntity.getErased()) {
+            taskDao.eraseTask(id);
+            removed = true;
+        } else if (taskEntity != null && taskEntity.getErased()) {
             taskDao.deleteTask(id);
             removed = true;
         }

@@ -52,6 +52,24 @@ public class TaskDao extends AbstractDao<TaskEntity> {
 		}
 	}
 
+	public boolean eraseTask(String id) {
+		boolean erased = false;
+		if (id == null) {
+			erased = false;
+		} else {
+			try {
+				TaskEntity taskToErase = findTaskById(id);
+				taskToErase.setErased(true);
+				merge(taskToErase);
+				erased = true;
+			} catch (Exception e) {
+				erased = false;
+			}
+		}
+		return erased;
+	}
+
+
 	public boolean deleteTask(String id) {
 		boolean deleted = false;
 		if (id == null) {
