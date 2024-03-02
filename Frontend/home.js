@@ -448,19 +448,27 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
 
   
   if (typeOfUser === SCRUM_MASTER || (typeOfUser === PRODUCT_OWNER && task.erased === false)) {  
+    
     const deleteButton = document.createElement('img');
     deleteButton.src = 'multimedia/dark-cross-01.png';
     deleteButton.className = 'apagarButton';
     deleteButton.dataset.taskId = task.id;
     postIt.appendChild(deleteButton);
+
   }  else if (typeOfUser === PRODUCT_OWNER && task.erased === true) {
-    console.log('entrei no else if do product owner');
+
     const permanentlyDeleteButton = document.createElement('img');
     permanentlyDeleteButton.src = 'multimedia/dark-cross-01.png';
     permanentlyDeleteButton.className = 'permanent-delete-button';
     permanentlyDeleteButton.dataset.taskId = task.id;
-    console.log('Classes do botão:', permanentlyDeleteButton.classList);
     postIt.appendChild(permanentlyDeleteButton);
+
+    const restoreButton = document.createElement('img');
+    restoreButton.src = 'multimedia/restoreIcon.png';
+    restoreButton.className = 'restore-button';
+    restoreButton.dataset.taskId = task.id;
+    postIt.appendChild(restoreButton);
+
   }
 
 
@@ -530,6 +538,34 @@ document.addEventListener('click', function (event) {
     });
   }
 });
+
+document.addEventListener('click', function (event) {
+  console.log('tokenValue:', tokenValue);
+  console.log('task:', event.target.dataset.taskId);
+  if (event.target.matches('.restore-button')) {
+    const taskElement = event.target.closest('.task');
+    const taskId = event.target.dataset.taskId;
+
+    const restoremodal = document.getElementById('restore-modal');
+    restoremodal.style.display = "grid";
+
+    function restoreButtonClickHandler() {
+      eraseTask(tokenValue, taskId);
+      taskElement.classList.remove('erased');
+      restoremodal.style.display = "none";
+      restorebtn.removeEventListener('click', restoreButtonClickHandler); 
+    }
+
+    const restorebtn = document.getElementById('restore-button');
+    restorebtn.addEventListener('click', restoreButtonClickHandler);
+
+    const cancelbtn = document.getElementById('cancel-restore-button');
+    cancelbtn.addEventListener('click', () => {
+      restoremodal.style.display = "none";
+    });
+  }
+});
+
 
 
 
