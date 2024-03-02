@@ -739,13 +739,15 @@ match ao arredondamento do painel (home.html) */
 /* Definições da cruz que apaga a task */
 /* Não mostra na mini-janela do post-it */
 .task .apagarButton,
-.task .permanent-delete-button {
+.task .permanent-delete-button,
+.task .restore-button {
   opacity: 0;
   transition: all 0.5s ease-in-out;
 }
 /* Mostra na mini-janela do post-it */
 .task:hover .apagarButton,
-.task:hover .permanent-delete-button{
+.task:hover .permanent-delete-button, 
+.task:hover .restore-button {
   opacity: 1;
   transition: all 0.5s ease-in-out;
 }
@@ -760,9 +762,21 @@ match ao arredondamento do painel (home.html) */
   cursor: pointer;
   transition: ease-on 0.01s;
 }
+
+.restore-button {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  max-width: 22px;
+  aspect-ratio: 1;
+  cursor: pointer;
+  transition: ease-on 0.01s;
+}
+
 /* Animação do botão apagar */
 .apagarButton:hover,
-.permanent-delete-button:hover{
+.permanent-delete-button:hover,
+.restore-button:hover {
   rotate: 360deg;
   transition: ease 0.01s;
 }
