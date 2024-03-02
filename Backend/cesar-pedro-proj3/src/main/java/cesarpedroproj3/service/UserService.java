@@ -247,7 +247,7 @@ public class UserService {
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
 
             userBean.updateUserEntityVisibility(username);
-            response = Response.status(Response.Status.OK).entity(username + " visibility: " + user.isVisible()).build(); //status code 200
+            response = Response.status(Response.Status.OK).entity(username + " visibility: " + !user.isVisible()).build(); //status code 200
 
         }else {
             response = Response.status(401).entity("Invalid credentials").build();

@@ -317,6 +317,7 @@ header {
   height: 40px;
   border-radius: 50%;
   margin: 0 30px;
+  object-fit: cover;
 }
 
 /* Username */
@@ -1490,7 +1491,7 @@ aside h3 {
 
 /* Centraliza o modal verticalmente */
 .modalContent {
-  margin-top: 18%;
+  margin-top: 15%;
 }
 
 /* Estilo para o formulário de alteração de senha */
@@ -1589,10 +1590,11 @@ aside h3 {
 
 #profile-clicked-pic {
   width: 84px;
-  height: auto;
+  height: 84px;
   border-radius: 50%;
   margin: 0 30px;
   margin-bottom: 10%;
+  object-fit: cover;
 }
 
 #search-input{
@@ -1608,7 +1610,6 @@ aside h3 {
   padding-top: 4%;
 }
 
-#deleteUser,
 #save_edit {
   text-align: center;
   text-transform: uppercase;
@@ -1621,7 +1622,6 @@ aside h3 {
   cursor: pointer;
 }
 
-#deleteUser:hover,
 #save_edit:hover {
   background-color: var(--green3);
   color: var(--green1);
@@ -1649,3 +1649,24 @@ aside h3 {
   transform: translateY(-50%);
 }
 
+#deleteUser,
+#visibleUser{
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 0;
+  background-color: var(--doing);
+  color: var(--green3);
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+#deleteUser:hover,
+#visibleUser:hover {
+  background-color: var(--green2);
+  color: var(--green1);
+}
+
+#deleteUser{
+  margin-left: 2px;
+}

@@ -1,3 +1,158 @@
+window.onload = async function() {
+
+let tokenValue = localStorage.getItem('token');
+
+if (tokenValue === null) {
+    window.location.href = "index.html";
+} else {
+    try {
+        const usernameLogged = await getUsername(tokenValue);
+        const typeOfUser = await getTypeOfUser(tokenValue);
+
+        if(typeOfUser){
+
+            const userType = parseInt(typeOfUser);
+            if(userType === 200){
+                scrumMasterPage();
+            }else if(userType === 300){
+                productOwnerPage();
+            }
+        }
+
+        getPhotoUrl(tokenValue);
+        await loadUserData(usernameLogged, tokenValue);
+
+    } catch (error) {
+        
+        console.error("An error occurred:", error);
+        window.location.href = "index.html";
+        
+    }
+    }
+};
+    
+const tokenValue = localStorage.getItem('token');
+
+function scrumMasterPage(){
+
+    const usersButton = document.createElement('a');
+    usersButton.href = 'users.html';
+    usersButton.draggable = 'false';
+    usersButton.innerText = 'Agile Users';
+    
+    let liElement = document.createElement('li');
+    liElement.id = 'nav-users';
+    
+    liElement.appendChild(usersButton);
+    document.getElementById('menu').appendChild(liElement);
+    
+    }
+    
+    function productOwnerPage(){
+
+    scrumMasterPage();
+    
+    const addUsersButton = document.createElement('a');
+    addUsersButton.href = 'register.html?fromAddUser=true';
+    addUsersButton.draggable = 'false';
+    addUsersButton.innerText = 'Add User';
+    
+    let liElement = document.createElement('li');
+    liElement.id = 'nav-users';
+    
+    liElement.appendChild(addUsersButton);
+    document.getElementById('menu').appendChild(liElement);
+    
+    }
+
+    async function getPhotoUrl(tokenValue) {
+
+        let photoUrlRequest = "http://localhost:8080/project_backend/rest/users/getPhotoUrl";
+          
+          try {
+              const response = await fetch(photoUrlRequest, {
+                  method: 'GET',
+                  headers: {
+                      'Content-Type': 'application/JSON',
+                      'Accept': '*/*',
+                      token: tokenValue
+                  },    
+              });
+      
+              if (response.ok) {
+      
+                const data = await response.text();
+                document.getElementById("profile-pic").src = data;
+      
+              } else if (response.status === 401) {
+                  alert("Invalid credentials")
+              } else if (response.status === 404) {
+                alert("teste 404")
+              }
+      
+          } catch (error) {
+              console.error('Error:', error);
+              alert("Something went wrong");
+          }
+      }
+
+    async function getUsername(tokenValue) {
+
+        let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getUsername";
+          
+          try {
+              const response = await fetch(firstNameRequest, {
+                  method: 'GET',
+                  headers: {
+                      'Content-Type': 'application/JSON',
+                      'Accept': '*/*',
+                      token: tokenValue
+                  },    
+              });
+      
+              if (response.ok) {
+      
+                const data = await response.text();
+                return data;
+      
+              } else if (!response.ok) {
+                  alert("Invalid credentials")
+              }
+      
+          } catch (error) {
+              console.error('Error:', error);
+              alert("Something went wrong");
+          }
+      }
+    
+
+//LOGOUT 
+document.getElementById("logout-button-header").addEventListener('click', async function() {
+
+    let logoutRequest = "http://localhost:8080/project_backend/rest/users/logout";
+        
+        try {   
+            const response = await fetch(logoutRequest, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/JSON',
+                    'Accept': '*/*',
+                    token: tokenValue
+                }, 
+            });
+            if (response.ok) {
+                
+            localStorage.clear();
+            window.location.href="index.html";
+    
+            } 
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Something went wrong");
+        }
+    })
+
+
 async function getAllUsers(tokenValue) {
 
     let getUsers = `http://localhost:8080/project_backend/rest/users/all`;
@@ -174,29 +329,56 @@ document.getElementById('search-input').addEventListener('input', function(event
 });
 
 //Escrever os botões de edição e de apagar na tabela
-function writeTableButtons(cell){
+function writeTableButtons(cell, visible){
 
+    const btn_visibility_user = document.createElement("button");
     const btn_delete_user = document.createElement("button");
 
-    btn_delete_user.innerHTML = "&times;";
-    btn_delete_user.setAttribute("id", "deleteUser");
-    btn_delete_user.type = "button";
+    if(visible){
+        btn_visibility_user.innerHTML = `<img src="multimedia/visibility_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128065;">`;
+        btn_delete_user.innerHTML = '';
+    }else{
+        btn_visibility_user.innerHTML = `<img src="multimedia/visibility_off_FILL0_wght200_GRAD0_opsz20.svg" alt="/">`
+        btn_delete_user.innerHTML = `<img src="multimedia/delete_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128465;">`;
 
-    btn_delete_user.addEventListener("click", async function(event) {
+        btn_delete_user.id = "deleteUser";
+        btn_delete_user.type = "button";
+
+        btn_delete_user.addEventListener("click", async function(event) {
+            await deleteUser(event);
+        });
+    }
+
+    btn_visibility_user.setAttribute("id", "visibleUser");
+    btn_visibility_user.type = "button";
+    
+
+    btn_visibility_user.addEventListener("click", async function(event) {
         await changeUserVisibility(event);
     });
 
-    cell.appendChild(btn_delete_user);
+    cell.appendChild(btn_visibility_user);
+
+    if(!visible){
+        cell.appendChild(btn_delete_user);
+    }
+    
 
 }
 
 // Adicionar evento de clique para cada linha da tabela
 document.querySelector('.table tbody').addEventListener('click', function(event) {
-    const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
-    if (clickedRow) {
-        const username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
-        // Chama a função para carregar os dados do usuário clicado
-        loadUserData(username, localStorage.getItem('token'));
+    const clickedCellIndex = event.target.cellIndex; // Obtém o índice da célula clicada
+    // Verifica se a célula clicada não é a última célula da linha (índice 6)
+    if (clickedCellIndex !== 6) {
+        const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
+        if (clickedRow) {
+            const username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+            if (!event.target.matches('img')) {
+            // Chama a função para carregar os dados do usuário clicado
+            loadUserData(username, localStorage.getItem('token'));
+            }
+        }
     }
 });
 
@@ -394,7 +576,7 @@ function renderTable() {
         cells[3].textContent = user.email;
         cells[4].textContent = parseTypeToString(user.typeOfUser);
         cells[5].textContent = 'nº';
-        writeTableButtons(cells[6]);
+        writeTableButtons(cells[6],user.visible);
         cells.forEach(cell => newRow.appendChild(cell));
         tbody.appendChild(newRow);
     });
@@ -667,7 +849,6 @@ async function changeUserVisibility(event) {
 
             if (response.ok && confirmDelete()) {
 
-                console.log("certo");
                 alert(await response.text());
 
                 renderTable();
@@ -685,6 +866,39 @@ async function changeUserVisibility(event) {
         }
 };
 
+async function deleteUser(event) {
+    event.preventDefault();
+
+    let token = localStorage.getItem('token');
+    let username;
+
+    const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
+    if (clickedRow) {
+        username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+    }
+
+    let deleteThisUser = `http://localhost:8080/project_backend/rest/users/${username}`;
+
+    try {
+        const response = await fetch(deleteThisUser, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: token
+            },
+        });
+
+        if (response.ok && confirmPermDelete()) {
+            console.log('User deleted successfully');
+        } else {
+            console.error('Error deleting User:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 document.querySelectorAll('#deleteUser').forEach(btn => {
     btn.addEventListener('click', async function (event) {
         await changeUserVisibility(event);
@@ -693,7 +907,12 @@ document.querySelectorAll('#deleteUser').forEach(btn => {
 
 
 
-//Função para confirmar "delete"
+//Função para confirmar mudança de visibilidade
 function confirmDelete() {
     return confirm("Are you sure you want to change this user state?");
+ }
+
+//Função para confirmar "delete"
+function confirmPermDelete() {
+    return confirm("Are you sure you want to delete this user?");
  }
