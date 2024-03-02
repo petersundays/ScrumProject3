@@ -35,18 +35,20 @@
         <aside>
             <div class="aside-users-container">
                 <h3 id="addTask-h3">Users</h3>
+                <label for="usersType">Type</label>
                 <select id="usersType" name="usersType">
                     <option value="All" disabled selected>Select an option</option>
-                    <option value="All">See All</option>
-                    <option value="300">See Product Owners</option>
-                    <option value="200">See Scrum Masters</option>
-                    <option value="100">See Developers</option>
+                    <option value="All">All</option>
+                    <option value="300">Product Owners</option>
+                    <option value="200">Scrum Masters</option>
+                    <option value="100">Developers</option>
                 </select>
+                <label for="usersVisibility">Visibility</label>
                 <select id="usersVisibility" name="usersVisibility">
                     <option value="All" disabled selected>Select an option</option>
-                    <option value="All">See All</option>
+                    <option value="All">All</option>
                     <option value="true">Active</option>
-                    <option value="false">Deleted</option>
+                    <option value="false">Inactive</option>
                 </select>
                 <button id="showUsers-button">Show Users</button>
 
