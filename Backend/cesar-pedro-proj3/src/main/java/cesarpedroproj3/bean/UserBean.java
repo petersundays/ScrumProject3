@@ -551,6 +551,17 @@ public class UserBean implements Serializable {
         return authorized;
     }
 
+    public boolean userIsDeveloper(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.DEVELOPER) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
     public boolean userIsScrumMaster(String token) {
         UserEntity userEntity = userDao.findUserByToken(token);
         boolean authorized = false;

@@ -1305,6 +1305,8 @@ aside h3 {
   margin-top: 40px;
   align-items: flex-start;
   flex-direction: column;
+  width: 59%;
+  height: 95%;
 }
 #username-title-editProfile,
 #typeOfUser-title-editProfile {
@@ -1536,9 +1538,12 @@ aside h3 {
 .container-table {
   margin-top: 20px;
   margin-left: 30px;
-  overflow-y: auto;
+  overflow: auto;
   width: 98%;
-  max-height: 90%;
+  max-height: 89%;
+  border-top-left-radius: 7px; 
+  border-top-right-radius: 7px;
+  position: relative;
 }
 
 .table {
@@ -1553,6 +1558,9 @@ aside h3 {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
+  position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .table-body {
@@ -1566,8 +1574,42 @@ aside h3 {
 .table th,
 .table td {
   padding: 12px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid var(--green2);
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 12%; /* Defina a largura da primeira coluna */
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 11%; /* Defina a largura da segunda coluna */
+}
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 11%; /* Defina a largura da primeira coluna */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 15%; /* Defina a largura da segunda coluna */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 12%; /* Defina a largura da primeira coluna */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 10%; /* Defina a largura da segunda coluna */
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 10%; /* Defina a largura da segunda coluna */
 }
 
 .table-body tr:hover {

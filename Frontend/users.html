@@ -23,7 +23,7 @@
             </ul>
         </nav>
         <div class="nav-menu-right">
-            <img src="multimedia/JSC_close up.png" id="profile-pic">
+            <img src="multimedia/prf-img-placeholder.PNG" id="profile-pic">
             <a href="edit-profile.html" id="first-name-label"></a>
             <button class="logout-button" id="logout-button-header">
                 <img src="multimedia/logout.png" alt="Logout Icon">
@@ -36,7 +36,7 @@
             <div class="aside-users-container">
                 <h3 id="addTask-h3">Users</h3>
                 <select id="usersType" name="usersType">
-                    <option value="none" disabled selected>Select an option</option>
+                    <option value="All" disabled selected>Select an option</option>
                     <option value="All">See All</option>
                     <option value="300">See Product Owners</option>
                     <option value="200">See Scrum Masters</option>
@@ -75,36 +75,12 @@
         <div class="users-details-container">  </div>
     </main>
 
-    <!-- Password Modal -->
-    <div id="passwordModal">
-        <div class="modalContent">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-            </div>
-            <!-- Form de alteração da password -->
-            <form id="changePasswordForm">
-                <label for="profile_oldPassword">Password atual:</label>
-                <input type="password" id="profile_oldPassword" name="profile_oldPassword" placeholder="Coloque a sua password atual" required>
-        
-                <label for="profile_newPassword">Nova Password:</label>
-                <input type="password" id="profile_newPassword" name="profile_newPassword" placeholder="Coloque a sua nova password" required>
-        
-                <label for="profile_confirmPassword">Confirme a nova password:</label>
-                <input type="password" id="profile_confirmPassword" name="profile_confirmPassword" placeholder="Confirme a sua nova password" required>
-        
-                <input type="submit" id="profile_savePass" value="Guardar alterações">
-            </form>
-        </div>
-    </div>
-
-    
     <footer>
         <div class="footer-content">
-            <div class="label-left">&copy; João Luís</div>
+            <div class="label-left">&copy; César Temudo</div>
             <div class="label-right">Programação Avançada em Java</div>
-            <div class="label-left">&copy; José Sousa Castro</div>
-            <div class="label-right">Projeto 2</div>
             <div class="label-left">&copy; Pedro Domingos</div>
+            <div class="label-right">Projeto 3</div>
         </div>
     </footer>
     <script src="users.js" defer></script>

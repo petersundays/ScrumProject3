@@ -313,7 +313,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> allUsers = userBean.getUsers();
             response = Response.status(200).entity(allUsers).build();
         } else {
@@ -327,7 +327,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsersByVisibility(@HeaderParam("token") String token, @PathParam("visible") boolean visible) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> users = userBean.getUsersByVisibility(visible);
             response = Response.status(200).entity(users).build();
         } else {
@@ -341,7 +341,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token, @PathParam("type") int typeOfUser) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> users = userBean.getUsersByType(typeOfUser);
             response = Response.status(200).entity(users).build();
         } else {
@@ -355,7 +355,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token, @PathParam("type") int typeOfUser, @PathParam("visible") boolean visible) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> users = userBean.getUsersByTypeAndVisibility(typeOfUser,visible);
             response = Response.status(200).entity(users).build();
         } else {

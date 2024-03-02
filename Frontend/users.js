@@ -6,8 +6,7 @@ if (tokenValue === null) {
     window.location.href = "index.html";
 } else {
     try {
-        const usernameLogged = await getUsername(tokenValue);
-        const typeOfUser = await getTypeOfUser(tokenValue);
+        let typeOfUser = await getTypeOfUser(tokenValue);
 
         if(typeOfUser){
 
@@ -19,8 +18,8 @@ if (tokenValue === null) {
             }
         }
 
+        getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        await loadUserData(usernameLogged, tokenValue);
 
     } catch (error) {
         
@@ -46,9 +45,9 @@ function scrumMasterPage(){
     liElement.appendChild(usersButton);
     document.getElementById('menu').appendChild(liElement);
     
-    }
+}
     
-    function productOwnerPage(){
+function productOwnerPage(){
 
     scrumMasterPage();
     
@@ -63,7 +62,7 @@ function scrumMasterPage(){
     liElement.appendChild(addUsersButton);
     document.getElementById('menu').appendChild(liElement);
     
-    }
+}
 
     async function getPhotoUrl(tokenValue) {
 
@@ -125,6 +124,34 @@ function scrumMasterPage(){
           }
       }
     
+      async function getFirstName(tokenValue) {
+
+        let firstNameRequest = "http://localhost:8080/project_backend/rest/users/getFirstName";
+          
+          try {
+              const response = await fetch(firstNameRequest, {
+                  method: 'GET',
+                  headers: {
+                      'Content-Type': 'application/JSON',
+                      'Accept': '*/*',
+                      token: tokenValue
+                  },    
+              });
+      
+              if (response.ok) {
+      
+                const data = await response.text();
+                document.getElementById("first-name-label").innerText = data;
+      
+              } else if (!response.ok) {
+                  alert("Invalid credentials")
+              }
+      
+          } catch (error) {
+              console.error('Error:', error);
+              alert("Something went wrong");
+          }
+      }
 
 //LOGOUT 
 document.getElementById("logout-button-header").addEventListener('click', async function() {
@@ -329,41 +356,49 @@ document.getElementById('search-input').addEventListener('input', function(event
 });
 
 //Escrever os botões de edição e de apagar na tabela
-function writeTableButtons(cell, visible){
+async function writeTableButtons(cell, visible){
 
-    const btn_visibility_user = document.createElement("button");
-    const btn_delete_user = document.createElement("button");
+    let typeOfUser = await getTypeOfUser(tokenValue);
 
-    if(visible){
-        btn_visibility_user.innerHTML = `<img src="multimedia/visibility_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128065;">`;
-        btn_delete_user.innerHTML = '';
-    }else{
-        btn_visibility_user.innerHTML = `<img src="multimedia/visibility_off_FILL0_wght200_GRAD0_opsz20.svg" alt="/">`
-        btn_delete_user.innerHTML = `<img src="multimedia/delete_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128465;">`;
+    if(typeOfUser){
+        const userType = parseInt(typeOfUser);
+        if(userType === 300){
+        
+            const btn_visibility_user = document.createElement("button");
+            const btn_delete_user = document.createElement("button");
 
-        btn_delete_user.id = "deleteUser";
-        btn_delete_user.type = "button";
+            if(visible){
+                btn_visibility_user.innerHTML = `<img src="multimedia/visibility_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128065;">`;
+                btn_delete_user.innerHTML = '';
+            }else{
+                btn_visibility_user.innerHTML = `<img src="multimedia/visibility_off_FILL0_wght200_GRAD0_opsz20.svg" alt="/">`
+                btn_delete_user.innerHTML = `<img src="multimedia/delete_FILL0_wght200_GRAD0_opsz20.svg" alt="&#128465;">`;
 
-        btn_delete_user.addEventListener("click", async function(event) {
-            await deleteUser(event);
-        });
+                btn_delete_user.id = "deleteUser";
+                btn_delete_user.type = "button";
+
+                btn_delete_user.addEventListener("click", async function(event) {
+                    if(confirmPermDelete()){
+                        await deleteUser(event);
+                    }
+                });
+            }
+
+            btn_visibility_user.setAttribute("id", "visibleUser");
+            btn_visibility_user.type = "button";
+            
+
+            btn_visibility_user.addEventListener("click", async function(event) {
+                await changeUserVisibility(event);
+            });
+
+            cell.appendChild(btn_visibility_user);
+
+            if(!visible){
+                cell.appendChild(btn_delete_user);
+            }
+        }
     }
-
-    btn_visibility_user.setAttribute("id", "visibleUser");
-    btn_visibility_user.type = "button";
-    
-
-    btn_visibility_user.addEventListener("click", async function(event) {
-        await changeUserVisibility(event);
-    });
-
-    cell.appendChild(btn_visibility_user);
-
-    if(!visible){
-        cell.appendChild(btn_delete_user);
-    }
-    
-
 }
 
 // Adicionar evento de clique para cada linha da tabela
@@ -385,6 +420,8 @@ document.querySelector('.table tbody').addEventListener('click', function(event)
 //Função que vai ler os dados do user clicado
 async function loadUserData(username, tokenValue) {
 
+    let typeOfUser = await getTypeOfUser(tokenValue);
+
     let loadDataRequest = `http://localhost:8080/project_backend/rest/users/${username}`;
 
     try {
@@ -397,11 +434,12 @@ async function loadUserData(username, tokenValue) {
             },
         });
 
+
         if (response.ok) {
             const data = await response.json();
 
             //Ler o formulário de edição do user
-            createEditProfileForm();
+            await createEditProfileForm(tokenValue);
             
             document.getElementById("first name-editUser").placeholder = data.firstName || '';
             document.getElementById("last name-editUser").placeholder = data.lastName || '';
@@ -409,7 +447,13 @@ async function loadUserData(username, tokenValue) {
             document.getElementById("photo url-editUser").placeholder = data.photoURL || '';
             document.getElementById("email-editUser").placeholder = data.email || '';
             document.getElementById("profile-clicked-pic").src = data.photoURL || "multimedia/default-profile-pic.png";
-            document.getElementById("user_role_loaded").innerText = parseTypeToString(data.typeOfUser) || '';
+
+            if(typeOfUser){
+                const userType = parseInt(typeOfUser);
+                if(userType === 300){
+                    document.getElementById("user_role_loaded").innerText = parseTypeToString(data.typeOfUser) || '';
+                }
+            }
 
         } else {
 
@@ -424,7 +468,9 @@ async function loadUserData(username, tokenValue) {
 }
 
 //Escrever os dados do user clicado no html
-function createEditProfileForm() {
+async function createEditProfileForm(tokenValue) {
+
+    let typeOfUser = await getTypeOfUser(tokenValue);
 
     // Cria os elementos
     const labels = [
@@ -467,48 +513,72 @@ function createEditProfileForm() {
         input.setAttribute('id', labels[i].toLowerCase() + '-editUser');
         input.setAttribute('name', labels[i].toLowerCase());
         input.setAttribute('placeholder', '');
+        if(typeOfUser){
+            const userType = parseInt(typeOfUser);
+            if(userType === 200){
+                input.disabled=true;
+            }
+        }
 
         // Adiciona os elementos à div
         form.appendChild(label);
         form.appendChild(input);
     }
 
-    const select_role = document.createElement('select');
-    select_role.id='select_role';
+    if(typeOfUser){
+        const userType = parseInt(typeOfUser);
+        if(userType === 300){
+            const select_role = document.createElement('select');
+            select_role.id='select_role';
 
+            const roles = ["user_role_loaded", "Developer", "Scrum Master", "Product Owner"];
 
-    const roles = ["user_role_loaded", "Developer", "Scrum Master", "Product Owner"];
+            roles.forEach((role, index) => {
+            const option = document.createElement('option');
+            if (index === 0){
+                option.disabled = true;
+                option.selected = true;
+                option.value = '';
+            }else {
+                option.value = index * 100;
+            }
+            option.textContent = role;
+            option.id = role;
+            select_role.appendChild(option);
+            });    
 
-    roles.forEach((role, index) => {
-        const option = document.createElement('option');
-        if (index ===0){
-            option.disabled = true;
-            option.selected = true;
-            option.value = '';
-        }else {
-            option.value = index * 100;
+            const btn_edit = document.createElement("button");
+            btn_edit.innerHTML = "&#9998";
+            btn_edit.id="save_edit";
+            btn_edit.type = "button";
+            form.appendChild(select_role);
+            form.appendChild(btn_edit);
+
+            btn_edit.addEventListener('click', saveEdit);
         }
-        option.textContent = role;
-        option.id = role;
-        select_role.appendChild(option);
-    });    
-
-    form.appendChild(select_role);
-
-    const btn_edit = document.createElement("button");
-    btn_edit.innerHTML = "&#9998";
-    btn_edit.id="save_edit";
-    btn_edit.type = "button";
-    form.appendChild(btn_edit);
+    }
 
     container.appendChild(form);
-
-    btn_edit.addEventListener('click', saveEdit);
 }
 
 
 // Função para ordenar e escrever a tabela
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+
+    let typeOfUser = await getTypeOfUser(tokenValue);
+
+    if(typeOfUser){
+        const userType = parseInt(typeOfUser);
+        if(userType === 200){
+            const tableHeaders = document.querySelectorAll('.table-header th');
+            tableHeaders.forEach(header => {
+                if (header.textContent.trim() === 'Actions') {
+                    header.remove();
+                }
+            });
+        }
+    }
+
     const headers = document.querySelectorAll('.table-header th');
     headers.forEach(header => {
         header.addEventListener('click', () => {
@@ -556,30 +626,43 @@ function getColumnProperty(index) {
 }
 
 // Função para escrever a tabela com os usuários filtrados e ordenados
-function renderTable() {
-    const tbody = document.querySelector('.table tbody');
-    tbody.innerHTML = '';
-    filteredUsers.forEach(user => {
-        const newRow = document.createElement('tr');
-        const cells = [
-            document.createElement('td'),
-            document.createElement('td'),
-            document.createElement('td'),
-            document.createElement('td'),
-            document.createElement('td'),
-            document.createElement('td'),
-            document.createElement('td')
-        ];
-        cells[0].textContent = user.username;
-        cells[1].textContent = user.firstName;
-        cells[2].textContent = user.lastName;
-        cells[3].textContent = user.email;
-        cells[4].textContent = parseTypeToString(user.typeOfUser);
-        cells[5].textContent = 'nº';
-        writeTableButtons(cells[6],user.visible);
-        cells.forEach(cell => newRow.appendChild(cell));
-        tbody.appendChild(newRow);
-    });
+async function renderTable() {
+
+    let typeOfUser = await getTypeOfUser(tokenValue);
+
+        if(typeOfUser){
+
+            const userType = parseInt(typeOfUser);
+
+            const tbody = document.querySelector('.table tbody');
+            tbody.innerHTML = '';
+            filteredUsers.forEach(user => {
+                const newRow = document.createElement('tr');
+                const cells = [
+                    document.createElement('td'),
+                    document.createElement('td'),
+                    document.createElement('td'),
+                    document.createElement('td'),
+                    document.createElement('td'),
+                    document.createElement('td')
+                ];
+                cells[0].textContent = user.username;
+                cells[1].textContent = user.firstName;
+                cells[2].textContent = user.lastName;
+                cells[3].textContent = user.email;
+                cells[4].textContent = parseTypeToString(user.typeOfUser);
+                cells[5].textContent = user.userTasks.length;
+                cells.forEach(cell => newRow.appendChild(cell));
+
+                if(userType === 300){
+                    const actionCell = document.createElement('td');
+                    writeTableButtons(actionCell, user.visible);
+                    newRow.appendChild(actionCell);
+                }
+
+                tbody.appendChild(newRow);
+            });
+        }
 }
 
 //Gravar edições do user
@@ -612,19 +695,7 @@ async function saveEdit(event) {
                 alert("Profile updated successfully");
                 loadUserData(username, token);
 
-                // Atualiza os dados do usuário na lista filteredUsers
-                const index = filteredUsers.findIndex(user => user.username === username);
-                if (index !== -1) {
-                    // Atualiza apenas os campos alterados na lista filteredUsers
-                    for (let key in updatedUser) {
-                        if (updatedUser[key] !== null && updatedUser[key] !== undefined) {
-                            filteredUsers[index][key] = updatedUser[key];
-                        }
-                    }
-
-                }
-
-                renderTable();
+                reloadUsers();
 
             } else {
                 switch (response.status) {
@@ -851,12 +922,10 @@ async function changeUserVisibility(event) {
 
                 alert(await response.text());
 
-                renderTable();
+                await reloadUsers();
 
             } else {
                 alert("No changes occured");
-
-                console.log("fora");
 
             }
 
@@ -865,6 +934,43 @@ async function changeUserVisibility(event) {
             alert("Something went wrong");
         }
 };
+
+//Reler a informação e colocar na tabela
+async function reloadUsers() {
+    try {
+        const tokenValue = localStorage.getItem('token');
+        let typeOfUser = document.getElementById('usersType').value;
+        let userStatus = document.getElementById('usersVisibility').value;
+
+        // Limpa a tabela antes de adicionar os novos dados
+        document.querySelector('.table tbody').innerHTML = '';
+
+        let usersList;
+        if(typeOfUser === 'All' && userStatus === 'All') {
+            usersList = await getAllUsers(tokenValue);
+        } else if(typeOfUser === 'All' && userStatus !== 'All') {
+            usersList = await getAllUsersByVisibility(tokenValue, userStatus);
+        } else if(typeOfUser === '300' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+        } else if(typeOfUser === '200' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+        } else if(typeOfUser === '100' && userStatus !== 'All') {
+            usersList = await getAllUsersByTypeAndVisibility(tokenValue, typeOfUser, userStatus);
+        } else {
+            usersList = await getAllUsersByType(tokenValue, typeOfUser);
+        }
+
+        // Atualiza a lista de usuários filtrados
+        filteredUsers = usersList;
+
+        // Renderiza a tabela com os usuários atualizados
+        renderTable();
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+}
 
 async function deleteUser(event) {
     event.preventDefault();
@@ -889,8 +995,9 @@ async function deleteUser(event) {
             },
         });
 
-        if (response.ok && confirmPermDelete()) {
-            console.log('User deleted successfully');
+        if (response.ok) {
+            alert('User deleted successfully');
+            reloadUsers();
         } else {
             console.error('Error deleting User:', response.statusText);
         }
