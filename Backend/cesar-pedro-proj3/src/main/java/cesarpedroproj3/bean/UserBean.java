@@ -31,6 +31,10 @@ public class UserBean implements Serializable {
     private CategoryBean categoryBean;
 
 
+    public UserBean(){
+
+    }
+
     public UserBean(UserDao userDao) {
         this.userDao = userDao;
     }
