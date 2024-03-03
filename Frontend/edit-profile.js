@@ -4,13 +4,26 @@ window.onload = async function() {
 
  if (tokenValue === null) {
     window.location.href = "index.html";
-    } else {
+} else {
     try {
         const usernameLogged = await getUsername(tokenValue);
+        const typeOfUser = await getTypeOfUser(tokenValue);
+        
+
+        if(typeOfUser){
+
+            const userType = parseInt(typeOfUser);
+            if(userType === 200){
+                scrumMasterPage();
+            }else if(userType === 300){
+                productOwnerPage();
+            }
+        }
+
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        loadUserData(usernameLogged, tokenValue);
-
+        await loadUserData(usernameLogged, tokenValue);
+    
         clearInputValues();
     } catch (error) {
         
@@ -22,6 +35,39 @@ window.onload = async function() {
 };
     
 const tokenValue = localStorage.getItem('token');
+
+function scrumMasterPage(){
+
+    const usersButton = document.createElement('a');
+    usersButton.href = 'users.html';
+    usersButton.draggable = 'false';
+    usersButton.innerText = 'Agile Users';
+  
+    let liElement = document.createElement('li');
+    liElement.id = 'nav-users';
+  
+    liElement.appendChild(usersButton);
+    document.getElementById('menu').appendChild(liElement);
+  
+  }
+  
+  function productOwnerPage(){
+
+    scrumMasterPage();
+  
+    const addUsersButton = document.createElement('a');
+    addUsersButton.href = 'register.html?fromAddUser=true';
+    addUsersButton.draggable = 'false';
+    addUsersButton.innerText = 'Add User';
+  
+    let liElement = document.createElement('li');
+    liElement.id = 'nav-users';
+  
+    liElement.appendChild(addUsersButton);
+    document.getElementById('menu').appendChild(liElement);
+  
+  }
+  
 
 //LOGOUT 
 document.getElementById("logout-button-header").addEventListener('click', async function() {
@@ -126,14 +172,16 @@ document.getElementById("logout-button-header").addEventListener('click', async 
 
         if (response.ok) {
             const data = await response.json();
+
+            console.log(data);
             
             document.getElementById("username-title-editProfile").textContent = "Bem vindo " + data.username || '';
+            document.getElementById("typeOfUser-title-editProfile").textContent = parseTypeToString(data.typeOfUser) || '';
             document.getElementById("firstName-editProfile").placeholder = data.firstName || '';
             document.getElementById("lastName-editProfile").placeholder = data.lastName || '';
             document.getElementById("phone-editProfile").placeholder = data.phone || '';
             document.getElementById("photoURL-editProfile").placeholder = data.photoURL || '';
             document.getElementById("email-editProfile").placeholder = data.email || '';
-            //document.getElementById("currentPass-editProfile").placeholder = '******';
 
         } else {
 
@@ -292,6 +340,32 @@ function isEveryFieldUnchanged() {
     return allFieldsUnchanged;
 }
 
+//Obter o tipo de user a partir do token
+async function getTypeOfUser(tokenValue) {
+    let typeOfUserRequest = "http://localhost:8080/project_backend/rest/users/getTypeOfUser";
+
+    try {
+        const response = await fetch(typeOfUserRequest, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.text();
+            return data;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
 
 //Obter o username a partir do token
 async function getUsername(tokenValue) {
@@ -323,22 +397,6 @@ async function getUsername(tokenValue) {
       }
   }
 
-//Atualiza foto instantaneamente
-document.getElementById('photoURL-editprofile').addEventListener('input', function(){
-    let url = this.value.trim(); // Obter o value do input
-    let photoInst = document.getElementById('profile-pic');
-
-    // Verificar URL
-    if (url !== '') {
-        // Update o src para o novo URL
-        photoInst.src = url;
-        document.getElementById('profile-pic').src = url;
-    } else {
-        // Se o URL é vazio, atualiza o src para a imagem padrão
-        photoInst.src = this.placeholder;
-    }
-});
-
 
 //Se campo não for preenchido, retorna null
 function getInputValue(elementId) {
@@ -355,7 +413,7 @@ function getInputValue(elementId) {
 }
 
 // Alteração apenas da password
-async function save_editPass(oldPassword, newPassword, token) {
+async function save_editPass(usernameLogged, oldPassword, newPassword, token) {
 
     const response = await fetch(`http://localhost:8080/project_backend/rest/users/update/${usernameLogged}/password`, {
       method: 'PUT',
@@ -376,7 +434,9 @@ const btnOpenPasswordModal = document.getElementById('profile-changePass-button'
 
 // Abrir Modal Password no clique
 btnOpenPasswordModal.addEventListener('click', function(){
-    openPassModal;
+
+    console.log('Abrir Modal');
+    openPassModal();
 });
 
 // Obter a Modal da password
@@ -408,6 +468,8 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
 
     e.preventDefault();
 
+    let usernameLogged = await getUsername(tokenValue);
+
     const oldPassword = document.getElementById("profile_oldPassword").value;
     const newPassword = document.getElementById("profile_newPassword").value;
     const confirmPassword = document.getElementById("profile_confirmPassword").value;
@@ -418,15 +480,26 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
         return;
     }
 
-    const save_newPass = await save_editPass(oldPassword, newPassword);
+    const save_newPass = await save_editPass(usernameLogged, oldPassword, newPassword, tokenValue);
 
     if (save_newPass === 200) {
         alert('Password changed successfully.');
         passwordModal.style.display = "none";
-        document.getElementsByClassName("container")[0].style.filter = "none";
-        localStorage.setItem("password", newPassword);
+        document.getElementsByClassName("main-editProfile")[0].style.filter = "none";
 
     } else {
         alert('Failed to change password.');
     }
 });
+
+function parseTypeToString (type) {
+    let newType = '';
+    if(type === 100) {
+        newType = 'Developer';
+    } else if(type === 200) {
+        newType = 'Scrum Master';
+    } else if(type === 300) {
+        newType = 'Product Owner';
+    }
+    return newType;
+  }

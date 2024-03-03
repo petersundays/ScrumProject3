@@ -132,6 +132,24 @@ public class UserService {
         return response;
     }
 
+
+    //Retorna tipo de user do token enviado
+    @GET
+    @Path("/getTypeOfUser")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTypeOfUser(@HeaderParam("token") String token) {
+        Response response;
+
+        User currentUser = userBean.convertEntityByToken(token);
+
+        if (!userBean.isAuthenticated(token)) {
+            response = Response.status(401).entity("Invalid credentials").build();
+        } else {
+            response = Response.status(200).entity(currentUser.getTypeOfUser()).build();
+        }
+        return response;
+    }
+
     @GET
     @Path("/getUsernameFromEmail")
     @Produces(MediaType.APPLICATION_JSON)
@@ -229,7 +247,7 @@ public class UserService {
         if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
 
             userBean.updateUserEntityVisibility(username);
-            response = Response.status(Response.Status.OK).entity(username + " visibility: " + user.isVisible()).build(); //status code 200
+            response = Response.status(Response.Status.OK).entity(username + " visibility: " + !user.isVisible()).build(); //status code 200
 
         }else {
             response = Response.status(401).entity("Invalid credentials").build();
@@ -295,7 +313,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> allUsers = userBean.getUsers();
             response = Response.status(200).entity(allUsers).build();
         } else {
@@ -305,13 +323,13 @@ public class UserService {
     }
 
     @GET
-    @Path("/all/{visible}")
+    @Path("/all/visible/{visible}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsersByVisibility(@PathParam("visible") boolean visible , @HeaderParam("token") String token) {
+    public Response getUsersByVisibility(@HeaderParam("token") String token, @PathParam("visible") boolean visible) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
-            List<User> allUsers = userBean.getUsersByVisibility(visible);
-            response = Response.status(200).entity(allUsers).build();
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
+            List<User> users = userBean.getUsersByVisibility(visible);
+            response = Response.status(200).entity(users).build();
         } else {
             response = Response.status(401).entity("You don't have permission").build();
         }
@@ -323,7 +341,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token, @PathParam("type") int typeOfUser) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> users = userBean.getUsersByType(typeOfUser);
             response = Response.status(200).entity(users).build();
         } else {
@@ -337,7 +355,7 @@ public class UserService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsers(@HeaderParam("token") String token, @PathParam("type") int typeOfUser, @PathParam("visible") boolean visible) {
         Response response;
-        if (userBean.isAuthenticated(token) && userBean.userIsProductOwner(token)) {
+        if (userBean.isAuthenticated(token) && !userBean.userIsDeveloper(token)) {
             List<User> users = userBean.getUsersByTypeAndVisibility(typeOfUser,visible);
             response = Response.status(200).entity(users).build();
         } else {

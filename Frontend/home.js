@@ -3,7 +3,9 @@ window.onload = async function() {
   sessionStorage.clear();
   const tokenValue = localStorage.getItem('token');
   const user = await getUser(tokenValue);
-  const typeOfUser = user.typeOfUser;
+  const typeOfUser = await getTypeOfUser(tokenValue);
+
+  console.log(typeOfUser);
 
   let usernameLogged;
   
@@ -13,9 +15,11 @@ window.onload = async function() {
     try {
         cleanAllTaskFields();
         usernameLogged = await getUsername(tokenValue);
+
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        pageToLoad(typeOfUser);
+      
+        await pageToLoad(typeOfUser);
         await loadTasks(tokenValue, typeOfUser);
         await getCategories(tokenValue);
     } catch (error) {
@@ -34,12 +38,13 @@ const SCRUM_MASTER = 200;
 const PRODUCT_OWNER = 300;
 
 
-function pageToLoad(typeOfUser) {
- if (typeOfUser === SCRUM_MASTER) {
+async function pageToLoad(typeOfUser) {
+ if (parseInt(typeOfUser) === SCRUM_MASTER) {
     scrumMasterPage();
-  } else if (typeOfUser === PRODUCT_OWNER) {
+
+  }else if(parseInt(typeOfUser) === PRODUCT_OWNER){
     productOwnerPage();
-  }
+}
 }
 
 
@@ -60,8 +65,10 @@ function scrumMasterPage(){
 
 function productOwnerPage(){
 
+  scrumMasterPage();
+
   const addUsersButton = document.createElement('a');
-  addUsersButton.href = 'register.html';
+  addUsersButton.href = 'register.html?fromAddUser=true';
   addUsersButton.draggable = 'false';
   addUsersButton.innerText = 'Add User';
 
@@ -100,7 +107,7 @@ function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and
       task.classList.remove('dragging')
       removeAllTaskElements();
       await updateTaskStatus(localStorage.getItem('token'), task.id, task.stateId);
-      await loadTasks(tokenValue);    
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));    
   });
 }
 
@@ -450,7 +457,7 @@ function createTask(title, description, priority, startDate, limitDate, category
     
     newTask(tokenValue, task).then (async() => {
       removeAllTaskElements();
-      await loadTasks(tokenValue);
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
       cleanAllTaskFields();
     });
   }
@@ -468,12 +475,12 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
    if (button.classList.contains('selected')) {
     tasksButton.innerHTML= 'All Tasks';
     removeAllTaskElements();
-    await loadTasks(tokenValue);
+    await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
     button.classList.remove('selected');
    } else {
     button.classList.add('selected');
     tasksButton.innerHTML= 'My Tasks';
-    await loadAllTasks(tokenValue, typeOfUser);
+    await loadAllTasks(tokenValue, await getTypeOfUser(tokenValue));
 }
 });
 
@@ -1218,4 +1225,30 @@ async function getUsername(tokenValue) {
         console.error('Error:', error);
         alert("Something went wrong");
     }
+}
+
+//Obter o tipo de user a partir do token
+async function getTypeOfUser(tokenValue) {
+  let typeOfUserRequest = "http://localhost:8080/project_backend/rest/users/getTypeOfUser";
+
+  try {
+      const response = await fetch(typeOfUserRequest, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/JSON',
+              'Accept': '*/*',
+              token: tokenValue
+          },
+      });
+
+      if (response.ok) {
+          const data = await response.text();
+          return data;
+      } else {
+          return null;
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      return null;
+  }
 }

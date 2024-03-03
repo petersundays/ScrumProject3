@@ -300,6 +300,12 @@ public class UserBean implements Serializable {
                 u.setPhotoURL(user.getPhotoURL());
             }
 
+            // Verifica se o typeOfUser no objeto User é nulo ou vazio
+            if (user.getTypeOfUser() != 0) {
+                // Se não for nulo nem vazio, atualiza a foto
+                u.setTypeOfUser(user.getTypeOfUser());
+            }
+
             try{
                 userDao.merge(u); //Atualiza o user na base de dados
                 status = true;
@@ -539,6 +545,17 @@ public class UserBean implements Serializable {
         boolean authorized = false;
         if (userEntity != null) {
             if (taskEntity.getOwner().getUsername().equals(userEntity.getUsername())) {
+                authorized = true;
+            }
+        }
+        return authorized;
+    }
+
+    public boolean userIsDeveloper(String token) {
+        UserEntity userEntity = userDao.findUserByToken(token);
+        boolean authorized = false;
+        if (userEntity != null) {
+            if (userEntity.getTypeOfUser() == User.DEVELOPER) {
                 authorized = true;
             }
         }
