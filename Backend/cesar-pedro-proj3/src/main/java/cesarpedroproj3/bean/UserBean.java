@@ -226,8 +226,9 @@ public class UserBean implements Serializable {
             ArrayList<User> users = new ArrayList<>();
             for (UserEntity userE : userEntities) {
 
-                users.add(convertUserEntitytoUserDto(userE));
-
+                if (userE.getTypeOfUser()!=400){
+                    users.add(convertUserEntitytoUserDto(userE));
+                }
             }
             return users;
         }
