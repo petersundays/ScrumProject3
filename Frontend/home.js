@@ -37,6 +37,8 @@ const PRODUCT_OWNER = 300;
 function pageToLoad(typeOfUser) {
  if (typeOfUser === SCRUM_MASTER) {
     scrumMasterPage();
+  } else if (typeOfUser === PRODUCT_OWNER) {
+    productOwnerPage();
   }
 }
 
@@ -68,7 +70,7 @@ function productOwnerPage(){
 
   liElement.appendChild(addUsersButton);
   document.getElementById('menu').appendChild(liElement);
-
+  createSearchMenu();
 }
 
   function cleanAllTaskFields() {
@@ -315,7 +317,6 @@ async function getAllTasks(tokenValue) {
 
 
 
-
   async function getAllTasksFromUser(tokenValue) {
 
   const usernameLogged = await getUsername(tokenValue);
@@ -346,6 +347,72 @@ async function getAllTasks(tokenValue) {
           alert("Task not created. Something went wrong");
       }
     };
+
+
+
+async function getTasksByCategory(tokenValue, category) {
+
+  let getTasks = `http://localhost:8080/project_backend/rest/users/tasks/${category}`;
+
+  try {
+    const response = await fetch(getTasks, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/JSON',
+        'Accept': '*/*',
+        token: tokenValue
+      },
+    });
+
+    if (response.ok) {
+      const tasks = await response.json();
+      return tasks;
+
+    } else if (response.status === 401) {
+      alert("Invalid credentials")
+    } else if (response.status === 404) {
+      alert("No tasks found")
+    } else if (response.status === 403) {
+      alert("No tasks foundYou don't have permission for this request")
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert("Something went wrong");
+  }
+}
+
+async function getErasedTasks(tokenValue) {
+  let getErasedTasks = `http://localhost:8080/project_backend/rest/users/erasedTasks`;
+
+  try {
+    const response = await fetch(getErasedTasks, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/JSON',
+        'Accept': '*/*',
+        token: tokenValue
+      },
+    });
+
+    if (response.ok) {
+      const tasks = await response.json();
+      return tasks;
+
+    } else if (response.status === 401) {
+      alert("Invalid credentials")
+    } else if (response.status === 404) {
+      alert("No tasks found")
+    } else if (response.status === 403) {
+      alert("You don't have permission for this request")
+    }
+    
+  } catch (error) {
+    console.error('Error:', error);
+    alert("Something went wrong");
+  }
+}
+
 
 
 function createTask(title, description, priority, startDate, limitDate, categoryName) { // Cria uma nova task com os dados inseridos pelo utilizador
@@ -389,7 +456,6 @@ function createTask(title, description, priority, startDate, limitDate, category
   }
 });
 
-
 document.getElementById('nav-all-tasks').addEventListener('click', async function() {
   
   let button = document.getElementById('nav-all-tasks');
@@ -411,7 +477,215 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
 }
 });
 
+function createSearchMenu() {
+  const searchNav = document.createElement('li');
+  searchNav.id = 'nav-search-tasks';
+  const searchLink = document.createElement('a');
+  searchLink.innerText = "Search";
+  searchNav.appendChild(searchLink);
+  document.getElementById('menu').appendChild(searchNav);
 
+  let asideCreated = false; 
+
+  searchNav.addEventListener('click', function() {
+    if (!asideCreated) { 
+      removeAsideElements();
+      createAsideElements();
+      asideCreated = true; 
+    }
+  });
+}
+
+
+function removeAsideElements() {
+ 
+  const asideElement = document.querySelector('aside');
+  const childElements = asideElement.children;
+
+  for (let i = 0; i < childElements.length; i++) {
+   const childElement = childElements[i];
+    childElement.remove();
+  }
+
+}
+
+function createAsideElements() {
+  
+  const asideElement = document.querySelector('aside');
+  const asideTitle = document.createElement('h3');
+  asideTitle.innerText = "Search Tasks";
+  asideElement.appendChild(asideTitle);
+
+  const userLabel = document.createElement('label');
+  userLabel.innerText = "User";
+  userLabel.id = 'label-search-user';
+  asideElement.appendChild(userLabel);
+
+  const usernameInput = document.createElement('input');
+  usernameInput.type = 'text';
+  usernameInput.id = 'search-input-home';
+  usernameInput.placeholder = 'Username';
+  asideElement.appendChild(usernameInput);
+
+  const dropdownUsers = document.createElement('select');
+  dropdownUsers.id = 'usersType-home';
+  dropdownUsers.name = 'usersType';
+  dropdownUsers.textContent = 'Select User';
+  asideElement.appendChild(dropdownUsers);
+
+  const searchUserButton = document.createElement('button');
+  searchUserButton.id = 'search-user-button';
+  searchUserButton.innerText = "Search User's Tasks";
+  asideElement.appendChild(searchUserButton);
+
+  const categoryLabel = document.createElement('label');
+  categoryLabel.innerText = "Category";
+  categoryLabel.id = 'label-search-category';
+  asideElement.appendChild(categoryLabel);
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'text';
+  categoryInput.id = 'search-category-home';
+  categoryInput.placeholder = 'Category';
+  asideElement.appendChild(categoryInput);
+
+  const dropdownCategories = document.createElement('select');
+  dropdownCategories.id = 'categoriesType-home';
+  dropdownCategories.name = 'categoriesType';
+  asideElement.appendChild(dropdownCategories);
+
+  const searchCategoryButton = document.createElement('button');
+  searchCategoryButton.id = 'search-category-button';
+  searchCategoryButton.innerText = 'Search Category';
+  asideElement.appendChild(searchCategoryButton);
+
+  const deletedTasksLabel = document.createElement('label');
+  deletedTasksLabel.innerText = "Deleted Tasks";
+  deletedTasksLabel.id = 'label-search-deleted';
+  asideElement.appendChild(deletedTasksLabel);
+
+  const deletedTasksButton = document.createElement('button');
+  deletedTasksButton.id = 'search-deleted-button';
+  deletedTasksButton.innerText = 'Deleted Tasks';
+  asideElement.appendChild(deletedTasksButton);
+
+  dropdownUsers.addEventListener('click', async function() {
+    const drodpDownUsersMessage = 'Select User';
+    const notAssigned = 'notAssigned';
+    if (usernameInput.value === '') {
+      dropdownUsers.innerHTML = ''; 
+      populateDropdownUsers(tokenValue);
+    
+    } else if (usernameInput.value !== '') {
+        dropdownUsers.innerHTML = ''; 
+        let username = usernameInput.value;
+        let users = await getUsersContainingName(tokenValue, username);
+      
+        users.forEach(user => {
+          if (user.username.toLowerCase() !== notAssigned.toLowerCase()) {
+            let option = document.createElement('option');
+            option.value = user;
+            option.textContent = user.username;
+            dropdownUsers.appendChild(option);
+          }
+        });
+      }
+  });
+
+  searchUserButton.addEventListener('click', async function() {
+    let userLogged = await getUser(tokenValue);
+    const typeOfUser = userLogged.typeOfUser;
+    removeAllTaskElements();
+    const allTasks = await getAllTasks(tokenValue);
+    
+    if (dropdownUsers.textContent === 'Select User' || dropdownUsers.textContent === '') {
+      document.getElementById('nav-all-tasks').click();
+    
+    } else if (dropdownUsers.innerHTML !== 'Select User') {
+      allTasks.forEach(task => {
+        if (task.owner.username === dropdownUsers.options[dropdownUsers.selectedIndex].textContent) {
+          const taskElement = createTaskElement(task, typeOfUser);
+          task.stateId = parseStateIdToString(task.stateId);
+          const panel = document.getElementById(task.stateId);
+          panel.appendChild(taskElement);
+          attachDragAndDropListeners(taskElement);
+        }
+      });
+    }
+    createDefaultOption(dropdownUsers, 'Select User');
+  });
+
+  dropdownCategories.addEventListener('click', async function() {
+    const drodpDownCategoriesMessage = 'Select Category';
+    if (categoryInput.value === '') {
+      dropdownCategories.innerHTML = '';
+      populateDropdownCategories(tokenValue);
+      console.log('populateDropdownCategories called');
+
+    } else if (categoryInput.value !== '') {
+        dropdownCategories.innerHTML = '';
+        console.log('entrei no else');
+        let categories = await getAllCategories(tokenValue);
+
+        categories.forEach(category => {
+          console.log(category);
+          let option = document.createElement('option');
+          option.value = category;
+          option.textContent = category.name;
+          dropdownCategories.appendChild(option);
+        });
+      }
+  })
+
+  searchCategoryButton.addEventListener('click', async function() {
+    let userLogged = await getUser(tokenValue);
+    const typeOfUser = userLogged.typeOfUser;
+    removeAllTaskElements();
+    const allTasks = await getTasksByCategory(tokenValue, dropdownCategories.options[dropdownCategories.selectedIndex].textContent);
+
+    if (dropdownCategories.textContent === 'Select Category' || dropdownCategories.textContent === '') {
+      document.getElementById('nav-all-tasks').click();
+    
+    } else if (dropdownCategories.innerHTML !== 'Select Category') {
+      allTasks.forEach(task => {
+        const taskElement = createTaskElement(task, typeOfUser);
+        task.stateId = parseStateIdToString(task.stateId);
+        const panel = document.getElementById(task.stateId);
+        panel.appendChild(taskElement);
+        attachDragAndDropListeners(taskElement);
+      });
+    }
+    createDefaultOption(dropdownCategories, 'Select Category');
+  });
+  
+  deletedTasksButton.addEventListener('click', async function() {
+    let userLogged = await getUser(tokenValue);
+    const typeOfUser = userLogged.typeOfUser;
+    removeAllTaskElements();
+    const allTasks = await getErasedTasks(tokenValue);
+    allTasks.forEach(task => {
+      const taskElement = createTaskElement(task, typeOfUser);
+      task.stateId = parseStateIdToString(task.stateId);
+      const panel = document.getElementById(task.stateId);
+      panel.appendChild(taskElement);
+      attachDragAndDropListeners(taskElement);
+    });
+  });
+  
+}
+
+
+
+function createDefaultOption(dropdown, textContent) {
+  dropdown.innerHTML = '';
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.hidden = true;
+  defaultOption.textContent = textContent;
+  dropdown.appendChild(defaultOption);
+}
 
 
   function createTaskElement(task, typeOfUser) {
@@ -540,8 +814,7 @@ document.addEventListener('click', function (event) {
 });
 
 document.addEventListener('click', function (event) {
-  console.log('tokenValue:', tokenValue);
-  console.log('task:', event.target.dataset.taskId);
+  
   if (event.target.matches('.restore-button')) {
     const taskElement = event.target.closest('.task');
     const taskId = event.target.dataset.taskId;
@@ -566,6 +839,64 @@ document.addEventListener('click', function (event) {
   }
 });
 
+
+
+async function populateDropdownUsers(tokenValue) {
+  let users = await getAllUsers(tokenValue);
+  const notAssigned = 'notAssigned';
+  users.forEach(user => {
+    if (user.username.toLowerCase() !== notAssigned.toLowerCase()) {
+      let option = document.createElement('option');
+      option.value = user;
+      option.textContent = user.username;
+      document.getElementById("usersType-home").appendChild(option);
+    }
+  });
+}
+
+async function populateDropdownCategories(tokenValue) {
+  let categories = await getAllCategories(tokenValue);
+  categories.forEach(category => {
+    let option = document.createElement('option');
+    option.value = category;
+    option.textContent = category.name;
+    document.getElementById("categoriesType-home").appendChild(option);
+  });
+}
+
+async function getUsersContainingName(tokenValue, username) {
+  let users = await getAllUsers(tokenValue);
+  let usersContainingName = users.filter(user => user.username.includes(username));
+  return usersContainingName;
+}
+
+
+
+async function getAllUsers(tokenValue) {
+
+  let getUsers = `http://localhost:8080/project_backend/rest/users/all`;
+    
+    try {
+        const response = await fetch(getUsers, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+
+          if (response.ok) {
+            return response.json();
+          } else {
+            alert("Invalid credentials")
+          }
+      
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong. Please try again later.");
+    }
+};
 
 
 

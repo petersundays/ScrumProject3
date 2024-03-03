@@ -36,11 +36,11 @@ public class CategoryBean implements Serializable {
         return exists;
     }
 
-    public ArrayList<String> findAllCategories(){
-        ArrayList<String> categories = new ArrayList<>();
+    public ArrayList<Category> findAllCategories(){
+        ArrayList<Category> categories = new ArrayList<>();
         ArrayList<CategoryEntity> categoryEntities = categoryDao.findAllCategories();
         for (CategoryEntity categoryEntity : categoryEntities) {
-            categories.add(categoryEntity.getName());
+            categories.add(convertCategoryEntityToCategoryDto(categoryEntity));
         }
         return categories;
     }
