@@ -1,4 +1,18 @@
 
+window.onload = function() {
+     // Verificar se a página foi carregada através do botão "Add User"
+     let urlParams = new URLSearchParams(window.location.search);
+     let fromAddUser = urlParams.has('fromAddUser'); 
+ 
+     // Alterar dinamicamente o link "Voltar"
+     const backButton = document.getElementById('backToLoginLink');
+     if (fromAddUser) {
+         backButton.innerHTML = '';
+         backButton.innerText = 'Back';
+         backButton.href = 'home.html';
+     }
+}
+
 
 document.getElementById('registrationForm').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -89,6 +103,8 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         'photoURL-register'
     ];
 
+    console.log(newUser);
+
     try {
         const response = await fetch(registerRequest, {
             method: 'POST',
@@ -107,7 +123,19 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             inputFieldIds.forEach(fieldId => {
                 document.getElementById(fieldId).value = '';
             });
-            window.location.href = 'index.html';
+
+            // Verificar se a página foi carregada através do botão "Add User"
+            let urlParams = new URLSearchParams(window.location.search);
+            const fromAddUser = urlParams.has('fromAddUser'); 
+        
+            // Alterar dinamicamente a direção
+            if (fromAddUser) {
+                window.location.href = 'home.html';
+            }else {
+                window.location.href = 'index.html';
+            }
+
+            
 
         } else {
             switch (response.status) {
@@ -138,6 +166,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
                     alert("Username already in use");
                     break;
                 default:
+                    console.log('Unknown error message:', errorData);
                     alert("Something went wrong");
             }
         }
@@ -165,11 +194,7 @@ function createUserData() {
             firstName: firstName,
             lastName: lastName,
             phone: phone,
-            photoURL: photoURL,
-            visivel: true
+            photoURL: photoURL
         };
     
 }
-
-
-

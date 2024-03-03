@@ -3,7 +3,9 @@ window.onload = async function() {
   sessionStorage.clear();
   const tokenValue = localStorage.getItem('token');
   const user = await getUser(tokenValue);
-  const typeOfUser = user.typeOfUser;
+  const typeOfUser = await getTypeOfUser(tokenValue);
+
+  console.log(typeOfUser);
 
   let usernameLogged;
   
@@ -13,9 +15,11 @@ window.onload = async function() {
     try {
         cleanAllTaskFields();
         usernameLogged = await getUsername(tokenValue);
+
         getFirstName(tokenValue);
         getPhotoUrl(tokenValue);
-        pageToLoad(typeOfUser);
+      
+        await pageToLoad(typeOfUser);
         await loadTasks(tokenValue, typeOfUser);
         await getCategories(tokenValue);
     } catch (error) {
@@ -34,12 +38,13 @@ const SCRUM_MASTER = 200;
 const PRODUCT_OWNER = 300;
 
 
-function pageToLoad(typeOfUser) {
- if (typeOfUser === SCRUM_MASTER) {
+async function pageToLoad(typeOfUser) {
+ if (parseInt(typeOfUser) === SCRUM_MASTER) {
     scrumMasterPage();
-  } else if (typeOfUser === PRODUCT_OWNER) {
+
+  }else if(parseInt(typeOfUser) === PRODUCT_OWNER){
     productOwnerPage();
-  }
+}
 }
 
 
@@ -60,8 +65,10 @@ function scrumMasterPage(){
 
 function productOwnerPage(){
 
+  scrumMasterPage();
+
   const addUsersButton = document.createElement('a');
-  addUsersButton.href = 'register.html';
+  addUsersButton.href = 'register.html?fromAddUser=true';
   addUsersButton.draggable = 'false';
   addUsersButton.innerText = 'Add User';
 
@@ -71,6 +78,7 @@ function productOwnerPage(){
   liElement.appendChild(addUsersButton);
   document.getElementById('menu').appendChild(liElement);
   createSearchMenu();
+  createCategoriesMenu();
 }
 
   function cleanAllTaskFields() {
@@ -100,7 +108,7 @@ function attachDragAndDropListeners(task) { // Adiciona os listeners de drag and
       task.classList.remove('dragging')
       removeAllTaskElements();
       await updateTaskStatus(localStorage.getItem('token'), task.id, task.stateId);
-      await loadTasks(tokenValue);    
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));    
   });
 }
 
@@ -450,7 +458,7 @@ function createTask(title, description, priority, startDate, limitDate, category
     
     newTask(tokenValue, task).then (async() => {
       removeAllTaskElements();
-      await loadTasks(tokenValue);
+      await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
       cleanAllTaskFields();
     });
   }
@@ -468,12 +476,12 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
    if (button.classList.contains('selected')) {
     tasksButton.innerHTML= 'All Tasks';
     removeAllTaskElements();
-    await loadTasks(tokenValue);
+    await loadTasks(tokenValue, await getTypeOfUser(tokenValue));
     button.classList.remove('selected');
    } else {
     button.classList.add('selected');
     tasksButton.innerHTML= 'My Tasks';
-    await loadAllTasks(tokenValue, typeOfUser);
+    await loadAllTasks(tokenValue, await getTypeOfUser(tokenValue));
 }
 });
 
@@ -490,8 +498,27 @@ function createSearchMenu() {
   searchNav.addEventListener('click', function() {
     if (!asideCreated) { 
       removeAsideElements();
-      createAsideElements();
+      createAsideSearchTasks();
       asideCreated = true; 
+    }
+  });
+}
+
+function createCategoriesMenu() {
+  const categoriesNav = document.createElement('li');
+  categoriesNav.id = 'nav-categories';
+  const categoriesLink = document.createElement('a');
+  categoriesLink.innerText = "Categories";
+  categoriesNav.appendChild(categoriesLink);
+  document.getElementById('menu').appendChild(categoriesNav);
+
+  let asideCategoriesCreated = false;
+
+  categoriesNav.addEventListener('click', function() {
+    if (!asideCategoriesCreated) {
+      removeAsideElements();
+      createAsideCategories();
+      asideCategoriesCreated = true;
     }
   });
 }
@@ -509,13 +536,40 @@ function removeAsideElements() {
 
 }
 
-function createAsideElements() {
+function createAsideSearchTasks() {
   
   const asideElement = document.querySelector('aside');
   const asideTitle = document.createElement('h3');
   asideTitle.innerText = "Search Tasks";
   asideElement.appendChild(asideTitle);
 
+  createUserSearchElements(asideElement);
+  createUserSearchEventListeners();
+  createCategoriesElements(asideElement);
+  createCategoriesEventListeners();
+  createDeletedTasksElements(asideElement);
+  createDeletedTasksEventListeners();
+  
+}
+
+function createAsideCategories() {
+  createCategoriesElements(document.querySelector('aside'));
+}
+
+
+
+function createDefaultOption(dropdown, textContent) {
+  dropdown.innerHTML = '';
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.hidden = true;
+  defaultOption.textContent = textContent;
+  dropdown.appendChild(defaultOption);
+}
+
+function createUserSearchElements(asideElement) {
   const userLabel = document.createElement('label');
   userLabel.innerText = "User";
   userLabel.id = 'label-search-user';
@@ -537,41 +591,17 @@ function createAsideElements() {
   searchUserButton.id = 'search-user-button';
   searchUserButton.innerText = "Search User's Tasks";
   asideElement.appendChild(searchUserButton);
+}
 
-  const categoryLabel = document.createElement('label');
-  categoryLabel.innerText = "Category";
-  categoryLabel.id = 'label-search-category';
-  asideElement.appendChild(categoryLabel);
+function createUserSearchEventListeners() {
 
-  const categoryInput = document.createElement('input');
-  categoryInput.type = 'text';
-  categoryInput.id = 'search-category-home';
-  categoryInput.placeholder = 'Category';
-  asideElement.appendChild(categoryInput);
-
-  const dropdownCategories = document.createElement('select');
-  dropdownCategories.id = 'categoriesType-home';
-  dropdownCategories.name = 'categoriesType';
-  asideElement.appendChild(dropdownCategories);
-
-  const searchCategoryButton = document.createElement('button');
-  searchCategoryButton.id = 'search-category-button';
-  searchCategoryButton.innerText = 'Search Category';
-  asideElement.appendChild(searchCategoryButton);
-
-  const deletedTasksLabel = document.createElement('label');
-  deletedTasksLabel.innerText = "Deleted Tasks";
-  deletedTasksLabel.id = 'label-search-deleted';
-  asideElement.appendChild(deletedTasksLabel);
-
-  const deletedTasksButton = document.createElement('button');
-  deletedTasksButton.id = 'search-deleted-button';
-  deletedTasksButton.innerText = 'Deleted Tasks';
-  asideElement.appendChild(deletedTasksButton);
+  const usernameInput = document.getElementById('search-input-home');
+  const dropdownUsers = document.getElementById('usersType-home');
+  const searchUserButton = document.getElementById('search-user-button');
+  const notAssigned = 'notAssigned';
 
   dropdownUsers.addEventListener('click', async function() {
-    const drodpDownUsersMessage = 'Select User';
-    const notAssigned = 'notAssigned';
+  
     if (usernameInput.value === '') {
       dropdownUsers.innerHTML = ''; 
       populateDropdownUsers(tokenValue);
@@ -614,6 +644,38 @@ function createAsideElements() {
     }
     createDefaultOption(dropdownUsers, 'Select User');
   });
+}
+
+
+
+function createCategoriesElements(asideElement) {
+  const categoryLabel = document.createElement('label');
+  categoryLabel.innerText = "Category";
+  categoryLabel.id = 'label-search-category';
+  asideElement.appendChild(categoryLabel);
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'text';
+  categoryInput.id = 'search-category-home';
+  categoryInput.placeholder = 'Category';
+  asideElement.appendChild(categoryInput);
+
+  const dropdownCategories = document.createElement('select');
+  dropdownCategories.id = 'categoriesType-home';
+  dropdownCategories.name = 'categoriesType';
+  asideElement.appendChild(dropdownCategories);
+
+  const searchCategoryButton = document.createElement('button');
+  searchCategoryButton.id = 'search-category-button';
+  searchCategoryButton.innerText = 'Search Category';
+  asideElement.appendChild(searchCategoryButton);
+
+}
+
+function createCategoriesEventListeners() {
+  const categoryInput = document.getElementById('search-category-home');
+  const dropdownCategories = document.getElementById('categoriesType-home');
+  const searchCategoryButton = document.getElementById('search-category-button');
 
   dropdownCategories.addEventListener('click', async function() {
     const drodpDownCategoriesMessage = 'Select Category';
@@ -657,7 +719,23 @@ function createAsideElements() {
     }
     createDefaultOption(dropdownCategories, 'Select Category');
   });
-  
+}
+
+function createDeletedTasksElements(asideElement) {
+  const deletedTasksLabel = document.createElement('label');
+  deletedTasksLabel.innerText = "Deleted Tasks";
+  deletedTasksLabel.id = 'label-search-deleted';
+  asideElement.appendChild(deletedTasksLabel);
+
+  const deletedTasksButton = document.createElement('button');
+  deletedTasksButton.id = 'search-deleted-button';
+  deletedTasksButton.innerText = 'Deleted Tasks';
+  asideElement.appendChild(deletedTasksButton);
+}
+
+function createDeletedTasksEventListeners() {
+  const deletedTasksButton = document.getElementById('search-deleted-button');
+
   deletedTasksButton.addEventListener('click', async function() {
     let userLogged = await getUser(tokenValue);
     const typeOfUser = userLogged.typeOfUser;
@@ -671,21 +749,8 @@ function createAsideElements() {
       attachDragAndDropListeners(taskElement);
     });
   });
-  
 }
 
-
-
-function createDefaultOption(dropdown, textContent) {
-  dropdown.innerHTML = '';
-  const defaultOption = document.createElement('option');
-  defaultOption.value = '';
-  defaultOption.disabled = true;
-  defaultOption.selected = true;
-  defaultOption.hidden = true;
-  defaultOption.textContent = textContent;
-  dropdown.appendChild(defaultOption);
-}
 
 
   function createTaskElement(task, typeOfUser) {
@@ -1218,4 +1283,30 @@ async function getUsername(tokenValue) {
         console.error('Error:', error);
         alert("Something went wrong");
     }
+}
+
+//Obter o tipo de user a partir do token
+async function getTypeOfUser(tokenValue) {
+  let typeOfUserRequest = "http://localhost:8080/project_backend/rest/users/getTypeOfUser";
+
+  try {
+      const response = await fetch(typeOfUserRequest, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/JSON',
+              'Accept': '*/*',
+              token: tokenValue
+          },
+      });
+
+      if (response.ok) {
+          const data = await response.text();
+          return data;
+      } else {
+          return null;
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      return null;
+  }
 }
