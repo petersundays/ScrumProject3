@@ -31,6 +31,10 @@ public class UserBean implements Serializable {
     private CategoryBean categoryBean;
 
 
+    public UserBean(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
     private ArrayList<User> users;
 
     //Permite ao utilizador entrar na app, gera token
@@ -164,13 +168,6 @@ public class UserBean implements Serializable {
             return true;
         }
         return false;
-    }
-
-    public boolean tokenExist(String token) {
-        if (userDao.findUserByToken(token) != null)
-            return true;
-        return false;
-
     }
 
     public ArrayList<User> getUsers() {
