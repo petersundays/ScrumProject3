@@ -1830,3 +1830,8 @@ aside h3 {
 #categoriesType-home {
   margin-top: 10px;
 }
+
+/*para a tabela de Users*/
+.hidden {
+  display: none;
+}
