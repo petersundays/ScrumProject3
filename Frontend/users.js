@@ -899,6 +899,8 @@ function getInputValue(elementId) {
 async function changeUserVisibility(event) {
     event.preventDefault();
 
+    if(confirmDelete()){ 
+
     let token = localStorage.getItem('token');
     let username;
 
@@ -918,7 +920,7 @@ async function changeUserVisibility(event) {
                 },
             });
 
-            if (response.ok && confirmDelete()) {
+            if (response.ok) {
 
                 alert(await response.text());
 
@@ -933,6 +935,7 @@ async function changeUserVisibility(event) {
             console.error('Error:', error);
             alert("Something went wrong");
         }
+    }
 };
 
 //Reler a informação e colocar na tabela
