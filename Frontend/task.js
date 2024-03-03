@@ -2,7 +2,6 @@ window.onload = async function() {
 
   const taskId = sessionStorage.getItem("taskId");
   const owner = sessionStorage.getItem("owner");
-  console.log("OWNER ON LOAD: ", owner);
   const tokenValue = localStorage.getItem('token');
   const user = await getUser(tokenValue);
   let usernameLogged;
@@ -460,8 +459,8 @@ async function getCategories(task,tokenValue) {
   
   categories.forEach(category => {
     let option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
+    option.value = category.name;
+    option.textContent = category.name;
     document.getElementById("task-category-edit").appendChild(option);
   });
 }

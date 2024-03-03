@@ -663,7 +663,7 @@ public class UserService {
     @Path("/deleteCategory/{categoryName}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteCategory(@HeaderParam("token") String token, @PathParam("categoryName") String categoryName) {
-
+        System.out.println("********************** CATEGORY NAME " + categoryName);
         Response response;
 
         if (userBean.isAuthenticated(token)) {
@@ -673,7 +673,7 @@ public class UserService {
                     if (deleted) {
                         response = Response.status(200).entity("Category removed successfully").build();
                     } else {
-                        response = Response.status(404).entity("Category with this name is not found").build();
+                        response = Response.status(400).entity("Category with this name can't be deleted").build();
                     }
                 } catch (Exception e) {
                     response = Response.status(404).entity("Something went wrong. The category was not removed.").build();
