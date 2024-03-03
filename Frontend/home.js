@@ -60,6 +60,7 @@ function scrumMasterPage(){
 
   liElement.appendChild(usersButton);
   document.getElementById('menu').appendChild(liElement);
+  createSearchMenu();
 
 }
 
@@ -77,7 +78,6 @@ function productOwnerPage(){
 
   liElement.appendChild(addUsersButton);
   document.getElementById('menu').appendChild(liElement);
-  createSearchMenu();
   createCategoriesMenu();
 }
 
@@ -222,8 +222,8 @@ async function getCategories(tokenValue) {
   
   categories.forEach(category => {
     let option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
+    option.value = category.name;
+    option.textContent = category.name;
     document.getElementById("task-category").appendChild(option);
   });
 }
@@ -263,6 +263,8 @@ async function getAllCategories(tokenValue) {
 
 async function newTask(tokenValue, task) {
 
+  console.log(task);
+
   const usernameLogged = await getUsername(tokenValue);
   let newTask = `http://localhost:8080/project_backend/rest/users/${usernameLogged}/addTask`;
     
@@ -272,7 +274,6 @@ async function newTask(tokenValue, task) {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                username: usernameLogged,
                 token: tokenValue
             },    
             body: JSON.stringify(task)
@@ -485,56 +486,56 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
 }
 });
 
-function createSearchMenu() {
-  //removeAsideElements();
+async function createSearchMenu() {
+
   const searchNav = document.createElement('li');
   searchNav.id = 'nav-search-tasks';
   const searchLink = document.createElement('a');
   searchLink.innerText = "Search";
   searchNav.appendChild(searchLink);
   document.getElementById('menu').appendChild(searchNav);
+  let users = await getAllUsers(tokenValue);
+  let categories = await getAllCategories(tokenValue);
 
-  let asideCreated = false; 
+ 
 
   searchNav.addEventListener('click', function() {
-    if (!asideCreated) { 
+     
       removeAsideElements();
       createAsideSearchTasks();
-      asideCreated = true; 
-    }
+      populateDropdownCategories(categories);
+      populateDropdownUsers(users);
+    
   });
 }
 
-function createCategoriesMenu() {
+async function createCategoriesMenu() {
   const categoriesNav = document.createElement('li');
   categoriesNav.id = 'nav-categories';
   const categoriesLink = document.createElement('a');
   categoriesLink.innerText = "Categories";
   categoriesNav.appendChild(categoriesLink);
   document.getElementById('menu').appendChild(categoriesNav);
+  let categories = await getAllCategories(tokenValue);
 
-  let asideCategoriesCreated = false;
 
   categoriesNav.addEventListener('click', function() {
-    if (!asideCategoriesCreated) {
+
       removeAsideElements();
-      createAsideCategories();
-      asideCategoriesCreated = true;
-    }
+      const asideElement = document.querySelector('aside');
+      const asideTitle = document.createElement('h3');
+      asideTitle.innerText = "Categories";
+      asideElement.appendChild(asideTitle);
+      createCategoriesMenuElements(asideElement);
+      populateDropdownCategories(categories);
+      createCategoryButtonsListeners()
   });
 }
 
 
 function removeAsideElements() {
  
-  const asideElement = document.querySelector('aside');
-  const childElements = asideElement.children;
-
-  for (let i = 0; i < childElements.length; i++) {
-   const childElement = childElements[i];
-    childElement.remove();
-  }
-
+  document.querySelector('aside').innerHTML = '';
 }
 
 function createAsideSearchTasks() {
@@ -577,7 +578,7 @@ function createUserSearchElements(asideElement) {
   asideElement.appendChild(userLabel);
 
   const usernameInput = document.createElement('input');
-  usernameInput.type = 'text';
+  usernameInput.type = 'search';
   usernameInput.id = 'search-input-home';
   usernameInput.placeholder = 'Username';
   asideElement.appendChild(usernameInput);
@@ -599,29 +600,39 @@ function createUserSearchEventListeners() {
   const usernameInput = document.getElementById('search-input-home');
   const dropdownUsers = document.getElementById('usersType-home');
   const searchUserButton = document.getElementById('search-user-button');
-  const notAssigned = 'notAssigned';
 
-  dropdownUsers.addEventListener('click', async function() {
-  
-    if (usernameInput.value === '') {
-      dropdownUsers.innerHTML = ''; 
-      populateDropdownUsers(tokenValue);
+
+  usernameInput.addEventListener('input', async function(event) {
+    const searchValue = event.target.value.toLowerCase().trim(); 
+    const users = await getAllUsers(tokenValue);
+    let filteredUsers = [];
+    for (i=0; i<users.length; i++) {
+      if (users[i].username.toLowerCase()!== 'notassigned' || users[i].username.toLowerCase()!== 'admin') {
+        filteredUsers.push(users[i]);
+      } 
+    }
     
-    } else if (usernameInput.value !== '') {
-        dropdownUsers.innerHTML = ''; 
-        let username = usernameInput.value;
-        let users = await getUsersContainingName(tokenValue, username);
-      
-        users.forEach(user => {
-          if (user.username.toLowerCase() !== notAssigned.toLowerCase()) {
-            let option = document.createElement('option');
-            option.value = user;
-            option.textContent = user.username;
-            dropdownUsers.appendChild(option);
-          }
-        });
-      }
-  });
+    
+
+        
+        if (searchValue === '') {
+            filteredUsers = users;
+        } else {
+            // Filtra os usuários com base no valor da pesquisa
+            filteredUsers = users.filter(user => {
+              
+                
+            // Verificar se o nome de usuário, primeiro nome, último nome ou e-mail contém o valor da pesquisa
+            return (
+                user.username.toLowerCase().includes(searchValue)
+            );
+            });
+        }
+
+    // Renderizar a tabela com os usuários filtrados
+    populateDropdownUsers(filteredUsers);
+});
+
 
   searchUserButton.addEventListener('click', async function() {
     let userLogged = await getUser(tokenValue);
@@ -643,7 +654,7 @@ function createUserSearchEventListeners() {
         }
       });
     }
-    createDefaultOption(dropdownUsers, 'Select User');
+    //createDefaultOption(dropdownUsers, 'Select User');
   });
 }
 
@@ -656,7 +667,35 @@ function createCategoriesElements(asideElement) {
   asideElement.appendChild(categoryLabel);
 
   const categoryInput = document.createElement('input');
-  categoryInput.type = 'text';
+  categoryInput.type = 'search';
+  categoryInput.id = 'search-category-home';
+  categoryInput.placeholder = 'Category';
+  asideElement.appendChild(categoryInput);
+
+  const dropdownCategories = document.createElement('select');
+  dropdownCategories.id = 'categoriesType-home';
+  dropdownCategories.name = 'categoriesType';
+  asideElement.appendChild(dropdownCategories);
+  createSearchCategoriesButton(asideElement);
+  
+
+}
+
+function createSearchCategoriesButton(asideElement) {
+  const searchCategoryButton = document.createElement('button');
+  searchCategoryButton.id = 'search-category-button';
+  searchCategoryButton.innerText = 'Search Category';
+  asideElement.appendChild(searchCategoryButton);
+}
+
+function createCategoriesMenuElements(asideElement) {
+  const categoryLabel = document.createElement('label');
+  categoryLabel.innerText = "Search";
+  categoryLabel.id = 'label-search-category';
+  asideElement.appendChild(categoryLabel);
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'search';
   categoryInput.id = 'search-category-home';
   categoryInput.placeholder = 'Category';
   asideElement.appendChild(categoryInput);
@@ -666,39 +705,209 @@ function createCategoriesElements(asideElement) {
   dropdownCategories.name = 'categoriesType';
   asideElement.appendChild(dropdownCategories);
 
-  const searchCategoryButton = document.createElement('button');
-  searchCategoryButton.id = 'search-category-button';
-  searchCategoryButton.innerText = 'Search Category';
-  asideElement.appendChild(searchCategoryButton);
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.id = 'buttonsDiv';
+  asideElement.appendChild(buttonsDiv);
+
+  const editCategoryButton = document.createElement('button');
+  editCategoryButton.id = 'edit-category-button';
+  editCategoryButton.innerText = 'Edit';
+  buttonsDiv.appendChild(editCategoryButton);
+
+
+
+  const deleteCategoryButton = document.createElement('button');
+  deleteCategoryButton.id = 'delete-category-button';
+  deleteCategoryButton.innerText = 'Delete';
+  buttonsDiv.appendChild(deleteCategoryButton);
+
+  const newInput = document.createElement('input');
+  newInput.type = 'text';
+  newInput.id = 'newCategory';
+  asideElement.appendChild(newInput);
+
+  const newCategoryButton = document.createElement('button');
+  newCategoryButton.id = 'new-category-button';
+  newCategoryButton.innerText = 'Create category';
+  asideElement.appendChild(newCategoryButton);
 
 }
+
+function createCategoryButtonsListeners() {
+  const editCategoryButton = document.getElementById('edit-category-button');
+  const deleteCategoryButton = document.getElementById('delete-category-button');
+  const newCategoryButton = document.getElementById('new-category-button');
+  let container = document.getElementById('buttonsDiv');
+
+  editCategoryButton.addEventListener('click', function() {
+
+    const inputEditCateg = document.createElement('input');
+    inputEditCateg.type = 'text';
+    inputEditCateg.id = 'editCategory-input';
+    inputEditCateg.placeholder = 'Write New Title';
+    container.appendChild(inputEditCateg);
+
+    const saveCategoryButton = document.createElement('button');
+    saveCategoryButton.id ='save-category-button';
+    saveCategoryButton.innerText = 'Save Edit';
+    container.appendChild(saveCategoryButton);
+
+    saveCategoryButton.addEventListener('click', async function () {
+      const oldName = document.getElementById('categoriesType-home').value;
+      const newName = document.getElementById('editCategory-input').value;
+
+      console.log(oldName, newName);
+      
+      await editCategory(tokenValue, oldName, newName);
+
+    })
+  });
+
+
+  deleteCategoryButton.addEventListener('click', function () {
+
+    const selectedCategory = document.getElementById('categoriesType-home').value;
+    deleteCategory(tokenValue, selectedCategory);
+  });
+
+  newCategoryButton.addEventListener('click', async function() {
+    
+    const name = document.getElementById('newCategory').value;
+    console.log(name);
+    await newCategory(tokenValue, name);
+  });
+
+}
+
+async function newCategory(tokenValue, name) {
+
+  console.log(name);
+  let category = {
+    name: name
+  }
+  let newCategory = "http://localhost:8080/project_backend/rest/users/newCategory";
+    
+    try {
+        const response = await fetch(newCategory, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+            body: JSON.stringify(category)
+        });
+
+          if (response.ok) {
+            alert("Task created successfully");
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          } else if (response.status === 404) {
+            alert("Impossible to create task. Verify all fields")
+          } else if (response.status === 409) {
+            alert("Category already exists")
+          } else {
+            alert("Category not created. Something went wrong")
+          }
+      
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Category not created. Something went wrong");
+    }
+};
+
+async function editCategory(tokenValue, oldName, newName) {
+
+  let editCategory = `http://localhost:8080/project_backend/rest/users/editCategory/${oldName}`;
+    
+    try {
+        const response = await fetch(editCategory, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                token: tokenValue,
+                newCategoryName: newName
+            },    
+        });
+
+          if (response.ok) {
+            alert("Task edited successfully");
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          } else if (response.status === 404) {
+            alert("Impossible to edit task. Verify all fields")
+          } else if (response.status === 409) {
+            alert("Category already exists")
+          } else {
+            alert("Category not created. Something went wrong")
+          }
+      
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Category not created. Something went wrong");
+    }
+};
+
+
+async function deleteCategory(tokenValue, category) {
+
+  let deleteCategory = `http://localhost:8080/project_backend/rest/users/deleteCategory/${category}`;
+    
+    try {
+        const response = await fetch(deleteCategory, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+          
+          if (response.status==200) {
+            alert("Category deleted successfully");
+          } else if (response.status==400){
+            alert("Category with this name can't be deleted while it has tasks associated")
+          }
+      
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong. Please try again later.");
+    }
+};
+
 
 function createCategoriesEventListeners() {
   const categoryInput = document.getElementById('search-category-home');
   const dropdownCategories = document.getElementById('categoriesType-home');
   const searchCategoryButton = document.getElementById('search-category-button');
 
-  dropdownCategories.addEventListener('click', async function() {
-    const drodpDownCategoriesMessage = 'Select Category';
-    if (categoryInput.value === '') {
-      dropdownCategories.innerHTML = '';
-      populateDropdownCategories(tokenValue);
-      console.log('populateDropdownCategories called');
 
-    } else if (categoryInput.value !== '') {
-        dropdownCategories.innerHTML = '';
-        console.log('entrei no else');
-        let categories = await getAllCategories(tokenValue);
+  categoryInput.addEventListener('input', async function(event) {
+    dropdownCategories.innerHTML = '';
+    const searchValue = event.target.value.toLowerCase().trim(); 
+    const categories = await getAllCategories(tokenValue);
 
-        categories.forEach(category => {
-          console.log(category);
-          let option = document.createElement('option');
-          option.value = category;
-          option.textContent = category.name;
-          dropdownCategories.appendChild(option);
-        });
-      }
-  })
+    let filteredCatg = [];
+        
+        if (searchValue === '') {
+          filteredCatg = categories;
+        } else {
+            // Filtra os usuários com base no valor da pesquisa
+            filteredCatg = categories.filter(category => {
+              
+                
+            // Verificar se o nome de usuário, primeiro nome, último nome ou e-mail contém o valor da pesquisa
+            return (
+                category.name.toLowerCase().includes(searchValue)
+            );
+            });
+        }
+
+    // Renderizar a tabela com os usuários filtrados
+    populateDropdownCategories(filteredCatg);
+});
+
 
   searchCategoryButton.addEventListener('click', async function() {
     let userLogged = await getUser(tokenValue);
@@ -718,7 +927,7 @@ function createCategoriesEventListeners() {
         attachDragAndDropListeners(taskElement);
       });
     }
-    createDefaultOption(dropdownCategories, 'Select Category');
+    //createDefaultOption(dropdownCategories, 'Select Category');
   });
 }
 
@@ -787,7 +996,10 @@ function createDeletedTasksEventListeners() {
   displayDescription.textContent = task.description;
 
   
-  if (typeOfUser === SCRUM_MASTER || (typeOfUser === PRODUCT_OWNER && task.erased === false)) {  
+  
+  if ((typeOfUser === SCRUM_MASTER && task.erased === false)|| (typeOfUser === PRODUCT_OWNER && task.erased === false)) {  
+
+    console.log('bababa');
     
     const deleteButton = document.createElement('img');
     deleteButton.src = 'multimedia/dark-cross-01.png';
@@ -907,8 +1119,8 @@ document.addEventListener('click', function (event) {
 
 
 
-async function populateDropdownUsers(tokenValue) {
-  let users = await getAllUsers(tokenValue);
+async function populateDropdownUsers(users) {
+  document.getElementById('usersType-home').innerHTML = '';
   const notAssigned = 'notAssigned';
   users.forEach(user => {
     if (user.username.toLowerCase() !== notAssigned.toLowerCase()) {
@@ -920,11 +1132,11 @@ async function populateDropdownUsers(tokenValue) {
   });
 }
 
-async function populateDropdownCategories(tokenValue) {
-  let categories = await getAllCategories(tokenValue);
+async function populateDropdownCategories(categories) {
+  
   categories.forEach(category => {
     let option = document.createElement('option');
-    option.value = category;
+    option.value = category.name;
     option.textContent = category.name;
     document.getElementById("categoriesType-home").appendChild(option);
   });
@@ -967,7 +1179,7 @@ async function getAllUsers(tokenValue) {
 
 
 async function loadTasks(tokenValue, typeOfUser) {
-  const usernameLogged = await getUsername(tokenValue);
+  
   getAllTasksFromUser(tokenValue).then(tasksArray => {
       tasksArray.forEach(task => {
       const taskElement = createTaskElement(task, typeOfUser);
