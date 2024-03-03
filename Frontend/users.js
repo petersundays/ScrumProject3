@@ -438,6 +438,8 @@ async function loadUserData(username, tokenValue) {
         if (response.ok) {
             const data = await response.json();
 
+            console.log(data);
+
             //Ler o formulário de edição do user
             await createEditProfileForm(tokenValue);
             
@@ -655,7 +657,10 @@ async function renderTable() {
                 cells[2].textContent = user.lastName;
                 cells[3].textContent = user.email;
                 cells[4].textContent = parseTypeToString(user.typeOfUser);
+
                 cells[5].textContent = user.userTasks.length;
+                //getUserTasks(user.username);
+
                 cells.forEach(cell => newRow.appendChild(cell));
 
                 if(userType === 300){
@@ -1025,6 +1030,59 @@ document.querySelectorAll('#deleteUser').forEach(btn => {
     });
 });
 
+async function getUserTasks(username) {
+    // Assuming tokenValue is defined and accessible in the scope
+    try {
+        let allTasks = await getAllTasks(tokenValue);
+
+        // Validate username
+        if (!username) {
+            throw new Error("Username is required.");
+        }
+
+        // Filter tasks for the specified username
+        let filteredTasks = allTasks.filter(task => task.username === username);
+
+        // Return the filtered tasks or count
+        return filteredTasks.length; // or return filteredTasks; if you want to return tasks
+    } catch (error) {
+        // Handle errors gracefully
+        console.error("Error in getUserTasks:", error);
+        // Return appropriate error response or rethrow the error
+        throw error;
+    }
+}
+
+//Vai buscar todas as tarefas
+async function getAllTasks(tokenValue) {
+
+    let getAllTasks = `http://localhost:8080/project_backend/rest/users/tasks`;
+  
+    try {
+        const response = await fetch(getAllTasks, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/JSON',
+                'Accept': '*/*',
+                token: tokenValue
+            },    
+        });
+  
+        if (response.ok) {
+          const tasks = await response.json();
+          return tasks;
+  
+        } else if (response.status === 401) {
+          alert("Invalid credentials")
+        } else if (response.status === 404) {
+          alert("No tasks found")
+        }
+  
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong");
+    }
+  }
 
 
 //Função para confirmar mudança de visibilidade
