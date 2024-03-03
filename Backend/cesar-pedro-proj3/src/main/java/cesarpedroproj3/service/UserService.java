@@ -1,6 +1,7 @@
 package cesarpedroproj3.service;
 
 import cesarpedroproj3.bean.CategoryBean;
+import cesarpedroproj3.bean.StartupBean;
 import cesarpedroproj3.bean.TaskBean;
 import cesarpedroproj3.bean.UserBean;
 import cesarpedroproj3.dto.*;

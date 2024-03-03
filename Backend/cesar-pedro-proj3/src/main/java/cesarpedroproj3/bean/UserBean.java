@@ -31,15 +31,46 @@ public class UserBean implements Serializable {
     private CategoryBean categoryBean;
 
 
-    public UserBean(){
-
-    }
+    //Construtor vazio
+    public UserBean(){}
 
     public UserBean(UserDao userDao) {
         this.userDao = userDao;
     }
 
-    private ArrayList<User> users;
+    public void createDefaultUsersIfNotExistent() {
+        UserEntity userEntity = userDao.findUserByUsername("admin");
+        if (userEntity == null) {
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword("admin");
+            admin.setEmail("admin@admin.com");
+            admin.setFirstName("admin");
+            admin.setLastName("admin");
+            admin.setPhone("123456789");
+            admin.setPhotoURL("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
+            admin.setTypeOfUser(300);
+            admin.setVisible(false);
+
+            register(admin);
+        }
+
+        UserEntity userEntity2 = userDao.findUserByUsername("NOTASSIGNED");
+        if (userEntity2 == null) {
+            User deletedUser = new User();
+            deletedUser.setUsername("NOTASSIGNED");
+            deletedUser.setPassword("123");
+            deletedUser.setEmail("deleted@user.com");
+            deletedUser.setFirstName("Deleted");
+            deletedUser.setLastName("User");
+            deletedUser.setPhone("123456788");
+            deletedUser.setPhotoURL("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
+            deletedUser.setTypeOfUser(400);
+            deletedUser.setVisible(false);
+
+            register(deletedUser);
+        }
+    }
 
     //Permite ao utilizador entrar na app, gera token
     public String login(Login user) {
@@ -63,6 +94,17 @@ public class UserBean implements Serializable {
                 user.setUsername(user.getUsername().toUpperCase());
                 user.setVisible(false);
                 user.setTypeOfUser(User.NOTASSIGNED);
+
+                //Encripta a password usando BCrypt
+                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+
+                //Define a password encriptada
+                user.setPassword(hashedPassword);
+
+                //Persist o user
+                userDao.persist(convertUserDtotoUserEntity(user));
+
+                return true;
             } else {
                 user.setInitialTypeOfUser();
                 user.setVisible(true);
@@ -80,7 +122,6 @@ public class UserBean implements Serializable {
         } else {
             return false;
         }
-        return false;
     }
 
 
