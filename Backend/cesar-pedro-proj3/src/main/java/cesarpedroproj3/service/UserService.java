@@ -707,7 +707,7 @@ public class UserService {
 
         if (userBean.isAuthenticated(token)) {
             try {
-                    List<String> allCategories = categoryBean.findAllCategories();
+                    List<Category> allCategories = categoryBean.findAllCategories();
                     response = Response.status(200).entity(allCategories).build();
             } catch (Exception e) {
                 response = Response.status(404).entity("Something went wrong. The categories were not found.").build();
