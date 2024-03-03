@@ -486,6 +486,7 @@ document.getElementById('nav-all-tasks').addEventListener('click', async functio
 });
 
 function createSearchMenu() {
+  //removeAsideElements();
   const searchNav = document.createElement('li');
   searchNav.id = 'nav-search-tasks';
   const searchLink = document.createElement('a');
