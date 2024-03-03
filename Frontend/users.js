@@ -333,15 +333,15 @@ document.getElementById('showUsers-button').addEventListener('click', async func
 
 //Pesquisa na tabela
 document.getElementById('search-input').addEventListener('input', function(event) {
-    const searchValue = event.target.value.toLowerCase().trim(); // Obtém o valor da pesquisa e o limpa
+    const searchValue = event.target.value.toLowerCase().trim();
 
-        // Se o valor da pesquisa estiver vazio, restaura a lista de usuários para a lista original
+        // Se o valor da pesquisa estiver vazio, restaura a lista de users para a lista original
         if (searchValue === '') {
             filteredUsers = usersList.slice(0);
         } else {
-            // Filtra os usuários com base no valor da pesquisa
+            // Filtra os users com base no valor da pesquisa
             filteredUsers = usersList.filter(user => {
-            // Verificar se o nome de usuário, primeiro nome, último nome ou e-mail contém o valor da pesquisa
+            // Verificar se o nome de user, primeiro nome, último nome ou e-mail contém o valor da pesquisa
             return (
                 user.username.toLowerCase().includes(searchValue) ||
                 user.firstName.toLowerCase().includes(searchValue) ||
@@ -351,7 +351,7 @@ document.getElementById('search-input').addEventListener('input', function(event
             });
         }
 
-    // Renderizar a tabela com os usuários filtrados
+    // Renderizar a tabela com os users filtrados
     renderTable();
 });
 

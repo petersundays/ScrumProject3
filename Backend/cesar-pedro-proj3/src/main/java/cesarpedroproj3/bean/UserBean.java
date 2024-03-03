@@ -49,7 +49,6 @@ public class UserBean implements Serializable {
             admin.setLastName("admin");
             admin.setPhone("123456789");
             admin.setPhotoURL("https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png");
-            admin.setTypeOfUser(300);
             admin.setVisible(false);
 
             register(admin);
@@ -106,7 +105,12 @@ public class UserBean implements Serializable {
 
                 return true;
             } else {
-                user.setInitialTypeOfUser();
+                if (user.getUsername().equals("admin")){
+                    user.setTypeOfUser(300);
+                }else{
+                    user.setInitialTypeOfUser();
+                }
+
                 user.setVisible(true);
 
                 //Encripta a password usando BCrypt

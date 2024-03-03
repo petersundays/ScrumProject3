@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Random;
 
 
@@ -84,50 +88,42 @@ public class UserCreator {
 
     //Function that adds the user
     public void addUser(User user) {
-        try {
-            URL url = new URL("http://localhost:8080/jl_jc_pd_project2_war_exploded/rest/users/register");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-            connection.setRequestProperty("username", user.getUsername());
-            connection.setRequestProperty("password", user.getPassword());
-            connection.setRequestProperty("email", user.getEmail());
-            connection.setRequestProperty("firstName", user.getFirstName());
-            connection.setRequestProperty("lastName", user.getLastName());
-            connection.setRequestProperty("phone", user.getPhone());
-            connection.setRequestProperty("photoURL", user.getPhotoURL());
-            JSONObject jsonUser=new JSONObject(user);
-            connection.getOutputStream().write(jsonUser.toString().getBytes());
-            connection.getOutputStream().flush();
-            connection.getOutputStream().close();
 
-            int responseCode = connection.getResponseCode();
-            System.out.println(responseCode);
-            BufferedReader reader;
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                System.out.println("User added successfully: " + user);
-            } else {
-                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            // Configurações de conexão com o banco de dados
+            String url = "jdbc:mysql://localhost:3306/cesar_pedro_proj3";
+            String username = "root";
+            String password = "bjacc86t^nXZc)#c";
+
+            // Declaração SQL para inserir um novo usuário na tabela users
+            String sql = "INSERT INTO user (username, password, email, first_name, last_name, phone, photo_url, type_of_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try (
+                    // Conectar-se ao banco de dados
+                    Connection connection = DriverManager.getConnection(url, username, password);
+                    // Preparar a declaração SQL
+                    PreparedStatement statement = connection.prepareStatement(sql)
+            ) {
+                // Configurar os parâmetros da declaração SQL com os valores do usuário
+                statement.setString(1, user.getUsername());
+                statement.setString(2, user.getPassword());
+                statement.setString(3, user.getEmail());
+                statement.setString(4, user.getFirstName());
+                statement.setString(5, user.getLastName());
+                statement.setString(6, user.getPhone());
+                statement.setString(7, user.getPhotoURL());
+
+                // Executar a declaração SQL para inserir o usuário na tabela
+                int rowsAffected = statement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    System.out.println("User added successfully: " + user);
+                } else {
+                    System.out.println("Failed to add user");
+                }
+            } catch (SQLException e) {
+                System.out.println("Error adding user to database: " + e.getMessage());
             }
-
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-
-            // Parse the JSON response to get the message
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            String message = jsonResponse.getString("message");
-            System.out.println("Response message: " + message);
-
-        } catch (Exception e) {
-            System.out.println("Failed to fetch user data" + e.getMessage());
         }
-    }
 
     public static String generateRandomNumberString() {
         // Create an instance of Random class

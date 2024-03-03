@@ -36,7 +36,6 @@ public class Main {
                 String password = args[2];
                 int numberOfTasks = Integer.parseInt(args[3]);
 
-
                 TaskCreator taskPopulator = new TaskCreator(username, password, numberOfTasks);
                 taskPopulator.create();
 
