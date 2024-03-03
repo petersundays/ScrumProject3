@@ -323,7 +323,7 @@ document.getElementById('showUsers-button').addEventListener('click', async func
         }
 
         // Adiciona os users à tabela
-        renderTable();
+        await renderTable();
 
     } catch (error) {
         console.error('Error:', error);
@@ -628,7 +628,11 @@ function getColumnProperty(index) {
 // Função para escrever a tabela com os usuários filtrados e ordenados
 async function renderTable() {
 
-    let typeOfUser = await getTypeOfUser(tokenValue);
+    try{
+        // Oculta a tabela durante a construção
+        document.querySelector('.table').classList.add('hidden');
+
+        let typeOfUser = await getTypeOfUser(tokenValue);
 
         if(typeOfUser){
 
@@ -663,6 +667,12 @@ async function renderTable() {
                 tbody.appendChild(newRow);
             });
         }
+         // Mostra a tabela quando estiver pronta
+         document.querySelector('.table').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Something went wrong");
+        }
 }
 
 //Gravar edições do user
@@ -695,7 +705,7 @@ async function saveEdit(event) {
                 alert("Profile updated successfully");
                 loadUserData(username, token);
 
-                reloadUsers();
+                await reloadUsers();
 
             } else {
                 switch (response.status) {
@@ -967,7 +977,7 @@ async function reloadUsers() {
         filteredUsers = usersList;
 
         // Renderiza a tabela com os usuários atualizados
-        renderTable();
+        await renderTable();
 
     } catch (error) {
         console.error('Error:', error);
@@ -1000,7 +1010,7 @@ async function deleteUser(event) {
 
         if (response.ok) {
             alert('User deleted successfully');
-            reloadUsers();
+            await reloadUsers();
         } else {
             console.error('Error deleting User:', response.statusText);
         }
