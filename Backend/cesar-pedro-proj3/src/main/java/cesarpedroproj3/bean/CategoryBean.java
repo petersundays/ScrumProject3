@@ -47,6 +47,7 @@ public class CategoryBean implements Serializable {
 
     public boolean deleteCategory(String name){
         boolean deleted = false;
+        System.out.println();
         if (name != null) {
             deleted = categoryDao.deleteCategory(name);
         }

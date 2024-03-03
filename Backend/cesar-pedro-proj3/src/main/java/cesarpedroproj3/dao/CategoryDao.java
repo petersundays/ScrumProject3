@@ -42,12 +42,14 @@ public class CategoryDao extends AbstractDao<CategoryEntity> {
     }
 
  public boolean deleteCategory(String name) {
+     System.out.println("############ CATEGORY DAO " + name);
         boolean deleted = false;
         if (name == null) {
             deleted = false;
         } else {
             try {
                 ArrayList<TaskEntity> categoryTasks = (ArrayList<TaskEntity>) em.createNamedQuery("Category.findTasksByCategory").setParameter("name", name).getResultList();
+                System.out.println("*/*/*/*/*/ SIZE " + categoryTasks.size());
                 if (categoryTasks.isEmpty()) {
                     em.createNamedQuery("Category.deleteCategory").setParameter("name", name).executeUpdate();
                     deleted = true;
