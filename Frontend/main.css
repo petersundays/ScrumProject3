@@ -495,7 +495,10 @@ aside h3 {
 #label-priority,
 #label-startDate,
 #label-limitDate,
-#label-category {
+#label-category,
+#label-search-user,
+#label-search-category,
+#label-search-deleted {
   margin-block: 20px;
   margin-inline: 60px;
   text-align: center;
@@ -540,6 +543,31 @@ aside h3 {
 #addTask:hover,
 #showUsers-button:hover
 #search-button:hover {
+  background-color: var(--green3);
+  color: var(--green1);
+}
+
+#search-deleted-button,
+#search-category-button,
+#search-user-button {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 50px;
+  width: 185px;
+  height: 32px;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: var(--done);
+  color: var(--green3);
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+#search-deleted-button:hover,
+#search-category-button:hover,
+#search-user-button:hover {
   background-color: var(--green3);
   color: var(--green1);
 }
@@ -1665,6 +1693,11 @@ aside h3 {
   margin-top: 10%;
 }
 
+#search-input-home,
+#search-category-home {
+  margin-top: 10%;
+}
+
 #edit-user-form{
   display: flex;
   width: 100%;
@@ -1704,7 +1737,22 @@ aside h3 {
   position: relative;
 }
 
-#search-input::before {
+#search-input-home,
+#search-category-home {
+  display: flex;
+  padding-left: 10px;
+  width: 170px;
+  height: 30px;
+  background-color: var(--white);
+  font-size: 12px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  margin-left: 58px;
+}
+
+#search-input-home::before {
   content: '\F52A'; /* Unicode do ícone */
   font-family: Arial, sans-serif; 
   position: absolute;
@@ -1724,6 +1772,14 @@ aside h3 {
   transition: background-color 0.3s, color 0.3s;
   cursor: pointer;
 }
+#search-input-home::before {
+  content: '\F52A'; /* Unicode do ícone */
+  font-family: Arial, sans-serif; 
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
 
 #deleteUser:hover,
 #visibleUser:hover {
@@ -1733,4 +1789,44 @@ aside h3 {
 
 #deleteUser{
   margin-left: 2px;
+}
+
+
+#search-category-home::before {
+  content: '\F52A'; /* Unicode do ícone */
+  font-family: Arial, sans-serif; 
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#search-category-home::before {
+  content: '\F52A'; /* Unicode do ícone */
+  font-family: Arial, sans-serif; 
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#usersType-home,
+#categoriesType-home {
+  padding-left: 10px;
+  width: 185px;
+  background-color: var(--white);
+  font-size: 12px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+
+#usersType-home,
+#categoriesType-home {
+  height: 30px;
+}
+#usersType-home,
+#categoriesType-home {
+  margin-top: 10px;
 }
