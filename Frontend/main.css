@@ -552,7 +552,8 @@ aside h3 {
 #search-user-button,
 #edit-category-button,
 #delete-category-button,
-#new-category-button {
+#new-category-button,
+#save-category-button {
   text-align: center;
   margin-top: 10px;
   margin-bottom: 50px;
@@ -572,7 +573,8 @@ aside h3 {
 #search-category-button:hover,
 #search-user-button:hover,
 #edit-category-button:hover,
-#delete-category-button:hover {
+#delete-category-button:hover,
+#save-category-button:hover {
   background-color: var(--green3);
   color: var(--green1);
 }
@@ -1771,7 +1773,8 @@ aside h3 {
 
 #search-input-home,
 #search-category-home,
-#newCategory {
+#newCategory,
+#editCategory-input {
   display: flex;
   padding-left: 10px;
   width: 170px;

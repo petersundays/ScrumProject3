@@ -714,6 +714,8 @@ function createCategoriesMenuElements(asideElement) {
   editCategoryButton.innerText = 'Edit';
   buttonsDiv.appendChild(editCategoryButton);
 
+
+
   const deleteCategoryButton = document.createElement('button');
   deleteCategoryButton.id = 'delete-category-button';
   deleteCategoryButton.innerText = 'Delete';
@@ -734,9 +736,33 @@ function createCategoriesMenuElements(asideElement) {
 function createCategoryButtonsListeners() {
   const editCategoryButton = document.getElementById('edit-category-button');
   const deleteCategoryButton = document.getElementById('delete-category-button');
- const newCategoryButton = document.getElementById('new-category-button');
+  const newCategoryButton = document.getElementById('new-category-button');
+  let container = document.getElementById('buttonsDiv');
 
-  
+  editCategoryButton.addEventListener('click', function() {
+
+    const inputEditCateg = document.createElement('input');
+    inputEditCateg.type = 'text';
+    inputEditCateg.id = 'editCategory-input';
+    inputEditCateg.placeholder = 'Write New Title';
+    container.appendChild(inputEditCateg);
+
+    const saveCategoryButton = document.createElement('button');
+    saveCategoryButton.id ='save-category-button';
+    saveCategoryButton.innerText = 'Save Edit';
+    container.appendChild(saveCategoryButton);
+
+    saveCategoryButton.addEventListener('click', async function () {
+      const oldName = document.getElementById('categoriesType-home').value;
+      const newName = document.getElementById('editCategory-input').value;
+
+      console.log(oldName, newName);
+      
+      await editCategory(tokenValue, oldName, newName);
+
+    })
+  });
+
 
   deleteCategoryButton.addEventListener('click', function () {
 
@@ -778,6 +804,39 @@ async function newCategory(tokenValue, name) {
             alert("Invalid credentials")
           } else if (response.status === 404) {
             alert("Impossible to create task. Verify all fields")
+          } else if (response.status === 409) {
+            alert("Category already exists")
+          } else {
+            alert("Category not created. Something went wrong")
+          }
+      
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Category not created. Something went wrong");
+    }
+};
+
+async function editCategory(tokenValue, oldName, newName) {
+
+  let editCategory = `http://localhost:8080/project_backend/rest/users/editCategory/${oldName}`;
+    
+    try {
+        const response = await fetch(editCategory, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                token: tokenValue,
+                newCategoryName: newName
+            },    
+        });
+
+          if (response.ok) {
+            alert("Task edited successfully");
+          } else if (response.status === 401) {
+            alert("Invalid credentials")
+          } else if (response.status === 404) {
+            alert("Impossible to edit task. Verify all fields")
           } else if (response.status === 409) {
             alert("Category already exists")
           } else {
