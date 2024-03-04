@@ -660,6 +660,7 @@ async function renderTable() {
 
                 cells[5].textContent = user.userTasks.length;
                 //getUserTasks(user.username);
+            
 
                 cells.forEach(cell => newRow.appendChild(cell));
 
