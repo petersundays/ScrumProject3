@@ -1,0 +1,2591 @@
+{
+	"info": {
+		"_postman_id": "6eadf49f-7c3e-4362-83b4-eb5e27754040",
+		"name": "backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32787742",
+		"_collection_link": "https://os-bate-n-avo.postman.co/workspace/cesar-pedro-proj3~e07a5bad-8915-4036-a99b-7fb7ca3c03cb/collection/32787742-6eadf49f-7c3e-4362-83b4-eb5e27754040?action=share&source=collection_link&creator=32787742"
+	},
+	"item": [
+		{
+			"name": "tasks",
+			"item": [
+				{
+					"name": "Add Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"novaTask\",\r\n    \"description\": \"description\",\r\n    \"priority\": 100,\r\n    \"limitDate\": \"2024-02-25\"    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/:username/addTask",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								":username",
+								"addTask"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"    \r",
+									"pm.test(\"Status code is 204 and response body is empty\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"    pm.expect(pm.response.text()).to.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/tasks/all",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"tasks",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get task by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseurl}}/tasks/:Id",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"tasks",
+								":Id"
+							],
+							"variable": [
+								{
+									"key": "Id",
+									"value": "1707702770328"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "id",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "   {\r\n        \"creationDate\": \"2024-02-10\",\r\n        \"description\": \"descrição editada\",\r\n        \"limitDate\": \"2024-12-23\",\r\n        \"priority\": 300,\r\n        \"stateId\": 300,\r\n        \"title\": \"tarefaEditada\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/tasks/:id",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"tasks",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1707669827968"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseurl}}/tasks/:id",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"tasks",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1707670933424"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "testing for Task methods"
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Developer",
+					"item": [
+						{
+							"name": "D1 - Alterar o perfil e imagem",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseurl}}/users/update/:username",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"update",
+										":username"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Scrum Master",
+					"item": [
+						{
+							"name": "S3 - Get user by username",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response has Content-Type header of application/json\", function () {",
+											"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "JwCX4DAfTgIXtj9zGN9rhiTO5s4xfprA",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/:username",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										":username"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "ruipinto2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "S3 - Errado",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "JwCX4DAfTgIXtj9zGN9rhiTO5s4xfprA",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseurl}}/users/:username",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										":username"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "asdf"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Product Owner",
+					"item": [
+						{
+							"name": "P1 - Update user profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content type is application/json\", function () {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+											"});",
+											"",
+											"",
+											"pm.test(\"All body attributes are filled\", function () {",
+											"    var responseJson = pm.response.json();",
+											"    pm.expect(responseJson).to.be.true; ",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "2x1QQf3tkAxWfuF_RBjxVpa1Klnk5q5G",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"typeOfUser\": \"200\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/update/:username",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"update",
+										":username"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "songoku8"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P2 - Register User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for invalid credentials is  409\", function () {\r",
+											"    pm.expect(pm.response.code).to.eql(409);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Verify request body attributes\", function () {\r",
+											" \r",
+											"    const reqBody = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"    const expectedAttributes = ['username', 'password', 'email', 'firstName', 'lastName', 'phone', 'photoURL'];\r",
+											"\r",
+											"    expectedAttributes.forEach(function(attribute) {\r",
+											"        pm.expect(reqBody).to.have.property(attribute);\r",
+											"        pm.expect(reqBody[attribute]).to.not.be.empty;\r",
+											"    });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n        \"email\": \"mail2@mail.com\",\r\n        \"firstName\": \"son\",\r\n        \"lastName\": \"goku\",\r\n        \"password\": \"123\",\r\n        \"phone\": \"910000002\",\r\n        \"photoURL\": \"https://cdn-images.rtp.pt/icm/noticias/images/d7/d782917dbc567ce1b7da3909eddae012?w=1200&q=90&rect=0,0,1280,702&auto=format\",\r\n        \"username\": \"songoku2\"\r\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/register",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P3 - Get All Users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Email is in a valid format', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.email).to.be.a('string');\r",
+											"        pm.expect(user.email).to.match(/^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$/);\r",
+											"    });\r",
+											"})\r",
+											"\r",
+											"pm.test('Verify that \\'userTasks\\' array is present in the response', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.userTasks).to.exist.and.to.be.an('array');\r",
+											"    });\r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "2x1QQf3tkAxWfuF_RBjxVpa1Klnk5q5G",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/all",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P3 - Get All Users By Type",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Email is in a valid format', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.email).to.be.a('string');\r",
+											"        pm.expect(user.email).to.match(/^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$/);\r",
+											"    });\r",
+											"})\r",
+											"\r",
+											"pm.test('Verify that \\'userTasks\\' array is present in the response', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.userTasks).to.exist.and.to.be.an('array');\r",
+											"    });\r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "2x1QQf3tkAxWfuF_RBjxVpa1Klnk5q5G",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/all/:type",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"all",
+										":type"
+									],
+									"variable": [
+										{
+											"key": "type",
+											"value": "100"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P3 - Get All Users By Visibility",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Email is in a valid format', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.email).to.be.a('string');\r",
+											"        pm.expect(user.email).to.match(/^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$/);\r",
+											"    });\r",
+											"})\r",
+											"\r",
+											"pm.test('Verify that \\'userTasks\\' array is present in the response', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.userTasks).to.exist.and.to.be.an('array');\r",
+											"    });\r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "2x1QQf3tkAxWfuF_RBjxVpa1Klnk5q5G",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/all/visible/:visible",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"all",
+										"visible",
+										":visible"
+									],
+									"variable": [
+										{
+											"key": "visible",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P3 - Get All Users By Type And Visibility",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Email is in a valid format', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.email).to.be.a('string');\r",
+											"        pm.expect(user.email).to.match(/^[\\w-]+(\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$/);\r",
+											"    });\r",
+											"})\r",
+											"\r",
+											"pm.test('Verify that \\'userTasks\\' array is present in the response', function () {\r",
+											"    const responseData = pm.response.json();\r",
+											"    pm.expect(responseData).to.be.an('array');\r",
+											"    responseData.forEach(function (user) {\r",
+											"        pm.expect(user.userTasks).to.exist.and.to.be.an('array');\r",
+											"    });\r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token",
+										"value": "2x1QQf3tkAxWfuF_RBjxVpa1Klnk5q5G",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/all/:type/:visible",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"all",
+										":type",
+										":visible"
+									],
+									"variable": [
+										{
+											"key": "type",
+											"value": "100"
+										},
+										{
+											"key": "visible",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P4 - User Change Visibility",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "xLXlPjf_KsAiIdSV0xD6KlAPVnN4Ok7a",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseurl}}/users/update/:username/visibility",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"update",
+										":username",
+										"visibility"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "songoku2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P6 - User Change Role",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "7zSASQsIWol5Ysh6pVvYC0sYDHaECnIX",
+										"type": "text"
+									},
+									{
+										"key": "typeOfUser",
+										"value": "100",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseurl}}/users/update/:username/role",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										"update",
+										":username",
+										"role"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "songoku2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "P7 - User remove",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "z90DsogbZWNBV2TxOute8ysoptZsinNl",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseurl}}/users/:username",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"users",
+										":username"
+									],
+									"variable": [
+										{
+											"key": "username",
+											"value": "songoku8"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "R1 - Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Check if 'username' and 'password' headers are filled\", function () {\r",
+									"    // Verifica se as headers com estes nomes existem\r",
+									"    pm.request.to.have.header('username');\r",
+									"    pm.request.to.have.header('password');\r",
+									"    \r",
+									"    // buscar os values das headers\r",
+									"    var username = pm.request.headers.get('username');\r",
+									"    var password = pm.request.headers.get('password');\r",
+									"    \r",
+									"    pm.expect(username).to.not.be.empty;\r",
+									"    pm.expect(password).to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response for invalid credentials is  401\", function () {\r",
+									"    pm.expect(pm.response.code).to.eql(401);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"songohan\",\r\n    \"password\" : \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/login",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R2 - Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Content-Type is application/json\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than  500ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "7zSASQsIWol5Ysh6pVvYC0sYDHaECnIX",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/logout",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R3 - Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response for invalid credentials is  409\", function () {\r",
+									"    pm.expect(pm.response.code).to.eql(409);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify request body attributes\", function () {\r",
+									" \r",
+									"    const reqBody = JSON.parse(pm.request.body.raw);\r",
+									"\r",
+									"    const expectedAttributes = ['username', 'password', 'email', 'firstName', 'lastName', 'phone', 'photoURL'];\r",
+									"\r",
+									"    expectedAttributes.forEach(function(attribute) {\r",
+									"        pm.expect(reqBody).to.have.property(attribute);\r",
+									"        pm.expect(reqBody[attribute]).to.not.be.empty;\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"email\": \"mail126@mail.com\",\r\n        \"firstName\": \"son\",\r\n        \"lastName\": \"gohan\",\r\n        \"password\": \"123\",\r\n        \"phone\": \"911011111\",\r\n        \"photoURL\": \"https://cdn-images.rtp.pt/icm/noticias/images/d7/d782917dbc567ce1b7da3909eddae012?w=1200&q=90&rect=0,0,1280,702&auto=format\",\r\n        \"username\": \"songohan7\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/register",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R4 - Get first name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response body is a string\", function () {\r",
+									"    \r",
+									"    var responseBody = pm.response.text();\r",
+									"    pm.expect(responseBody).to.be.a(\"string\");\r",
+									"    \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Status code is   200 for successful request\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "R8lQg-QJDN4YHxQhVf0QJBb97XyV7DLW",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/getFirstName",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"getFirstName"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R5 - Get photo url",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response has Content-Type header of application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "username",
+								"value": "celso",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/getPhotoUrl",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"getPhotoUrl"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R10 - Get user tasks list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Response is an array', function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('array');\r",
+									"})\r",
+									"\r",
+									"pm.test('Validate the response content type is \\'application/json\\'', function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "35Q2oy1KvBkQHsLoAbVG3NUyaTFhRtx-",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/:username/tasks",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								":username",
+								"tasks"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "songohan"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Response is an array', function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.be.an('array');\r",
+									"})\r",
+									"\r",
+									"pm.test('Validate the response content type is \\'application/json\\'', function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "mcL7nYwwJe9T2aHRtmdvv3m9kNn2HjZq",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/tasks",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R11 - New task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is  401 for invalid credentials\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Status code is  404 for missing fields\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "SqJQIQFiRCKxWT_soX23JcFVLypwoJtE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"intelliJ\",\r\n    \"description\": \"Rockstar\",\r\n    \"priority\": 300,\r\n    \"startDate\": \"2024-04-02\",\r\n    \"limitDate\": \"2024-06-02\",\r\n    \"category\": {\r\n        \"name\": \"backend\",\r\n        \"id\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/:username/addTask",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								":username",
+								"addTask"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "songoku"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R12 - Update task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "QBCfLq6fSOtX1-vyR_qcmkxTwIWG-thO",
+								"type": "text"
+							},
+							{
+								"key": "categoryName",
+								"value": "backend",
+								"type": "text"
+							},
+							{
+								"key": "startDate",
+								"value": "2024-12-25",
+								"type": "text"
+							},
+							{
+								"key": "limitDate",
+								"value": "2024-12-31",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\": \"leaks\",\r\n    \"priority\": 100,\r\n    \"stateId\": 100,\r\n    \"title\": \"paj\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/updatetask/:id",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"updatetask",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R13 - Update task status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "123456",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/tasks/:id/:newStateId",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"tasks",
+								":id",
+								":newStateId"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1708945867055"
+								},
+								{
+									"key": "newStateId",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R14 - Erase task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "zeTIKSotRCGHQXd4MUI5npSPtqSZ30g0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/:taskId",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								":taskId"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "taskId",
+									"value": "1709292922542"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R15 - Delete task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "zeTIKSotRCGHQXd4MUI5npSPtqSZ30g0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/delete/:taskId",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"delete",
+								":taskId"
+							],
+							"variable": [
+								{
+									"key": "taskId",
+									"value": "1709308294069"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R16 - Tasks by category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123456",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/tasks/:category",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"tasks",
+								":category"
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "backend"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R17 - See erased tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123456",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/erasedTasks",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"erasedTasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R18 - New Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "f4-PWYB09Qney8ePtcuEsplyy7JGfZSE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"nova\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/newCategory",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"newCategory"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R19 - Remove Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "qZWTMh4tqidwdkXLCW0oi81MCYXTbQsI",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/deleteCategory/:categoryName",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"deleteCategory",
+								":categoryName"
+							],
+							"variable": [
+								{
+									"key": "categoryName",
+									"value": "nova"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R20 - Edit Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "f4-PWYB09Qney8ePtcuEsplyy7JGfZSE",
+								"type": "text"
+							},
+							{
+								"key": "newCategoryName",
+								"value": "nao",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/users/editCategory/:categoryName",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"editCategory",
+								":categoryName"
+							],
+							"variable": [
+								{
+									"key": "categoryName",
+									"value": "sim"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "R21 - Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "z2-Zu2E33kpfV9xwRi-WqRVIVdaysvJc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/categories",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Username",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "R8lQg-QJDN4YHxQhVf0QJBb97XyV7DLW",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/getUsername",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"getUsername"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Username From Email",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "rsp2pLllJV-pwdR_qMa2nVDxBVjdO6GP",
+								"type": "text"
+							},
+							{
+								"key": "email",
+								"value": "mail2@mail.com",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/getUsernameFromEmail",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"getUsernameFromEmail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Erase All Tasks",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "123456",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/eraseAllTasks/:username",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"eraseAllTasks",
+								":username"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "songoku"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "7oZIloLbqShKOo0To9sXurbzK_CGHNb4",
+								"type": "text"
+							},
+							{
+								"key": "oldpassword",
+								"value": "123a",
+								"type": "text"
+							},
+							{
+								"key": "newpassword",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/update/:username/password",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"update",
+								":username",
+								"password"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "songoku"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tasks By Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "z2-Zu2E33kpfV9xwRi-WqRVIVdaysvJc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/tasks/:category",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"tasks",
+								":category"
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "noend"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Erased Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "z2-Zu2E33kpfV9xwRi-WqRVIVdaysvJc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/users/erasedTasks",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"users",
+								"erasedTasks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Retrospective",
+			"item": [
+				{
+					"name": "Get All Retrospectives",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "username",
+								"value": "jcastro",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/retrospective/all",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "username",
+								"value": "jcastro",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/retrospective/:id/allComments",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								":id",
+								"allComments"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1708022476770"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Retrospective",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "username",
+								"value": "jcastro",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseurl}}/retrospective/:id",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1708022476770"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "username",
+								"value": "jcastro",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/retrospective/:id/comment/:id2",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								":id",
+								"comment",
+								":id2"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1708022476770",
+									"description": "1708007259993"
+								},
+								{
+									"key": "id2",
+									"value": "1708022493162",
+									"description": "1708009291974"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Retrospective",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "username",
+								"value": "teste123",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Ninja das Piça\",\r\n    \"date\": \"2024-03-21\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/retrospective/add",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content type is application/json\", function () {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "username",
+								"value": "jcastro",
+								"type": "text"
+							},
+							{
+								"key": "password",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\": \"newComment3\",\r\n    \"user\": \"foca\",\r\n    \"commentId\": 200\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/retrospective/:id/addComment/",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"retrospective",
+								":id",
+								"addComment",
+								""
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1708007259993"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseurl",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
