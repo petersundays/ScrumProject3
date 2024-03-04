@@ -642,7 +642,7 @@ async function renderTable() {
 
             const tbody = document.querySelector('.table tbody');
             tbody.innerHTML = '';
-            filteredUsers.forEach(user => {
+            filteredUsers.forEach(async user => {
                 const newRow = document.createElement('tr');
                 const cells = [
                     document.createElement('td'),
@@ -658,8 +658,7 @@ async function renderTable() {
                 cells[3].textContent = user.email;
                 cells[4].textContent = parseTypeToString(user.typeOfUser);
 
-                cells[5].textContent = user.userTasks.length;
-                //getUserTasks(user.username);
+                cells[5].textContent = await getUserTasks(user.username);
             
 
                 cells.forEach(cell => newRow.appendChild(cell));
@@ -1032,24 +1031,20 @@ document.querySelectorAll('#deleteUser').forEach(btn => {
 });
 
 async function getUserTasks(username) {
-    // Assuming tokenValue is defined and accessible in the scope
+   
     try {
         let allTasks = await getAllTasks(tokenValue);
 
-        // Validate username
         if (!username) {
             throw new Error("Username is required.");
         }
 
-        // Filter tasks for the specified username
-        let filteredTasks = allTasks.filter(task => task.username === username);
+        let filteredTasks = allTasks.filter(task => task.owner.username === username);
+    
 
-        // Return the filtered tasks or count
-        return filteredTasks.length; // or return filteredTasks; if you want to return tasks
+        return Promise.resolve(filteredTasks.length);
     } catch (error) {
-        // Handle errors gracefully
         console.error("Error in getUserTasks:", error);
-        // Return appropriate error response or rethrow the error
         throw error;
     }
 }
