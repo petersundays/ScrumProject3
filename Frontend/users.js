@@ -408,10 +408,20 @@ document.querySelector('.table tbody').addEventListener('click', function(event)
     if (clickedCellIndex !== 6) {
         const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
         if (clickedRow) {
-            const username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+            const username = clickedRow.cells[0].textContent; // Obtém o nome de user da primeira célula
             if (!event.target.matches('img')) {
             // Chama a função para carregar os dados do usuário clicado
             loadUserData(username, localStorage.getItem('token'));
+
+            const usernameToDeleteTask = username;
+
+            document.getElementById('deleteTasks-button').addEventListener('click', async function() {
+            
+                console.log(usernameToDeleteTask);
+            
+                await deleteAllTasks(usernameToDeleteTask);
+            
+              });
             }
         }
     }
@@ -921,7 +931,7 @@ async function changeUserVisibility(event) {
 
     const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
     if (clickedRow) {
-        username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+        username = clickedRow.cells[0].textContent; // Obtém o nome de user da primeira célula
     }
 
         try {
@@ -998,7 +1008,7 @@ async function deleteUser(event) {
 
     const clickedRow = event.target.closest('tr'); // Encontra a linha clicada
     if (clickedRow) {
-        username = clickedRow.cells[0].textContent; // Obtém o nome de usuário da primeira célula
+        username = clickedRow.cells[0].textContent; // Obtém o nome de user da primeira célula
     }
 
     let deleteThisUser = `http://localhost:8080/project_backend/rest/users/${username}`;
@@ -1079,6 +1089,58 @@ async function getAllTasks(tokenValue) {
         alert("Something went wrong");
     }
   }
+
+  
+
+  async function deleteAllTasks(username){
+
+    try {
+        let allTasks = await getAllTasks(tokenValue);
+
+        if (!username) {
+            throw new Error("Username is required.");
+        }
+
+        let filteredTasks = allTasks.filter(task => task.owner.username === username && task.erased === false);    
+
+        filteredTasks.forEach(async task =>
+            await eraseTask(tokenValue, task.id)
+        );
+
+    
+    } catch (error) {
+        console.error("Error in getUserTasks:", error);
+        throw error;
+    }
+  }
+
+  async function eraseTask(tokenValue, taskId) {
+
+    let eraseTask = `http://localhost:8080/project_backend/rest/users/${taskId}`;
+        
+        try {
+            const response = await fetch(eraseTask, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    token: tokenValue
+                },    
+            });
+    
+              if (response.ok) {
+                alert("Task deleted successfully");
+              } else if (response.status === 401) {
+                alert("Invalid credentials")
+              } else if (response.status === 404) {
+                alert("Something went wrong. The task was not deleted.")
+              }
+          
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Task was not deleted. Something went wrong");
+        }
+      }
 
 
 //Função para confirmar mudança de visibilidade

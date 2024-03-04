@@ -526,7 +526,8 @@ aside h3 {
 /* Botão add task e de show users*/
 #addTask,
 #showUsers-button,
-#search-button {
+#search-button,
+#deleteTasks-button {
   text-align: center;
   margin-top: 25px;
   width: 120px;
@@ -541,8 +542,9 @@ aside h3 {
   cursor: pointer;
 }
 #addTask:hover,
-#showUsers-button:hover
-#search-button:hover {
+#showUsers-button:hover,
+#search-button:hover,
+#deleteTasks-button:hover {
   background-color: var(--green3);
   color: var(--green1);
 }
